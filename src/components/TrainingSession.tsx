@@ -19,17 +19,29 @@ function shuffle<T>(arr: T[]): T[] {
 
 function speakItem(item: VocabItem, onStart: () => void, onEnd: () => void) {
   const voices = window.speechSynthesis.getVoices();
+  console.log("[TTS] voices available:", voices.length, voices.map(v => `${v.name} (${v.lang})`));
+
   const hasJapanese = voices.some((v) => v.lang.startsWith("ja"));
   const text = hasJapanese ? (item.reading ?? item.japanese) : item.romaji;
+  console.log("[TTS] text to speak:", text, "| hasJapanese:", hasJapanese);
 
   const utterance = new SpeechSynthesisUtterance(text);
   if (hasJapanese) utterance.lang = "ja-JP";
-  utterance.onstart = onStart;
-  utterance.onend = onEnd;
-  utterance.onerror = onEnd;
+  utterance.onstart = () => { console.log("[TTS] onstart"); onStart(); };
+  utterance.onend = () => { console.log("[TTS] onend"); onEnd(); };
+  utterance.onerror = (e) => { console.log("[TTS] onerror:", e.error, e); onEnd(); };
 
   window.speechSynthesis.cancel();
-  setTimeout(() => window.speechSynthesis.speak(utterance), 50);
+  setTimeout(() => {
+    console.log("[TTS] calling speak(), pending:", window.speechSynthesis.pending, "speaking:", window.speechSynthesis.speaking);
+    window.speechSynthesis.speak(utterance);
+    setTimeout(() => console.log("[TTS] 100ms after speak() — speaking:", window.speechSynthesis.speaking, "pending:", window.speechSynthesis.pending), 100);
+  }, 50);
+
+  // Log voiceschanged if it fires after the fact
+  window.speechSynthesis.addEventListener("voiceschanged", () => {
+    console.log("[TTS] voiceschanged fired — voices now:", window.speechSynthesis.getVoices().length);
+  }, { once: true });
 }
 
 const WAVE_BARS = [
