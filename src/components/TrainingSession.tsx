@@ -17,31 +17,25 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+let currentAudio: HTMLAudioElement | null = null;
+let pendingOnEnd: (() => void) | null = null;
+
 function speakItem(item: VocabItem, onStart: () => void, onEnd: () => void) {
-  const voices = window.speechSynthesis.getVoices();
-  console.log("[TTS] voices available:", voices.length, voices.map(v => `${v.name} (${v.lang})`));
-
-  const hasJapanese = voices.some((v) => v.lang.startsWith("ja"));
-  const text = hasJapanese ? (item.reading ?? item.japanese) : item.romaji;
-  console.log("[TTS] text to speak:", text, "| hasJapanese:", hasJapanese);
-
-  const utterance = new SpeechSynthesisUtterance(text);
-  if (hasJapanese) utterance.lang = "ja-JP";
-  utterance.onstart = () => { console.log("[TTS] onstart"); onStart(); };
-  utterance.onend = () => { console.log("[TTS] onend"); onEnd(); };
-  utterance.onerror = (e) => { console.log("[TTS] onerror:", e.error, e); onEnd(); };
-
-  window.speechSynthesis.cancel();
-  setTimeout(() => {
-    console.log("[TTS] calling speak(), pending:", window.speechSynthesis.pending, "speaking:", window.speechSynthesis.speaking);
-    window.speechSynthesis.speak(utterance);
-    setTimeout(() => console.log("[TTS] 100ms after speak() — speaking:", window.speechSynthesis.speaking, "pending:", window.speechSynthesis.pending), 100);
-  }, 50);
-
-  // Log voiceschanged if it fires after the fact
-  window.speechSynthesis.addEventListener("voiceschanged", () => {
-    console.log("[TTS] voiceschanged fired — voices now:", window.speechSynthesis.getVoices().length);
-  }, { once: true });
+  if (currentAudio) {
+    currentAudio.onended = null;
+    currentAudio.onerror = null;
+    currentAudio.pause();
+    currentAudio = null;
+    pendingOnEnd?.();
+    pendingOnEnd = null;
+  }
+  const audio = new Audio(`/audio/${item.id}.wav`);
+  currentAudio = audio;
+  pendingOnEnd = onEnd;
+  audio.onplaying = onStart;
+  audio.onended = () => { currentAudio = null; pendingOnEnd = null; onEnd(); };
+  audio.onerror = () => { currentAudio = null; pendingOnEnd = null; onEnd(); };
+  audio.play().catch(() => { currentAudio = null; pendingOnEnd = null; onEnd(); });
 }
 
 const WAVE_BARS = [
