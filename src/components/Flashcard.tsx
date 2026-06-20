@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { VocabItem } from "../data/types";
 
 interface Props {
@@ -10,10 +10,8 @@ interface Props {
 export function Flashcard({ item, onCorrect, onWrong }: Props) {
   const [flipped, setFlipped] = useState(false);
 
-  useEffect(() => {
-    if (!flipped) return;
-
-    function speak(voices: SpeechSynthesisVoice[]) {
+  const speak = useCallback(() => {
+    function doSpeak(voices: SpeechSynthesisVoice[]) {
       const hasJapanese = voices.some((v) => v.lang.startsWith("ja"));
       const utterance = new SpeechSynthesisUtterance(
         hasJapanese ? (item.reading ?? item.japanese) : item.romaji
@@ -25,13 +23,16 @@ export function Flashcard({ item, onCorrect, onWrong }: Props) {
 
     const voices = window.speechSynthesis.getVoices();
     if (voices.length > 0) {
-      speak(voices);
+      doSpeak(voices);
     } else {
-      const handler = () => speak(window.speechSynthesis.getVoices());
+      const handler = () => doSpeak(window.speechSynthesis.getVoices());
       window.speechSynthesis.addEventListener("voiceschanged", handler, { once: true });
-      return () => window.speechSynthesis.removeEventListener("voiceschanged", handler);
     }
-  }, [flipped, item]);
+  }, [item]);
+
+  useEffect(() => {
+    if (flipped) speak();
+  }, [flipped, speak]);
 
   function handleFlip() {
     setFlipped(true);
@@ -60,6 +61,14 @@ export function Flashcard({ item, onCorrect, onWrong }: Props) {
         {!flipped && item.reading && (
           <p className="text-lg text-indigo-500">{item.reading}</p>
         )}
+
+        <button
+          onClick={(e) => { e.stopPropagation(); speak(); }}
+          className="text-2xl opacity-50 hover:opacity-100 transition-opacity"
+          title="Aussprache anhören"
+        >
+          🔊
+        </button>
 
         {!flipped && (
           <p className="text-gray-400 text-sm">Tippen zum Umdrehen</p>
