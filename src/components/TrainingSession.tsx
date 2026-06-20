@@ -18,26 +18,21 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function speakItem(item: VocabItem, onStart: () => void, onEnd: () => void) {
-  function doSpeak(voices: SpeechSynthesisVoice[]) {
-    const hasJapanese = voices.some((v) => v.lang.startsWith("ja"));
-    const utterance = new SpeechSynthesisUtterance(
-      hasJapanese ? (item.reading ?? item.japanese) : item.romaji
-    );
-    if (hasJapanese) utterance.lang = "ja-JP";
-    utterance.onstart = onStart;
-    utterance.onend = onEnd;
-    utterance.onerror = onEnd;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-  }
-
+  // Some browsers (Brave) block getVoices() for privacy — speak directly
+  // and use Japanese voice only if one is actually available.
   const voices = window.speechSynthesis.getVoices();
-  if (voices.length > 0) {
-    doSpeak(voices);
-  } else {
-    const handler = () => doSpeak(window.speechSynthesis.getVoices());
-    window.speechSynthesis.addEventListener("voiceschanged", handler, { once: true });
-  }
+  const hasJapanese = voices.some((v) => v.lang.startsWith("ja"));
+  const text = hasJapanese ? (item.reading ?? item.japanese) : item.romaji;
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  if (hasJapanese) utterance.lang = "ja-JP";
+  utterance.onstart = onStart;
+  utterance.onend = onEnd;
+  utterance.onerror = onEnd;
+
+  // cancel() followed immediately by speak() can fail in Chromium-based browsers
+  window.speechSynthesis.cancel();
+  setTimeout(() => window.speechSynthesis.speak(utterance), 50);
 }
 
 const WAVE_BARS = [
