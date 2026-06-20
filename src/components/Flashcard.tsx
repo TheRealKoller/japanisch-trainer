@@ -5,9 +5,10 @@ interface Props {
   item: VocabItem;
   onCorrect: () => void;
   onWrong: () => void;
+  autoSpeak?: boolean;
 }
 
-export function Flashcard({ item, onCorrect, onWrong }: Props) {
+export function Flashcard({ item, onCorrect, onWrong, autoSpeak = true }: Props) {
   const [flipped, setFlipped] = useState(false);
 
   const speak = useCallback(() => {
@@ -31,8 +32,8 @@ export function Flashcard({ item, onCorrect, onWrong }: Props) {
   }, [item]);
 
   useEffect(() => {
-    if (flipped) speak();
-  }, [flipped, speak]);
+    if (flipped && autoSpeak) speak();
+  }, [flipped, autoSpeak, speak]);
 
   function handleFlip() {
     setFlipped(true);
