@@ -11,7 +11,8 @@
       "Bash(gh issue *)",
       "Skill(run)",
       "Bash(npx tsc *)",
-      "Skill(code-review:code-review)"
+      "Skill(code-review:code-review)",
+      "Bash(npm test *)"
     ]
   }
 }
