@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { VocabItem } from "../data/numbers";
+import type { VocabItem } from "../data/types";
 import { Flashcard } from "./Flashcard";
 
 interface Props {
