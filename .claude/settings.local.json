@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(gh project *)",
+      "Bash(git checkout *)",
+      "Bash(git push *)",
+      "Bash(gh pr *)",
+      "Bash(git pull *)",
+      "Bash(git branch *)",
+      "Bash(gh issue *)",
+      "Skill(run)",
+      "Bash(npx tsc *)",
+      "Skill(code-review:code-review)"
     ]
   }
 }
