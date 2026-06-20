@@ -12,11 +12,25 @@ export function Flashcard({ item, onCorrect, onWrong }: Props) {
 
   useEffect(() => {
     if (!flipped) return;
-    const text = item.reading ?? item.japanese;
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "ja-JP";
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
+
+    function speak(voices: SpeechSynthesisVoice[]) {
+      const hasJapanese = voices.some((v) => v.lang.startsWith("ja"));
+      const utterance = new SpeechSynthesisUtterance(
+        hasJapanese ? (item.reading ?? item.japanese) : item.romaji
+      );
+      if (hasJapanese) utterance.lang = "ja-JP";
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    }
+
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      speak(voices);
+    } else {
+      const handler = () => speak(window.speechSynthesis.getVoices());
+      window.speechSynthesis.addEventListener("voiceschanged", handler, { once: true });
+      return () => window.speechSynthesis.removeEventListener("voiceschanged", handler);
+    }
   }, [flipped, item]);
 
   function handleFlip() {
