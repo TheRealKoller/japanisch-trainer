@@ -55,6 +55,20 @@ interface VocabItem {
 - Fortschrittsbalken zeigt korrekt beantwortete Karten
 - Kein Backend, kein Persistenz — bewusst einfach gehalten
 
+## Git-Workflow
+
+- **Kein direkter Push auf `main`** — immer über Feature-Branches und PRs
+- Branch-Namenskonvention: `feature/<name>` oder `fix/<name>`
+- Jedes Feature hat ein GitHub Issue — PR schließt das Issue via `Closes #<nr>` im Body
+- Vor dem PR: `/pr-ready` ausführen (Lint, Build, TypeScript-Check)
+- Vor dem Merge: `/review` für Code-Review
+
+```bash
+git checkout -b feature/mein-feature
+# ... entwickeln ...
+/pr-ready   # Qualitätscheck + PR erstellen
+```
+
 ## Konventionen
 
 - Keine CSS-Klassen-Extraktion — Tailwind direkt im JSX
