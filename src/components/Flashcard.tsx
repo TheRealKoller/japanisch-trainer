@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { VocabItem } from "../data/numbers";
+import type { VocabItem } from "../data/types";
 
 interface Props {
   item: VocabItem;
@@ -33,14 +33,23 @@ export function Flashcard({ item, onCorrect, onWrong }: Props) {
         `}
       >
         <span className="text-7xl">{item.japanese}</span>
-        {flipped && (
-          <div className="text-center">
-            <p className="text-xl text-indigo-600 font-medium">{item.reading}</p>
-            <p className="text-gray-500 text-sm mt-1">{item.meaning}</p>
-          </div>
+
+        {!flipped && item.reading && (
+          <p className="text-lg text-indigo-500">{item.reading}</p>
         )}
+
         {!flipped && (
           <p className="text-gray-400 text-sm">Tippen zum Umdrehen</p>
+        )}
+
+        {flipped && (
+          <div className="text-center">
+            {item.reading && (
+              <p className="text-lg text-indigo-500">{item.reading}</p>
+            )}
+            <p className="text-xl text-indigo-600 font-medium">{item.romaji}</p>
+            <p className="text-gray-500 text-sm mt-1">{item.meaning}</p>
+          </div>
         )}
       </div>
 
