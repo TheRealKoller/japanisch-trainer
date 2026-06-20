@@ -53,6 +53,10 @@ Als [Wer] möchte ich [Was], damit [Warum].
 - [ ] Kriterium 1
 - [ ] Kriterium 2
 
+## Tests
+- [ ] Test für Hauptfunktionalität (z.B. "zeigt Statistik nach Abschluss an")
+- [ ] Test für Edge Cases falls relevant
+
 ## Out of Scope
 - Nicht-Ziel 1
 
@@ -85,6 +89,9 @@ Als [Wer] möchte ich [Was], damit [Warum].
 - [ ] Bug tritt nicht mehr auf
 - [ ] Weitere Kriterien falls nötig
 
+## Tests
+- [ ] Regressionstest: [Was genau getestet wird, damit der Bug nicht wiederkommt]
+
 ## Technische Hinweise
 - Betroffene Dateien / Komponenten
 
@@ -106,6 +113,10 @@ Als [Wer] möchte ich [Was], damit [Warum].
 - [ ] Kriterium 1
 - [ ] Alle bestehenden Tests bestehen weiterhin
 
+## Tests
+- [ ] Bestehende Tests anpassen falls nötig
+- [ ] Neuer Test falls Verhalten sich ändert
+
 ## Technische Hinweise
 - Betroffene Dateien / Komponenten
 
@@ -121,6 +132,7 @@ Als [Wer] möchte ich [Was], damit [Warum].
 - Akzeptanzkriterien sind konkret und überprüfbar (kein "funktioniert gut")
 - Ein Issue = ein abgrenzbares Problem; bei zu großem Scope aufteilen vorschlagen
 - Abhängigkeiten zwischen Issues immer in beide Richtungen vermerken
+- Tests sind Pflicht: Features brauchen mindestens einen Test für die Kernfunktion, Bugs mindestens einen Regressionstest
 
 ## GitHub-Kommandos
 
