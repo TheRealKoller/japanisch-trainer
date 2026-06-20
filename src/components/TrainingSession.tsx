@@ -17,13 +17,16 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-function speakItem(item: VocabItem) {
+function speakItem(item: VocabItem, onStart: () => void, onEnd: () => void) {
   function doSpeak(voices: SpeechSynthesisVoice[]) {
     const hasJapanese = voices.some((v) => v.lang.startsWith("ja"));
     const utterance = new SpeechSynthesisUtterance(
       hasJapanese ? (item.reading ?? item.japanese) : item.romaji
     );
     if (hasJapanese) utterance.lang = "ja-JP";
+    utterance.onstart = onStart;
+    utterance.onend = onEnd;
+    utterance.onerror = onEnd;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   }
@@ -37,16 +40,40 @@ function speakItem(item: VocabItem) {
   }
 }
 
+const WAVE_BARS = [
+  { delay: "0ms",   h: "h-2" },
+  { delay: "120ms", h: "h-4" },
+  { delay: "240ms", h: "h-5" },
+  { delay: "120ms", h: "h-3" },
+];
+
+function WaveAnimation() {
+  return (
+    <div className="flex items-center gap-0.5 h-5">
+      {WAVE_BARS.map((bar, i) => (
+        <div
+          key={i}
+          className={`w-1 ${bar.h} bg-indigo-500 rounded-full animate-bounce`}
+          style={{ animationDelay: bar.delay }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function TrainingSession({ items, title, onBack }: Props) {
   const [queue, setQueue] = useState<VocabItem[]>(() => shuffle(items));
   const [wrongItems, setWrongItems] = useState<VocabItem[]>([]);
   const [correctCount, setCorrectCount] = useState(0);
   const [done, setDone] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(true);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const current = queue[0];
 
-  const handleSpeak = useCallback(() => speakItem(current), [current]);
+  const handleSpeak = useCallback(() => {
+    speakItem(current, () => setIsSpeaking(true), () => setIsSpeaking(false));
+  }, [current]);
 
   const handleCorrect = useCallback(() => {
     setCorrectCount((c) => c + 1);
@@ -114,13 +141,17 @@ export function TrainingSession({ items, title, onBack }: Props) {
         </button>
         <h2 className="text-lg font-semibold text-gray-700">{title}</h2>
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleSpeak}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-            title="Aussprache anhören"
-          >
-            🔊
-          </button>
+          {isSpeaking ? (
+            <WaveAnimation />
+          ) : (
+            <button
+              onClick={handleSpeak}
+              className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+              title="Aussprache anhören"
+            >
+              🔊
+            </button>
+          )}
           <button
             onClick={() => setAutoSpeak((v) => !v)}
             title={autoSpeak ? "Automatische Sprachausgabe deaktivieren" : "Automatische Sprachausgabe aktivieren"}
