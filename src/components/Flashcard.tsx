@@ -1,39 +1,20 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import type { VocabItem } from "../data/types";
 
 interface Props {
   item: VocabItem;
   onCorrect: () => void;
   onWrong: () => void;
+  onSpeak: () => void;
   autoSpeak?: boolean;
 }
 
-export function Flashcard({ item, onCorrect, onWrong, autoSpeak = true }: Props) {
+export function Flashcard({ item, onCorrect, onWrong, onSpeak, autoSpeak = true }: Props) {
   const [flipped, setFlipped] = useState(false);
 
-  const speak = useCallback(() => {
-    function doSpeak(voices: SpeechSynthesisVoice[]) {
-      const hasJapanese = voices.some((v) => v.lang.startsWith("ja"));
-      const utterance = new SpeechSynthesisUtterance(
-        hasJapanese ? (item.reading ?? item.japanese) : item.romaji
-      );
-      if (hasJapanese) utterance.lang = "ja-JP";
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
-    }
-
-    const voices = window.speechSynthesis.getVoices();
-    if (voices.length > 0) {
-      doSpeak(voices);
-    } else {
-      const handler = () => doSpeak(window.speechSynthesis.getVoices());
-      window.speechSynthesis.addEventListener("voiceschanged", handler, { once: true });
-    }
-  }, [item]);
-
   useEffect(() => {
-    if (flipped && autoSpeak) speak();
-  }, [flipped, autoSpeak, speak]);
+    if (flipped && autoSpeak) onSpeak();
+  }, [flipped, autoSpeak, onSpeak]);
 
   function handleFlip() {
     setFlipped(true);
@@ -62,14 +43,6 @@ export function Flashcard({ item, onCorrect, onWrong, autoSpeak = true }: Props)
         {!flipped && item.reading && (
           <p className="text-lg text-indigo-500">{item.reading}</p>
         )}
-
-        <button
-          onClick={(e) => { e.stopPropagation(); speak(); }}
-          className="text-2xl opacity-50 hover:opacity-100 transition-opacity"
-          title="Aussprache anhören"
-        >
-          🔊
-        </button>
 
         {!flipped && (
           <p className="text-gray-400 text-sm">Tippen zum Umdrehen</p>
