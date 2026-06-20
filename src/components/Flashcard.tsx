@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { VocabItem } from "../data/types";
 
 interface Props {
@@ -9,6 +9,15 @@ interface Props {
 
 export function Flashcard({ item, onCorrect, onWrong }: Props) {
   const [flipped, setFlipped] = useState(false);
+
+  useEffect(() => {
+    if (!flipped) return;
+    const text = item.reading ?? item.japanese;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "ja-JP";
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  }, [flipped, item]);
 
   function handleFlip() {
     setFlipped(true);
