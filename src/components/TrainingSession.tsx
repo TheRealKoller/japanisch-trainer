@@ -69,6 +69,7 @@ export function TrainingSession({ items, title, onBack }: Props) {
   const [queue, setQueue] = useState<VocabItem[]>(() => shuffle(items));
   const [wrongItems, setWrongItems] = useState<VocabItem[]>([]);
   const [correctCount, setCorrectCount] = useState(0);
+  const [wrongItemIds, setWrongItemIds] = useState<Set<string>>(() => new Set());
   const [done, setDone] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -93,6 +94,7 @@ export function TrainingSession({ items, title, onBack }: Props) {
   }, [queue, wrongItems]);
 
   const handleWrong = useCallback(() => {
+    setWrongItemIds((ids) => new Set([...ids, current.id]));
     setWrongItems((w) => [...w, current]);
     const next = queue.slice(1);
     if (next.length === 0) {
@@ -107,15 +109,28 @@ export function TrainingSession({ items, title, onBack }: Props) {
     setQueue(shuffle(items));
     setWrongItems([]);
     setCorrectCount(0);
+    setWrongItemIds(new Set());
     setDone(false);
   }
 
   if (done) {
+    const firstTryCorrect = items.length - wrongItemIds.size;
+    const pct = Math.round((firstTryCorrect / items.length) * 100);
     return (
       <div className="flex flex-col items-center gap-6 py-16">
         <div className="text-6xl">🎉</div>
         <h2 className="text-2xl font-bold text-gray-800">Geschafft!</h2>
-        <p className="text-gray-500">{correctCount} von {items.length} richtig beantwortet</p>
+        <div className="flex gap-10 text-center">
+          <div>
+            <p className="text-4xl font-bold text-green-600">{firstTryCorrect}</p>
+            <p className="text-sm text-gray-400 mt-1">richtig</p>
+          </div>
+          <div>
+            <p className="text-4xl font-bold text-red-500">{wrongItemIds.size}</p>
+            <p className="text-sm text-gray-400 mt-1">falsch</p>
+          </div>
+        </div>
+        <p className="text-lg font-semibold text-gray-600">{pct}% beim ersten Versuch</p>
         <div className="flex gap-4 mt-4">
           <button
             onClick={restart}
@@ -127,7 +142,7 @@ export function TrainingSession({ items, title, onBack }: Props) {
             onClick={onBack}
             className="px-6 py-3 rounded-xl bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors"
           >
-            Zurück
+            Zurück zur Auswahl
           </button>
         </div>
       </div>
