@@ -18,21 +18,31 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function speakItem(item: VocabItem, onStart: () => void, onEnd: () => void) {
-  // Some browsers (Brave) block getVoices() for privacy — speak directly
-  // and use Japanese voice only if one is actually available.
+  console.log("[TTS] speakItem called", { item });
+  console.log("[TTS] speechSynthesis exists:", "speechSynthesis" in window);
+  console.log("[TTS] speechSynthesis.speaking:", window.speechSynthesis?.speaking);
+  console.log("[TTS] speechSynthesis.paused:", window.speechSynthesis?.paused);
+
   const voices = window.speechSynthesis.getVoices();
+  console.log("[TTS] voices:", voices.length, voices.map(v => `${v.name} (${v.lang})`));
+
   const hasJapanese = voices.some((v) => v.lang.startsWith("ja"));
   const text = hasJapanese ? (item.reading ?? item.japanese) : item.romaji;
+  console.log("[TTS] hasJapanese:", hasJapanese, "→ text:", text);
 
   const utterance = new SpeechSynthesisUtterance(text);
   if (hasJapanese) utterance.lang = "ja-JP";
-  utterance.onstart = onStart;
-  utterance.onend = onEnd;
-  utterance.onerror = onEnd;
+  utterance.onstart = () => { console.log("[TTS] onstart fired"); onStart(); };
+  utterance.onend = () => { console.log("[TTS] onend fired"); onEnd(); };
+  utterance.onerror = (e) => { console.log("[TTS] onerror fired:", e.error); onEnd(); };
 
-  // cancel() followed immediately by speak() can fail in Chromium-based browsers
   window.speechSynthesis.cancel();
-  setTimeout(() => window.speechSynthesis.speak(utterance), 50);
+  console.log("[TTS] cancel() called, speaking in 50ms...");
+  setTimeout(() => {
+    console.log("[TTS] speak() called with text:", text);
+    window.speechSynthesis.speak(utterance);
+    console.log("[TTS] after speak() — speaking:", window.speechSynthesis.speaking);
+  }, 50);
 }
 
 const WAVE_BARS = [
