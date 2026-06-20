@@ -22,6 +22,7 @@ export function TrainingSession({ items, title, onBack }: Props) {
   const [wrongItems, setWrongItems] = useState<VocabItem[]>([]);
   const [correctCount, setCorrectCount] = useState(0);
   const [done, setDone] = useState(false);
+  const [autoSpeak, setAutoSpeak] = useState(true);
 
   const current = queue[0];
 
@@ -90,12 +91,16 @@ export function TrainingSession({ items, title, onBack }: Props) {
           ← Zurück
         </button>
         <h2 className="text-lg font-semibold text-gray-700">{title}</h2>
-        <span className="text-sm text-gray-400">
-          {queue.length} verbleibend
-        </span>
+        <button
+          onClick={() => setAutoSpeak((v) => !v)}
+          className="text-xl opacity-60 hover:opacity-100 transition-opacity"
+          title={autoSpeak ? "Automatische Sprachausgabe deaktivieren" : "Automatische Sprachausgabe aktivieren"}
+        >
+          {autoSpeak ? "🔊" : "🔇"}
+        </button>
       </div>
 
-      <Flashcard key={current.id} item={current} onCorrect={handleCorrect} onWrong={handleWrong} />
+      <Flashcard key={current.id} item={current} onCorrect={handleCorrect} onWrong={handleWrong} autoSpeak={autoSpeak} />
 
       <div className="w-full max-w-md bg-gray-100 rounded-full h-2">
         <div
