@@ -3,8 +3,9 @@ import { numbers } from "./data/numbers";
 import { hiragana } from "./data/hiragana";
 import { katakana } from "./data/katakana";
 import { TrainingSession } from "./components/TrainingSession";
+import { NumberQuizSession } from "./components/NumberQuizSession";
 
-type Lesson = "numbers" | "hiragana" | "katakana";
+type Lesson = "numbers" | "hiragana" | "katakana" | "number-quiz";
 
 const lessons = [
   {
@@ -14,6 +15,14 @@ const lessons = [
     description: "0 – 10.000",
     color: "bg-amber-50 border-amber-200 hover:bg-amber-100",
     badge: "bg-amber-100 text-amber-700",
+  },
+  {
+    id: "number-quiz" as Lesson,
+    title: "Zahlen-Quiz",
+    subtitle: "3.847 · 92.105 · ...",
+    description: "0 – 99.999",
+    color: "bg-orange-50 border-orange-200 hover:bg-orange-100",
+    badge: "bg-orange-100 text-orange-700",
   },
   {
     id: "hiragana" as Lesson,
@@ -36,9 +45,17 @@ const lessons = [
 function App() {
   const [active, setActive] = useState<Lesson | null>(null);
 
+  if (active === "number-quiz") {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center p-8">
+        <NumberQuizSession onBack={() => setActive(null)} />
+      </main>
+    );
+  }
+
   if (active) {
-    const dataMap = { numbers, hiragana, katakana };
-    const titleMap = { numbers: "Zahlen", hiragana: "Hiragana", katakana: "Katakana" };
+    const dataMap = { numbers, hiragana, katakana, "number-quiz": [] };
+    const titleMap = { numbers: "Zahlen", hiragana: "Hiragana", katakana: "Katakana", "number-quiz": "" };
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-8">
         <TrainingSession
