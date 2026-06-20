@@ -1,73 +1,46 @@
-# React + TypeScript + Vite
+# 日本語トレーナー — Japanese Vocabulary Trainer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A flashcard-based web app for learning Japanese. Built with React and deployable via Docker.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Lesson | Characters | Content |
+|---|---|---|
+| **Numbers** | 14 cards | 0 – 10,000 (零, 一, 二 … 万) |
+| **Hiragana** | 46 cards | Full hiragana syllabary (あ, い, う … ん) |
+| **Katakana** | 46 cards | Full katakana syllabary (ア, イ, ウ … ン) |
 
-## React Compiler
+### How it works
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Tap a card to reveal its reading and meaning
+- Mark it as **correct** or **wrong**
+- Wrong cards reappear in the same session until you get them right
+- A progress bar tracks how many cards you've answered correctly
+- Cards are shuffled randomly each session
 
-## Expanding the ESLint configuration
+## Quick Start
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Docker
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+docker build -t japanisch-trainer .
+docker run -p 8080:80 japanisch-trainer
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open [http://localhost:8080](http://localhost:8080).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Local development
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
+
+Open [http://localhost:5173](http://localhost:5173).
+
+## Tech Stack
+
+- [React 19](https://react.dev) + TypeScript
+- [Vite](https://vite.dev)
+- [Tailwind CSS v4](https://tailwindcss.com)
+- nginx (production container)
