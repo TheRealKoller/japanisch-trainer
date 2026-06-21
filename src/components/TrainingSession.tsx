@@ -111,10 +111,10 @@ export function TrainingSession({ items, title, onBack }: Props) {
     const firstTryCorrect = items.length - wrongItemIds.size;
     const pct = Math.round((firstTryCorrect / items.length) * 100);
     return (
-      <div className="flex flex-col items-center gap-6 py-16">
+      <div className="flex flex-col items-center gap-6">
         <div className="text-6xl">🎉</div>
         <h2 className="text-2xl font-bold text-gray-800">Geschafft!</h2>
-        <div className="flex gap-10 text-center">
+        <div className="flex gap-8 text-center">
           <div>
             <p className="text-4xl font-bold text-green-600">{firstTryCorrect}</p>
             <p className="text-sm text-gray-400 mt-1">richtig</p>

@@ -87,7 +87,7 @@ function App() {
                   <h2 className="text-xl font-semibold text-gray-800">{lesson.title}</h2>
                   <p className="text-2xl mt-1 tracking-widest">{lesson.subtitle}</p>
                 </div>
-                <span className={`text-xs font-medium px-2 py-1 rounded-full ${lesson.badge}`}>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${lesson.badge}`}>
                   {lesson.description}
                 </span>
               </div>

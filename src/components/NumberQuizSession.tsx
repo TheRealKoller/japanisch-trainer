@@ -178,7 +178,7 @@ export function NumberQuizSession({ onBack }: Props) {
 
         <button
           onClick={() => startQuiz(currentLevel)}
-          className="w-full py-4 rounded-2xl bg-indigo-600 text-white font-semibold text-lg hover:bg-indigo-700 transition-colors"
+          className="w-full py-3 rounded-2xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors"
         >
           Quiz starten
         </button>
@@ -201,11 +201,11 @@ export function NumberQuizSession({ onBack }: Props) {
       .map(([digit, count]) => ({ digit: Number(digit), count }));
 
     return (
-      <div className="flex flex-col items-center gap-5 py-8 w-full max-w-md">
+      <div className="flex flex-col items-center gap-4 py-8 w-full max-w-md">
         <div className="text-6xl">🎉</div>
 
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-orange-100 text-orange-700">
+        <div className="flex flex-col items-center gap-2">
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
             Stufe {currentLevel} · 0–{levelConfig.max.toLocaleString("de-DE")}
           </span>
           {leveledUp && (
@@ -217,7 +217,7 @@ export function NumberQuizSession({ onBack }: Props) {
 
         <h2 className="text-2xl font-bold text-gray-800">Geschafft!</h2>
 
-        <div className="flex gap-10 text-center">
+        <div className="flex gap-8 text-center">
           <div>
             <p className="text-4xl font-bold text-green-600">{firstTryCorrect}</p>
             <p className="text-sm text-gray-400 mt-1">richtig</p>
@@ -256,7 +256,7 @@ export function NumberQuizSession({ onBack }: Props) {
         {levelEntries.length > 0 && (
           <div className="w-full">
             <p className="text-xs text-gray-400 text-center mb-2">Gesamtstatistik</p>
-            <div className="flex flex-col gap-1 w-full">
+            <div className="flex flex-col gap-2 w-full">
               {levelEntries.map(({ l, rec }) => {
                 const acc = Math.round((rec.firstTryCorrect / rec.totalCards) * 100);
                 const reached = acc >= l.threshold * 100;
@@ -280,9 +280,9 @@ export function NumberQuizSession({ onBack }: Props) {
             <p className="text-xs text-gray-400 text-center mb-2">Problematische Ziffern</p>
             <div className="flex gap-2 justify-center">
               {digitEntries.map(({ digit, count }) => (
-                <div key={digit} className="flex flex-col items-center px-4 py-2 bg-red-50 rounded-xl">
-                  <span className="text-2xl font-bold text-red-600">{digit}</span>
-                  <span className="text-xs text-red-400">{count}×</span>
+                <div key={digit} className="flex flex-col items-center px-4 py-2 bg-red-100 rounded-xl">
+                  <span className="text-2xl font-bold text-red-700">{digit}</span>
+                  <span className="text-xs text-red-500">{count}×</span>
                 </div>
               ))}
             </div>
