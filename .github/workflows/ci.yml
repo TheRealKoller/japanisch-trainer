@@ -28,3 +28,47 @@ jobs:
 
       - name: Test
         run: npm test
+
+  smoketest:
+    name: Smoketest
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start services
+        run: docker compose -f docker-compose.ci.yml up --build -d
+
+      - name: Wait for app
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8080 && break
+            sleep 2
+          done
+
+      - name: App is reachable (HTTP 200)
+        run: curl -f http://localhost:8080
+
+      - name: VoiceVox proxy routes correctly
+        run: |
+          curl -sf -X POST "http://localhost:8080/voicevox/audio_query?text=テスト&speaker=1" \
+            -H "Content-Type: application/json" -o /dev/null
+          curl -sf -X POST "http://localhost:8080/voicevox/synthesis?speaker=1" \
+            -H "Content-Type: application/json" -d '{}' -o /dev/null
+
+      - name: nginx cache returns HIT on repeated request
+        run: |
+          QUERY=$(curl -sf -X POST "http://localhost:8080/voicevox/audio_query?text=テスト&speaker=1" \
+            -H "Content-Type: application/json")
+          curl -sf -X POST "http://localhost:8080/voicevox/synthesis?speaker=1" \
+            -H "Content-Type: application/json" -d "$QUERY" -o /dev/null
+          STATUS=$(curl -sf -X POST "http://localhost:8080/voicevox/synthesis?speaker=1" \
+            -H "Content-Type: application/json" -d "$QUERY" \
+            -D - -o /dev/null | grep -i "x-cache-status" | tr -d '\r')
+          echo "Cache status: $STATUS"
+          echo "$STATUS" | grep -qi "HIT"
+
+      - name: Teardown
+        if: always()
+        run: docker compose -f docker-compose.ci.yml down

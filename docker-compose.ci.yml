@@ -1,0 +1,19 @@
+services:
+  voicevox:
+    image: python:3-alpine
+    volumes:
+      - ./scripts/voicevox-mock.py:/mock.py:ro
+    command: python /mock.py
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:50021/version')"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  app:
+    build: .
+    ports:
+      - "8080:80"
+    depends_on:
+      voicevox:
+        condition: service_healthy
