@@ -178,7 +178,7 @@ export function NumberQuizSession({ onBack }: Props) {
 
         <button
           onClick={() => startQuiz(currentLevel)}
-          className="w-full py-3 rounded-2xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors"
+          className="w-full py-3 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors"
         >
           Quiz starten
         </button>
