@@ -11,6 +11,17 @@ export function setSpeakerId(id: number): void {
   localStorage.setItem(SPEAKER_STORAGE_KEY, String(id));
 }
 
+export function stopAudio(): void {
+  if (currentAudio) {
+    currentAudio.onended = null;
+    currentAudio.onerror = null;
+    currentAudio.pause();
+    if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+    currentAudio = null;
+    currentObjectUrl = null;
+  }
+}
+
 let currentAudio: HTMLAudioElement | null = null;
 let currentObjectUrl: string | null = null;
 
@@ -19,6 +30,7 @@ export async function speakText(
   onStart: () => void,
   onEnd: () => void,
   onError?: () => void,
+  speakerIdOverride?: number,
 ): Promise<void> {
   if (currentAudio) {
     currentAudio.onended = null;
@@ -29,7 +41,7 @@ export async function speakText(
     currentObjectUrl = null;
   }
 
-  const speakerId = getSpeakerId();
+  const speakerId = speakerIdOverride ?? getSpeakerId();
 
   try {
     const queryRes = await fetch(
