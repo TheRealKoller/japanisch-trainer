@@ -69,6 +69,20 @@ git checkout -b feature/mein-feature
 /pr-ready   # Qualitätscheck + PR erstellen
 ```
 
+## Design System
+
+**Pflichtlektüre für Implementierung, Code-Review und Issue-Erstellung:** [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md)
+
+Das Design System definiert verbindlich:
+- Farbpalette (Indigo als Primärfarbe, semantische Farben, Lektionsfarben)
+- Typografie-Skala (display → label)
+- Spacing-Tokens (gap-xs bis gap-xl, page-padding)
+- Border-Radius-Tokens (radius-sm bis radius-full)
+- Komponenten-Patterns (Button-Varianten, Flashcard, Toggle, Fortschrittsbalken, Session-Header)
+- Interaktionsregeln (transition-colors, select-none, Hover-States)
+
+Bei neuen UI-Komponenten und bei Code-Reviews: prüfen ob die Klassen den Tokens in `DESIGN_SYSTEM.md` entsprechen. Abweichungen nur mit expliziter Begründung.
+
 ## Konventionen
 
 - Keine CSS-Klassen-Extraktion — Tailwind direkt im JSX

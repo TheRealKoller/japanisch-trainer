@@ -1,90 +1,60 @@
+---
+name: review
+description: Projektspezifischer Code-Review für den Japanisch-Trainer. Aktiviere diesen Skill wenn der User `/review` schreibt oder einen Code-Review des aktuellen Feature-Branches anfordert. Delegiert die eigentliche Review-Arbeit an /code-review, das CLAUDE.md und DESIGN_SYSTEM.md automatisch liest.
+---
+
 # /review
 
-Führe einen projektspezifischen Code-Review des aktuellen Branches durch.
+Projektspezifischer Code-Review. Die eigentliche Arbeit übernimmt `/code-review`, das CLAUDE.md (inkl. Design System-Verweis) automatisch einliest. Dieser Skill liefert zusätzlichen Kontext, der über CLAUDE.md hinausgeht.
 
 ## Argumente
 
-- `--comment` — Postet Findings zusätzlich als Inline-Kommentare im offenen PR
-- `--fix` — Behebt gefundene Probleme direkt im Code (nur eindeutige Korrekturen)
+- `--comment` — Postet das Review als PR-Kommentar (wird an /code-review weitergegeben)
+- `--fix` — Behebt eindeutige lokale Probleme direkt im Code nach dem Review
 
 ## Ablauf
 
-### 1. Diff ermitteln
+### 1. Prüfe ob ein PR offen ist
 
 ```bash
-git diff main..HEAD -- src/
-```
-
-Falls der Diff leer ist: Melde dass kein veränderbarer Code gefunden wurde und beende.
-
-### 2. Review durchführen
-
-Analysiere den Diff anhand dieser projektspezifischen Checkliste:
-
-**Korrektheit**
-- Stimmt die Lernlogik (Karten-Shuffle, Wiederholung falscher Karten, Fortschrittsbalken)?
-- Werden React-Hooks korrekt verwendet (keine Hooks in Bedingungen, korrekte Dependencies in useCallback/useEffect)?
-- Gibt es mögliche Endlosschleifen in der TrainingSession-Logik?
-
-**TypeScript**
-- Werden alle Props korrekt typisiert?
-- Wird `VocabItem` aus `src/data/numbers.ts` importiert statt lokal redefiniert?
-- Keine `any`-Typen ohne Begründung?
-
-**Tailwind & Styling**
-- Konsistente Verwendung von Tailwind-Klassen (keine gemischte CSS-Datei-Nutzung)?
-- Responsive Klassen wo sinnvoll (mobile-first)?
-- Farbpalette konsistent mit bestehenden Komponenten (indigo, rose, sky, amber)?
-
-**Daten & Konventionen**
-- Neue `VocabItem`-Einträge folgen dem Schema: `id`, `japanese`, `reading`, `meaning`?
-- IDs sind eindeutig und folgen der Namenskonvention (z.B. `n1`, `ha`, `kka`)?
-- Neue Lektionen sind in `App.tsx` eingetragen?
-
-**Allgemein**
-- Keine auskommentierten Code-Blöcke?
-- Keine `console.log`-Statements?
-- Keine unnötigen Abhängigkeiten oder Imports?
-
-### 3. Ausgabe
-
-Strukturiere das Ergebnis so:
-
-```
-## Code Review
-
-### ✅ Gut
-- <Was gut ist>
-
-### ⚠️ Hinweise (kein Blocker)
-- `Datei:Zeile` — <Beschreibung>
-
-### ❌ Probleme (sollte vor Merge behoben werden)
-- `Datei:Zeile` — <Beschreibung>
-
-### Fazit
-<Ein Satz: bereit für Merge / nicht bereit>
-```
-
-Falls keine Probleme gefunden: Kurzes positives Feedback und "bereit für Merge".
-
-### 4. Mit --comment: PR-Kommentare posten
-
-Falls `--comment` übergeben wurde, lade den offenen PR:
-```bash
+git branch --show-current
 gh pr list --repo TheRealKoller/japanisch-trainer --head $(git branch --show-current) --json number,url
 ```
 
-Poste die Findings als PR-Review-Kommentar:
-```bash
-gh pr review <nr> --comment --body "<findings>" --repo TheRealKoller/japanisch-trainer
-```
+Falls kein offener PR: kurze Meldung und abbrechen.
 
-### 5. Mit --fix: Probleme beheben
+### 2. Zusätzlichen projektspezifischen Kontext bereitstellen
 
-Falls `--fix` übergeben wurde, behebe nur eindeutige Probleme (z.B. `console.log` entfernen, fehlende `id` ergänzen). Bei unsicheren Korrekturen frage den User zuerst.
+Lies `DESIGN_SYSTEM.md` und halte folgende Prüfpunkte bereit — sie ergänzen das, was `/code-review` aus CLAUDE.md zieht:
 
-## Hinweise
-- Review nur Dateien unter `src/` — keine Konfigurationsdateien
-- Sei präzise: Dateiname und Zeilennummer angeben, nicht nur vage Beschreibungen
-- Kleine, unbedeutende Stil-Präferenzen nicht als Probleme listen
+**Design System (`DESIGN_SYSTEM.md`)**
+- Button-Varianten: primary / secondary / danger / success / ghost / icon — richtige Klassen verwendet?
+- Karten: `rounded-2xl border-2` mit den korrekten Farb-Tokens (indigo-Vorderseite, white Rückseite)?
+- Badges: `text-xs font-medium px-2 py-0.5 rounded-full`?
+- Spacing: Tokens aus `gap-xs` bis `gap-xl` und `p-8` für Seiten-Padding?
+- Neue Farben außerhalb der definierten Palette (indigo, gray, amber, orange, rose, sky, green, red)?
+
+**Lernlogik**
+- Karten-Shuffle: Fisher-Yates korrekt implementiert?
+- Falsch beantwortete Karten kommen wieder in den Stapel?
+- Fortschrittsbalken zählt nur erste richtige Antworten?
+
+**TypeScript & React**
+- Keine `any`-Typen ohne Begründung?
+- `useCallback`/`useEffect` haben vollständige Dependency-Arrays?
+- Keine Hooks in Bedingungen oder Schleifen?
+
+**Datenschema**
+- Neue `VocabItem`-Einträge haben alle Felder: `id`, `japanese`, `reading`, `meaning`?
+- IDs eindeutig und nach Konvention (z.B. `n1`, `ha`, `kka`)?
+- Neue Lektionen in `App.tsx` eingetragen?
+
+### 3. /code-review aufrufen
+
+Rufe `/code-review` auf. Das Plugin liest automatisch CLAUDE.md (inkl. Design System-Verweis) und führt einen Multi-Agent-Review durch. Die obigen Prüfpunkte aus Schritt 2 stehen als Kontext bereit — zitiere sie in deiner Antwort falls `/code-review` danach fragt oder falls du Findings dazu ergänzen willst.
+
+Falls `--comment` übergeben wurde: gib das an `/code-review` weiter.
+
+### 4. Mit --fix
+
+Falls `--fix` übergeben wurde und es eindeutige Fixes gibt (z.B. `console.log` entfernen, fehlende Import ergänzen): direkt beheben, committen.

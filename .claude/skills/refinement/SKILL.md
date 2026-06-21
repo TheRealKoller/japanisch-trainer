@@ -63,6 +63,7 @@ Als [Wer] möchte ich [Was], damit [Warum].
 ## Technische Hinweise
 - Betroffene Dateien / Komponenten
 - Potenzielle Stolperfallen
+- UI-Komponenten: Tokens aus `DESIGN_SYSTEM.md` verwenden (Farben, Spacing, Border-Radius, Button-Varianten)
 
 ## Abhängigkeiten
 - Hängt ab von #X
