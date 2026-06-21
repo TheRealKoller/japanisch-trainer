@@ -1,6 +1,13 @@
+---
+name: feature
+description: Workflow für die Implementierung neuer Features und bekannter Bugs. Verwende diesen Skill immer wenn der User `/feature` schreibt, ein Feature implementieren oder einen bekannten Bug fixen will.
+---
+
 # /feature
 
 Workflow für die Implementierung neuer Features und bekannter Bugs (wenn das Problem bereits klar ist).
+
+**Wichtig:** Überspringe keinen Schritt, auch wenn die Lösung einfach oder offensichtlich erscheint. Implementiere das Feature niemals selbst — jeder Schritt delegiert an einen spezialisierten Sub-Skill.
 
 ## Ablauf
 
@@ -22,7 +29,7 @@ Frage den User: Gibt es ein passendes Issue (Feature oder Bug)?
 
 ### 1b. Kein Issue vorhanden → /refinement
 
-Rufe `/refinement` auf. Dieser Skill führt ein strukturiertes Gespräch und erstellt am Ende ein GitHub-Issue. Die neue Issue-Nummer liegt danach vor — weiter mit Schritt 1c.
+Rufe jetzt den `refinement`-Skill auf — verwende dazu das Skill-Tool mit `skill: "refinement"`. Warte auf den vollständigen Abschluss. Die neue Issue-Nummer liegt danach vor — weiter mit Schritt 1c.
 
 ### 1c. Branch erstellen und Draft-PR anlegen
 
@@ -47,33 +54,19 @@ gh pr create \
   --repo TheRealKoller/japanisch-trainer
 ```
 
-Der Draft-PR signalisiert dass die Arbeit läuft, ohne dass ein Merge möglich ist. GitHub verschiebt das Issue automatisch sobald der PR gemerged wird.
+### 2. Feature entwickeln
 
-### 2. Feature entwickeln → /feature-dev:feature-dev
+Rufe jetzt den `feature-dev:feature-dev`-Skill auf — verwende dazu das Skill-Tool mit `skill: "feature-dev:feature-dev"`. Übergib die Issue-Nummer als Kontext im Prompt. Implementiere das Feature nicht selbst. Warte auf den vollständigen Abschluss bevor du weitergehst.
 
-Rufe `/feature-dev:feature-dev` auf. Übergib die Issue-Nummer als Kontext.
+### 3. Code Review
 
-Dieser Skill deckt ab:
-- Codebase-Exploration
-- Klärende Fragen
-- Architektur-Entscheidung
-- Implementierung
-- Quality Review
+Rufe jetzt den `review`-Skill auf — verwende dazu das Skill-Tool mit `skill: "review"`. Warte auf den Abschluss und adressiere kritische Findings bevor du weitergehst.
 
-Warte auf den vollständigen Abschluss bevor du weitergehst.
+### 4. PR erstellen
 
-### 3. Code Review → /code-review:code-review
-
-Rufe `/code-review:code-review` auf dem aktuellen Branch auf.
-
-Warte auf den Abschluss und adressiere kritische Findings bevor du weitergehst.
-
-### 4. PR erstellen → /pr-ready
-
-Rufe `/pr-ready` auf. Stelle sicher dass der PR mit `Closes #<nr>` verknüpft wird.
+Rufe jetzt den `pr-ready`-Skill auf — verwende dazu das Skill-Tool mit `skill: "pr-ready"`. Stelle sicher dass der PR mit `Closes #<nr>` verknüpft wird.
 
 ## Hinweise
-- Dieser Workflow gilt für Features und Bug-Issues, bei denen das Problem und die Lösung bereits klar sind
-- Issue kann ein Feature-Issue oder ein Bug-Issue sein
 - Branch immer von `main` aus erstellen, nie von einem anderen Feature-Branch
-- Warte nach jedem Schritt auf den Abschluss bevor du weitermachst
+- Kein Schritt darf übersprungen werden — auch nicht bei einfachen Änderungen
+- Die Implementierung gehört ausschließlich in Schritt 2 (`feature-dev:feature-dev`)

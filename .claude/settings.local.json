@@ -12,7 +12,9 @@
       "Skill(run)",
       "Bash(npx tsc *)",
       "Skill(code-review:code-review)",
-      "Bash(npm test *)"
+      "Bash(npm test *)",
+      "Skill(code-review)",
+      "Bash(git stash *)"
     ]
   }
 }
