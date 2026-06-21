@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:50021";
+const BASE_URL = "/voicevox";
 const SPEAKER_ID = 1;
 
 let currentAudio: HTMLAudioElement | null = null;
