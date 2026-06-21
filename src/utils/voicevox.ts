@@ -1,5 +1,15 @@
 const BASE_URL = "/voicevox";
-const SPEAKER_ID = 1;
+const SPEAKER_STORAGE_KEY = "voicevox_speaker_id";
+
+export function getSpeakerId(): number {
+  const stored = localStorage.getItem(SPEAKER_STORAGE_KEY);
+  const parsed = stored !== null ? Number(stored) : NaN;
+  return Number.isFinite(parsed) ? parsed : 1;
+}
+
+export function setSpeakerId(id: number): void {
+  localStorage.setItem(SPEAKER_STORAGE_KEY, String(id));
+}
 
 let currentAudio: HTMLAudioElement | null = null;
 let currentObjectUrl: string | null = null;
@@ -10,7 +20,6 @@ export async function speakText(
   onEnd: () => void,
   onError?: () => void,
 ): Promise<void> {
-  // Stop any currently playing audio
   if (currentAudio) {
     currentAudio.onended = null;
     currentAudio.onerror = null;
@@ -20,16 +29,18 @@ export async function speakText(
     currentObjectUrl = null;
   }
 
+  const speakerId = getSpeakerId();
+
   try {
     const queryRes = await fetch(
-      `${BASE_URL}/audio_query?text=${encodeURIComponent(text)}&speaker=${SPEAKER_ID}`,
+      `${BASE_URL}/audio_query?text=${encodeURIComponent(text)}&speaker=${speakerId}`,
       { method: "POST" },
     );
     if (!queryRes.ok) { onEnd(); onError?.(); return; }
     const query = await queryRes.json();
     query.volumeScale = 3.0;
 
-    const synthRes = await fetch(`${BASE_URL}/synthesis?speaker=${SPEAKER_ID}`, {
+    const synthRes = await fetch(`${BASE_URL}/synthesis?speaker=${speakerId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(query),
