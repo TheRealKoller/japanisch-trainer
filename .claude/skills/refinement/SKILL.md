@@ -127,6 +127,30 @@ Als [Wer] möchte ich [Was], damit [Warum].
 
 *Den Abschnitt "Abhängigkeiten" weglassen, wenn keine vorhanden.*
 
+## Codebasis-Analyse
+
+Sobald das Thema klar ist — also direkt nachdem der User sein Anliegen beschrieben hat, noch **vor** den Klärungsfragen — spawne einen oder mehrere `codebase-explorer`-Sub-Agents parallel. Warte auf die Ergebnisse, dann erst stelle Fragen.
+
+Warum früh: Die Code-Analyse macht Klärungsfragen gezielter. Du kannst Fragen überspringen, deren Antwort schon im Code sichtbar ist, Widersprüche zwischen Wunsch und aktueller Implementierung früh ansprechen, und konkrete Dateinamen/Zeilennummern in Rückfragen einbauen.
+
+**Wie spawnen** — nutze das `Agent`-Tool, mehrere parallel wenn das Thema mehrere Aspekte hat:
+```
+Agent(
+  description: "Codebase-Analyse: [Thema]",
+  prompt: "Lies .claude/skills/codebase-explorer/SKILL.md und beantworte dann: [spezifische Frage]"
+)
+```
+
+**Beispiel für "Audio on-demand" (neues Issue):** Direkt nach der ersten User-Nachricht, zwei parallel:
+- `"Wie ist Audio-Wiedergabe aktuell implementiert? (speakItem, speakText, voicevox.ts)"`
+- `"Welche Dateien müssten für on-demand VoiceVox-Anfragen angepasst werden?"`
+
+**Beispiel für bestehendes Issue laden:** Direkt nach `gh issue view`, parallel zum Analysieren des Issue-Textes.
+
+Die Ergebnisse fließen in zwei Stellen ein:
+1. **Klärungsgespräch:** Informiertere, präzisere Fragen stellen
+2. **Technische Hinweise im Issue:** "Betroffene Dateien / Komponenten" und "Potenzielle Stolperfallen" mit echten Dateinamen und Zeilennummern befüllen
+
 ## Qualitätskriterien für Issues
 
 - Checklisten statt Fließtext — so knapp wie möglich, so ausführlich wie nötig
