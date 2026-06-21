@@ -2,6 +2,24 @@ import { useState, useCallback } from "react";
 import { numberToKanji, numberToHiragana, numberToRomaji, numberToHiraganaAlt, numberToRomajiAlt } from "../utils/numberConverter";
 import { speakText } from "../utils/voicevox";
 import { loadStats, saveStats, recordSession, LEVELS, type QuizStats } from "../utils/quizStats";
+import { OptionsMenu } from "./OptionsMenu";
+
+const WAVE_BARS = [
+  { delay: "0ms",   h: "h-2" },
+  { delay: "120ms", h: "h-4" },
+  { delay: "240ms", h: "h-5" },
+  { delay: "120ms", h: "h-3" },
+];
+
+function WaveAnimation() {
+  return (
+    <div className="flex items-center gap-0.5 h-5">
+      {WAVE_BARS.map((bar, i) => (
+        <div key={i} className={`w-1 ${bar.h} bg-indigo-500 dark:bg-indigo-400 rounded-full animate-bounce`} style={{ animationDelay: bar.delay }} />
+      ))}
+    </div>
+  );
+}
 
 const QUIZ_SIZE = 10;
 
@@ -42,22 +60,6 @@ function generateDeck(level: number): NumberCard[] {
   return shuffleSample(max, QUIZ_SIZE).map(makeCard);
 }
 
-const WAVE_BARS = [
-  { delay: "0ms",   h: "h-2" },
-  { delay: "120ms", h: "h-4" },
-  { delay: "240ms", h: "h-5" },
-  { delay: "120ms", h: "h-3" },
-];
-
-function WaveAnimation() {
-  return (
-    <div className="flex items-center gap-0.5 h-5">
-      {WAVE_BARS.map((bar, i) => (
-        <div key={i} className={`w-1 ${bar.h} bg-indigo-500 dark:bg-indigo-400 rounded-full animate-bounce`} style={{ animationDelay: bar.delay }} />
-      ))}
-    </div>
-  );
-}
 
 interface Props {
   onBack: () => void;
@@ -140,8 +142,8 @@ export function NumberQuizSession({ onBack }: Props) {
   if (!started) {
     const levelConfig = LEVELS[currentLevel - 1];
     return (
-      <div className="flex flex-col items-center gap-8 w-full max-w-md">
-        <div className="flex items-center justify-between w-full">
+      <div className="flex flex-col w-full max-w-md mx-auto flex-1">
+        <div className="flex items-center justify-between w-full py-1">
           <button
             onClick={onBack}
             className="text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors text-sm"
@@ -152,36 +154,38 @@ export function NumberQuizSession({ onBack }: Props) {
           <div className="w-8" />
         </div>
 
-        <div className="flex flex-col items-center gap-2 text-center">
-          <p className="text-gray-500 dark:text-slate-400 text-sm">Wähle eine Stufe</p>
-          <p className="text-xs text-gray-400 dark:text-slate-500">0 – {levelConfig.max.toLocaleString("de-DE")}</p>
-        </div>
+        <div className="flex-1 flex flex-col items-center justify-center gap-8">
+          <div className="flex flex-col items-center gap-2 text-center">
+            <p className="text-gray-500 dark:text-slate-400 text-sm">Wähle eine Stufe</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500">0 – {levelConfig.max.toLocaleString("de-DE")}</p>
+          </div>
 
-        <div className="flex gap-2 justify-center w-full">
-          {LEVELS.map(l => (
-            <button
-              key={l.level}
-              onClick={() => selectLevel(l.level)}
-              className={`flex flex-col items-center px-2.5 py-3 rounded-xl border-2 transition-colors flex-1
-                ${currentLevel === l.level
-                  ? "border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-500/15 dark:border-orange-400/60 dark:text-orange-300"
-                  : "border-gray-200 text-gray-500 hover:border-gray-300 dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-600"
-                }`}
-            >
-              <span className="font-bold text-base">{l.level}</span>
-              <span className="text-[10px] text-gray-400 dark:text-slate-500 leading-tight mt-0.5">
-                0–{l.max >= 1000 ? `${l.max / 1000}k` : l.max}
-              </span>
-            </button>
-          ))}
-        </div>
+          <div className="flex gap-2 justify-center w-full">
+            {LEVELS.map(l => (
+              <button
+                key={l.level}
+                onClick={() => selectLevel(l.level)}
+                className={`flex flex-col items-center px-2.5 py-3 rounded-xl border-2 transition-colors flex-1
+                  ${currentLevel === l.level
+                    ? "border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-500/15 dark:border-orange-400/60 dark:text-orange-300"
+                    : "border-gray-200 text-gray-500 hover:border-gray-300 dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-600"
+                  }`}
+              >
+                <span className="font-bold text-base">{l.level}</span>
+                <span className="text-[10px] text-gray-400 dark:text-slate-500 leading-tight mt-0.5">
+                  0–{l.max >= 1000 ? `${l.max / 1000}k` : l.max}
+                </span>
+              </button>
+            ))}
+          </div>
 
-        <button
-          onClick={() => startQuiz(currentLevel)}
-          className="w-full py-3 rounded-xl font-medium text-white bg-gradient-to-r from-indigo-500 to-violet-500 hover:opacity-90 transition-opacity"
-        >
-          Quiz starten
-        </button>
+          <button
+            onClick={() => startQuiz(currentLevel)}
+            className="w-full py-3 rounded-xl font-medium text-white bg-gradient-to-r from-indigo-500 to-violet-500 hover:opacity-90 transition-opacity"
+          >
+            Quiz starten
+          </button>
+        </div>
       </div>
     );
   }
@@ -316,8 +320,8 @@ export function NumberQuizSession({ onBack }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-8">
-      <div className="flex items-center justify-between w-full max-w-md">
+    <div className="flex flex-col w-full max-w-md mx-auto flex-1">
+      <div className="flex items-center justify-between w-full py-1">
         <button
           onClick={onBack}
           className="text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors text-sm"
@@ -330,13 +334,13 @@ export function NumberQuizSession({ onBack }: Props) {
             Stufe {currentLevel}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {isSpeaking ? (
             <WaveAnimation />
           ) : (
             <button
               onClick={handleSpeak}
-              className="p-1.5 rounded-lg transition-colors
+              className="p-2.5 rounded-xl transition-colors
                 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50
                 dark:text-slate-500 dark:hover:text-indigo-400 dark:hover:bg-indigo-500/10"
               title="Aussprache anhören"
@@ -344,51 +348,53 @@ export function NumberQuizSession({ onBack }: Props) {
               🔊
             </button>
           )}
-          <button
-            onClick={() => setAutoPlay(p => !p)}
-            title={autoPlay ? "Automatische Sprachausgabe deaktivieren" : "Automatische Sprachausgabe aktivieren"}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
-              autoPlay ? "bg-indigo-500" : "bg-gray-300 dark:bg-slate-700"
-            }`}
-          >
-            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${autoPlay ? "translate-x-6" : "translate-x-1"}`} />
-          </button>
+          <OptionsMenu autoPlay={autoPlay} onAutoPlayChange={setAutoPlay} />
         </div>
       </div>
 
-      <div
-        onClick={!flipped ? () => { setFlipped(true); if (autoPlay) handleSpeak(); } : undefined}
-        className={`w-72 sm:w-80 min-h-64 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 select-none transition-colors duration-200 p-6
-          ${flipped
-            ? "bg-white border-gray-200 cursor-default dark:bg-slate-800 dark:border-slate-700"
-            : "bg-indigo-50 border-indigo-200 hover:bg-indigo-100 cursor-pointer dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:hover:bg-indigo-500/15"
-          }`}
-      >
-        {!flipped ? (
-          <>
-            <p className="text-6xl font-bold text-gray-800 dark:text-slate-100">{current.value.toLocaleString("de-DE")}</p>
-            <p className="text-2xl text-indigo-600 dark:text-indigo-400">{current.kanji}</p>
-            <p className="text-gray-400 dark:text-slate-500 text-sm mt-2">Tippen zum Umdrehen</p>
-          </>
-        ) : (
-          <>
-            <p className="text-xl text-indigo-600 dark:text-indigo-300 font-medium text-center">{current.hiragana}</p>
-            {current.hiraganaAlt && (
-              <p className="text-base text-indigo-400 dark:text-indigo-500 text-center">({current.hiraganaAlt})</p>
-            )}
-            <p className="text-gray-500 dark:text-slate-400 text-center">{current.romaji}</p>
-            {current.romajiAlt && (
-              <p className="text-gray-400 dark:text-slate-500 text-sm text-center">({current.romajiAlt})</p>
-            )}
-          </>
-        )}
+      <div className="flex-1 flex flex-col items-center justify-center gap-6">
+        <div
+          onClick={!flipped ? () => { setFlipped(true); if (autoPlay) handleSpeak(); } : undefined}
+          className={`w-72 sm:w-80 min-h-64 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 select-none transition-colors duration-200 p-6
+            ${flipped
+              ? "bg-white border-gray-200 cursor-default dark:bg-slate-800 dark:border-slate-700"
+              : "bg-indigo-50 border-indigo-200 hover:bg-indigo-100 cursor-pointer dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:hover:bg-indigo-500/15"
+            }`}
+        >
+          {!flipped ? (
+            <>
+              <p className="text-6xl font-bold text-gray-800 dark:text-slate-100">{current.value.toLocaleString("de-DE")}</p>
+              <p className="text-2xl text-indigo-600 dark:text-indigo-400">{current.kanji}</p>
+              <p className="text-gray-400 dark:text-slate-500 text-sm mt-2">Tippen zum Umdrehen</p>
+            </>
+          ) : (
+            <>
+              <p className="text-xl text-indigo-600 dark:text-indigo-300 font-medium text-center">{current.hiragana}</p>
+              {current.hiraganaAlt && (
+                <p className="text-base text-indigo-400 dark:text-indigo-500 text-center">({current.hiraganaAlt})</p>
+              )}
+              <p className="text-gray-500 dark:text-slate-400 text-center">{current.romaji}</p>
+              {current.romajiAlt && (
+                <p className="text-gray-400 dark:text-slate-500 text-sm text-center">({current.romajiAlt})</p>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-2">
+          <div
+            className="bg-gradient-to-r from-indigo-500 to-violet-500 h-2 rounded-full transition-all duration-500"
+            style={{ width: `${(correctCount / deckSize) * 100}%` }}
+          />
+        </div>
+        <p className="text-sm text-gray-400 dark:text-slate-500">{correctCount} / {deckSize} gelernt</p>
       </div>
 
-      {flipped && (
-        <div className="flex gap-4 w-full max-w-xs sm:w-auto">
+      <div className="pb-4">
+        <div className={`flex gap-4 w-full transition-opacity duration-200 ${flipped ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
           <button
             onClick={() => advance(false)}
-            className="flex-1 sm:flex-none px-6 py-3 rounded-xl font-medium transition-colors
+            className="flex-1 py-4 rounded-xl font-medium transition-colors
               bg-red-100 text-red-700 hover:bg-red-200
               dark:bg-red-500/15 dark:text-red-400 dark:hover:bg-red-500/25"
           >
@@ -396,22 +402,14 @@ export function NumberQuizSession({ onBack }: Props) {
           </button>
           <button
             onClick={() => advance(true)}
-            className="flex-1 sm:flex-none px-6 py-3 rounded-xl font-medium transition-colors
+            className="flex-1 py-4 rounded-xl font-medium transition-colors
               bg-green-100 text-green-700 hover:bg-green-200
               dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/25"
           >
             Gewusst
           </button>
         </div>
-      )}
-
-      <div className="w-full max-w-md bg-gray-100 dark:bg-slate-800 rounded-full h-2">
-        <div
-          className="bg-gradient-to-r from-indigo-500 to-violet-500 h-2 rounded-full transition-all duration-500"
-          style={{ width: `${(correctCount / deckSize) * 100}%` }}
-        />
       </div>
-      <p className="text-sm text-gray-400 dark:text-slate-500">{correctCount} / {deckSize} gelernt</p>
     </div>
   );
 }

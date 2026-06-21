@@ -1,6 +1,24 @@
 import { useState, useCallback } from "react";
 import type { VocabItem } from "../data/types";
 import { Flashcard } from "./Flashcard";
+import { OptionsMenu } from "./OptionsMenu";
+
+const WAVE_BARS = [
+  { delay: "0ms",   h: "h-2" },
+  { delay: "120ms", h: "h-4" },
+  { delay: "240ms", h: "h-5" },
+  { delay: "120ms", h: "h-3" },
+];
+
+function WaveAnimation() {
+  return (
+    <div className="flex items-center gap-0.5 h-5">
+      {WAVE_BARS.map((bar, i) => (
+        <div key={i} className={`w-1 ${bar.h} bg-indigo-500 dark:bg-indigo-400 rounded-full animate-bounce`} style={{ animationDelay: bar.delay }} />
+      ))}
+    </div>
+  );
+}
 
 interface Props {
   items: VocabItem[];
@@ -38,26 +56,6 @@ function speakItem(item: VocabItem, onStart: () => void, onEnd: () => void) {
   audio.play().catch(() => { currentAudio = null; pendingOnEnd = null; onEnd(); });
 }
 
-const WAVE_BARS = [
-  { delay: "0ms",   h: "h-2" },
-  { delay: "120ms", h: "h-4" },
-  { delay: "240ms", h: "h-5" },
-  { delay: "120ms", h: "h-3" },
-];
-
-function WaveAnimation() {
-  return (
-    <div className="flex items-center gap-0.5 h-5">
-      {WAVE_BARS.map((bar, i) => (
-        <div
-          key={i}
-          className={`w-1 ${bar.h} bg-indigo-500 dark:bg-indigo-400 rounded-full animate-bounce`}
-          style={{ animationDelay: bar.delay }}
-        />
-      ))}
-    </div>
-  );
-}
 
 export function TrainingSession({ items, title, onBack }: Props) {
   const [queue, setQueue] = useState<VocabItem[]>(() => shuffle(items));
@@ -65,6 +63,7 @@ export function TrainingSession({ items, title, onBack }: Props) {
   const [correctCount, setCorrectCount] = useState(0);
   const [wrongItemIds, setWrongItemIds] = useState<Set<string>>(() => new Set());
   const [done, setDone] = useState(false);
+  const [flipped, setFlipped] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
@@ -75,6 +74,7 @@ export function TrainingSession({ items, title, onBack }: Props) {
   }, [current]);
 
   const handleCorrect = useCallback(() => {
+    setFlipped(false);
     setCorrectCount((c) => c + 1);
     const next = queue.slice(1);
     if (next.length === 0 && wrongItems.length === 0) {
@@ -88,6 +88,7 @@ export function TrainingSession({ items, title, onBack }: Props) {
   }, [queue, wrongItems]);
 
   const handleWrong = useCallback(() => {
+    setFlipped(false);
     setWrongItemIds((ids) => new Set([...ids, current.id]));
     setWrongItems((w) => [...w, current]);
     const next = queue.slice(1);
@@ -105,13 +106,14 @@ export function TrainingSession({ items, title, onBack }: Props) {
     setCorrectCount(0);
     setWrongItemIds(new Set());
     setDone(false);
+    setFlipped(false);
   }
 
   if (done) {
     const firstTryCorrect = items.length - wrongItemIds.size;
     const pct = Math.round((firstTryCorrect / items.length) * 100);
     return (
-      <div className="flex flex-col items-center gap-6">
+      <div className="flex flex-col items-center gap-6 w-full max-w-md mx-auto">
         <div className="text-6xl">🎉</div>
         <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Geschafft!</h2>
         <div className="flex gap-8 text-center">
@@ -146,8 +148,8 @@ export function TrainingSession({ items, title, onBack }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-8">
-      <div className="flex items-center justify-between w-full max-w-md">
+    <div className="flex flex-col w-full max-w-md mx-auto flex-1">
+      <div className="flex items-center justify-between w-full py-1">
         <button
           onClick={onBack}
           className="text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors text-sm"
@@ -155,13 +157,13 @@ export function TrainingSession({ items, title, onBack }: Props) {
           ← Zurück
         </button>
         <h2 className="text-lg font-semibold text-gray-700 dark:text-slate-200">{title}</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {isSpeaking ? (
             <WaveAnimation />
           ) : (
             <button
               onClick={handleSpeak}
-              className="p-1.5 rounded-lg transition-colors
+              className="p-2.5 rounded-xl transition-colors
                 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50
                 dark:text-slate-500 dark:hover:text-indigo-400 dark:hover:bg-indigo-500/10"
               title="Aussprache anhören"
@@ -169,34 +171,47 @@ export function TrainingSession({ items, title, onBack }: Props) {
               🔊
             </button>
           )}
-          <button
-            onClick={() => setAutoSpeak((v) => !v)}
-            title={autoSpeak ? "Automatische Sprachausgabe deaktivieren" : "Automatische Sprachausgabe aktivieren"}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
-              autoSpeak ? "bg-indigo-500" : "bg-gray-300 dark:bg-slate-700"
-            }`}
-          >
-            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${autoSpeak ? "translate-x-6" : "translate-x-1"}`} />
-          </button>
+          <OptionsMenu autoPlay={autoSpeak} onAutoPlayChange={setAutoSpeak} />
         </div>
       </div>
 
-      <Flashcard
-        key={current.id}
-        item={current}
-        onCorrect={handleCorrect}
-        onWrong={handleWrong}
-        onSpeak={handleSpeak}
-        autoSpeak={autoSpeak}
-      />
-
-      <div className="w-full max-w-md bg-gray-100 dark:bg-slate-800 rounded-full h-2">
-        <div
-          className="bg-gradient-to-r from-indigo-500 to-violet-500 h-2 rounded-full transition-all duration-500"
-          style={{ width: `${(correctCount / items.length) * 100}%` }}
+      <div className="flex-1 flex flex-col items-center justify-center gap-6">
+        <Flashcard
+          item={current}
+          flipped={flipped}
+          onFlip={() => setFlipped(true)}
+          onSpeak={handleSpeak}
+          autoSpeak={autoSpeak}
         />
+        <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-2">
+          <div
+            className="bg-gradient-to-r from-indigo-500 to-violet-500 h-2 rounded-full transition-all duration-500"
+            style={{ width: `${(correctCount / items.length) * 100}%` }}
+          />
+        </div>
+        <p className="text-sm text-gray-400 dark:text-slate-500">{correctCount} / {items.length} gelernt</p>
       </div>
-      <p className="text-sm text-gray-400 dark:text-slate-500">{correctCount} / {items.length} gelernt</p>
+
+      <div className="pb-4">
+        <div className={`flex gap-4 w-full transition-opacity duration-200 ${flipped ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+          <button
+            onClick={handleWrong}
+            className="flex-1 py-4 rounded-xl font-medium transition-colors
+              bg-red-100 text-red-700 hover:bg-red-200
+              dark:bg-red-500/15 dark:text-red-400 dark:hover:bg-red-500/25"
+          >
+            Nochmal
+          </button>
+          <button
+            onClick={handleCorrect}
+            className="flex-1 py-4 rounded-xl font-medium transition-colors
+              bg-green-100 text-green-700 hover:bg-green-200
+              dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/25"
+          >
+            Gewusst
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { hiragana } from "./data/hiragana";
 import { katakana } from "./data/katakana";
 import { TrainingSession } from "./components/TrainingSession";
 import { NumberQuizSession } from "./components/NumberQuizSession";
-import { ThemeToggle } from "./components/ThemeToggle";
+import { OptionsMenu } from "./components/OptionsMenu";
 
 type Lesson = "numbers" | "hiragana" | "katakana" | "number-quiz";
 
@@ -56,14 +56,12 @@ function App() {
 
   return (
     <>
-      <ThemeToggle />
-
       {active === "number-quiz" ? (
-        <main className="min-h-screen flex flex-col items-center justify-center p-6 sm:p-8 bg-white dark:bg-slate-950">
+        <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
           <NumberQuizSession onBack={() => setActive(null)} />
         </main>
       ) : active ? (
-        <main className="min-h-screen flex flex-col items-center justify-center p-6 sm:p-8 bg-white dark:bg-slate-950">
+        <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
           <TrainingSession
             items={dataMap[active]}
             title={titleMap[active]}
@@ -72,6 +70,9 @@ function App() {
         </main>
       ) : (
         <main className="min-h-screen flex flex-col items-center justify-center p-6 sm:p-8 bg-gray-50 dark:bg-slate-950">
+          <div className="fixed top-4 right-4 z-50">
+            <OptionsMenu />
+          </div>
           <div className="max-w-md w-full flex flex-col gap-8">
             <div className="text-center">
               <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent mb-2">
