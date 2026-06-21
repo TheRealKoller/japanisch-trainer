@@ -325,10 +325,10 @@ export function NumberQuizSession({ onBack }: Props) {
         </div>
         <button
           onClick={() => setAutoPlay(p => !p)}
-          title={autoPlay ? "Auto-Play aus" : "Auto-Play ein"}
-          className={`text-lg transition-opacity ${autoPlay ? "opacity-100" : "opacity-30"}`}
+          title={autoPlay ? "Automatische Sprachausgabe deaktivieren" : "Automatische Sprachausgabe aktivieren"}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${autoPlay ? "bg-indigo-500" : "bg-gray-300"}`}
         >
-          🔊
+          <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${autoPlay ? "translate-x-6" : "translate-x-1"}`} />
         </button>
       </div>
 
