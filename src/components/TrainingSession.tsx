@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import type { VocabItem } from "../data/types";
 import { Flashcard } from "./Flashcard";
 import { OptionsMenu } from "./OptionsMenu";
+import { speakText } from "../utils/voicevox";
 
 const WAVE_BARS = [
   { delay: "0ms",   h: "h-2" },
@@ -35,27 +36,6 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-let currentAudio: HTMLAudioElement | null = null;
-let pendingOnEnd: (() => void) | null = null;
-
-function speakItem(item: VocabItem, onStart: () => void, onEnd: () => void) {
-  if (currentAudio) {
-    currentAudio.onended = null;
-    currentAudio.onerror = null;
-    currentAudio.pause();
-    currentAudio = null;
-    pendingOnEnd?.();
-    pendingOnEnd = null;
-  }
-  const audio = new Audio(`/audio/${item.id}.wav`);
-  currentAudio = audio;
-  pendingOnEnd = onEnd;
-  audio.onplaying = onStart;
-  audio.onended = () => { currentAudio = null; pendingOnEnd = null; onEnd(); };
-  audio.onerror = () => { currentAudio = null; pendingOnEnd = null; onEnd(); };
-  audio.play().catch(() => { currentAudio = null; pendingOnEnd = null; onEnd(); });
-}
-
 
 export function TrainingSession({ items, title, onBack }: Props) {
   const [queue, setQueue] = useState<VocabItem[]>(() => shuffle(items));
@@ -66,15 +46,23 @@ export function TrainingSession({ items, title, onBack }: Props) {
   const [flipped, setFlipped] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speakError, setSpeakError] = useState(false);
 
   const current = queue[0];
 
   const handleSpeak = useCallback(() => {
-    speakItem(current, () => setIsSpeaking(true), () => setIsSpeaking(false));
+    if (!current) return;
+    speakText(
+      current.japanese,
+      () => { setIsSpeaking(true); setSpeakError(false); },
+      () => setIsSpeaking(false),
+      () => setSpeakError(true),
+    );
   }, [current]);
 
   const handleCorrect = useCallback(() => {
     setFlipped(false);
+    setSpeakError(false);
     setCorrectCount((c) => c + 1);
     const next = queue.slice(1);
     if (next.length === 0 && wrongItems.length === 0) {
@@ -89,6 +77,7 @@ export function TrainingSession({ items, title, onBack }: Props) {
 
   const handleWrong = useCallback(() => {
     setFlipped(false);
+    setSpeakError(false);
     setWrongItemIds((ids) => new Set([...ids, current.id]));
     setWrongItems((w) => [...w, current]);
     const next = queue.slice(1);
@@ -161,15 +150,20 @@ export function TrainingSession({ items, title, onBack }: Props) {
           {isSpeaking ? (
             <WaveAnimation />
           ) : (
-            <button
-              onClick={handleSpeak}
-              className="p-2.5 rounded-xl transition-colors
-                text-gray-400 hover:text-indigo-600 hover:bg-indigo-50
-                dark:text-slate-500 dark:hover:text-indigo-400 dark:hover:bg-indigo-500/10"
-              title="Aussprache anhören"
-            >
-              🔊
-            </button>
+            <>
+              {speakError && (
+                <span className="text-red-500 text-xs">Fehler</span>
+              )}
+              <button
+                onClick={handleSpeak}
+                className="p-2.5 rounded-xl transition-colors
+                  text-gray-400 hover:text-indigo-600 hover:bg-indigo-50
+                  dark:text-slate-500 dark:hover:text-indigo-400 dark:hover:bg-indigo-500/10"
+                title="Aussprache anhören"
+              >
+                🔊
+              </button>
+            </>
           )}
           <OptionsMenu autoPlay={autoSpeak} onAutoPlayChange={setAutoSpeak} />
         </div>
