@@ -25,18 +25,23 @@ function makeCard(value: number): NumberCard {
   };
 }
 
+function shuffleSample(max: number, count: number): number[] {
+  const pool = Array.from({ length: max + 1 }, (_, i) => i);
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, count);
+}
+
 function generateDeck(level: number): NumberCard[] {
   const { max } = LEVELS[level - 1];
   if (level === 1) {
-    // Garantierte Abdeckung aller Werte 0–10 per Fisher-Yates Shuffle
-    const values = Array.from({ length: max + 1 }, (_, i) => i);
-    for (let i = values.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [values[i], values[j]] = [values[j], values[i]];
-    }
-    return values.map(makeCard);
+    // Garantierte Abdeckung aller Werte 0–10 (max + 1 = 11 Karten)
+    return shuffleSample(max, max + 1).map(makeCard);
   }
-  return Array.from({ length: QUIZ_SIZE }, () => makeCard(Math.floor(Math.random() * (max + 1))));
+  // Keine doppelten Zahlen: Sample ohne Wiederholung aus dem Bereich
+  return shuffleSample(max, QUIZ_SIZE).map(makeCard);
 }
 
 const WAVE_BARS = [
