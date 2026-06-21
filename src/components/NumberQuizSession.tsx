@@ -115,7 +115,7 @@ export function NumberQuizSession({ onBack }: Props) {
       setQueue(next);
     }
     setFlipped(false);
-  }, [queue, wrongCards, current, wrongIds, stats, currentLevel]);
+  }, [queue, wrongCards, current, wrongIds, stats, currentLevel, deckSize]);
 
   function selectLevel(level: number) {
     const updated = { ...stats, currentLevel: level };
