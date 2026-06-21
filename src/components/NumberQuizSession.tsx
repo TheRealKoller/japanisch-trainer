@@ -67,6 +67,7 @@ export function NumberQuizSession({ onBack }: Props) {
     const level = loadStats().currentLevel;
     return level === 1 ? LEVELS[0].max + 1 : QUIZ_SIZE;
   });
+  const [started, setStarted] = useState(false);
   const [wrongCards, setWrongCards] = useState<NumberCard[]>([]);
   const [correctCount, setCorrectCount] = useState(0);
   const [wrongIds, setWrongIds] = useState<Set<number>>(() => new Set());
@@ -117,16 +118,66 @@ export function NumberQuizSession({ onBack }: Props) {
     saveStats(updated);
   }
 
-  function restart() {
-    const level = stats.currentLevel;
+  function startQuiz(level: number) {
     setQueue(generateDeck(level));
     setDeckSize(level === 1 ? LEVELS[0].max + 1 : QUIZ_SIZE);
+    setStarted(true);
+  }
+
+  function restart() {
     setWrongCards([]);
     setCorrectCount(0);
     setWrongIds(new Set());
     setDone(false);
     setFlipped(false);
     setLeveledUp(false);
+    setStarted(false);
+  }
+
+  if (!started) {
+    const levelConfig = LEVELS[currentLevel - 1];
+    return (
+      <div className="flex flex-col items-center gap-8 w-full max-w-md">
+        <div className="flex items-center justify-between w-full">
+          <button onClick={onBack} className="text-gray-400 hover:text-gray-600 transition-colors text-sm">
+            ← Zurück
+          </button>
+          <h2 className="text-lg font-semibold text-gray-700">Zahlen-Quiz</h2>
+          <div className="w-8" />
+        </div>
+
+        <div className="flex flex-col items-center gap-2 text-center">
+          <p className="text-gray-500 text-sm">Wähle eine Stufe</p>
+          <p className="text-xs text-gray-400">0 – {levelConfig.max.toLocaleString("de-DE")}</p>
+        </div>
+
+        <div className="flex gap-2 justify-center w-full">
+          {LEVELS.map(l => (
+            <button
+              key={l.level}
+              onClick={() => selectLevel(l.level)}
+              className={`flex flex-col items-center px-2.5 py-3 rounded-xl border-2 transition-colors flex-1
+                ${currentLevel === l.level
+                  ? "border-orange-400 bg-orange-50 text-orange-700"
+                  : "border-gray-200 text-gray-500 hover:border-gray-300"
+                }`}
+            >
+              <span className="font-bold text-base">{l.level}</span>
+              <span className="text-[10px] text-gray-400 leading-tight mt-0.5">
+                0–{l.max >= 1000 ? `${l.max / 1000}k` : l.max}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => startQuiz(currentLevel)}
+          className="w-full py-4 rounded-2xl bg-indigo-600 text-white font-semibold text-lg hover:bg-indigo-700 transition-colors"
+        >
+          Quiz starten
+        </button>
+      </div>
+    );
   }
 
   if (done) {
@@ -247,7 +298,7 @@ export function NumberQuizSession({ onBack }: Props) {
             Nochmal
           </button>
           <button onClick={onBack} className="px-6 py-3 rounded-xl bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors">
-            Zurück zur Auswahl
+            Zurück
           </button>
         </div>
       </div>
