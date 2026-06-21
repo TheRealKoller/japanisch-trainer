@@ -26,6 +26,7 @@ export async function speakText(
     );
     if (!queryRes.ok) { onEnd(); return; }
     const query = await queryRes.json();
+    query.volumeScale = 3.0;
 
     const synthRes = await fetch(`${BASE_URL}/synthesis?speaker=${SPEAKER_ID}`, {
       method: "POST",
