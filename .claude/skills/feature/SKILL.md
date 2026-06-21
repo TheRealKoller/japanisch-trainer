@@ -24,7 +24,7 @@ Frage den User: Gibt es ein passendes Issue (Feature oder Bug)?
 
 Rufe `/refinement` auf. Dieser Skill führt ein strukturiertes Gespräch und erstellt am Ende ein GitHub-Issue. Die neue Issue-Nummer liegt danach vor — weiter mit Schritt 1c.
 
-### 1c. Branch erstellen und Issue auf "In Progress" setzen
+### 1c. Branch erstellen und Draft-PR anlegen
 
 Branch immer von `main` aus erstellen:
 ```bash
@@ -32,20 +32,22 @@ git checkout main && git pull origin main
 git checkout -b feature/<kurzname>
 ```
 
-Issue im GitHub Project auf "In Progress" setzen:
+Einen leeren initialen Commit erstellen (damit der PR sofort angelegt werden kann):
 ```bash
-# Item-ID des Issues im Project ermitteln
-ITEM_ID=$(gh project item-list 6 --owner TheRealKoller --format json \
-  | python3 -c "import json,sys; items=json.load(sys.stdin)['items']; \
-    print(next(i['id'] for i in items if i['content'].get('number') == <issue-nr>))")
-
-# Status auf "In Progress" setzen
-gh project item-edit \
-  --id "$ITEM_ID" \
-  --field-id PVTSSF_lAHOAdvbTs4BbM1pzhV_Dbk \
-  --project-id 6 \
-  --single-select-option-id 47fc9ee4
+git commit --allow-empty -m "chore: start feature/<kurzname>"
+git push -u origin feature/<kurzname>
 ```
+
+Draft-PR erstellen und mit dem Issue verknüpfen:
+```bash
+gh pr create \
+  --draft \
+  --title "WIP: <kurzer Titel aus dem Issue>" \
+  --body "Closes #<issue-nr>" \
+  --repo TheRealKoller/japanisch-trainer
+```
+
+Der Draft-PR signalisiert dass die Arbeit läuft, ohne dass ein Merge möglich ist. GitHub verschiebt das Issue automatisch sobald der PR gemerged wird.
 
 ### 2. Feature entwickeln → /feature-dev:feature-dev
 
