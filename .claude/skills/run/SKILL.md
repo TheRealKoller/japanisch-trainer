@@ -1,27 +1,46 @@
+---
+name: run
+description: Startet die App lokal via docker compose (neu bauen + starten) und zeigt sie im Browser. Verwende diesen Skill wenn der User `/run` schreibt, die App lokal starten oder neu starten möchte.
+---
+
 # /run
 
-Starte den Vite Dev-Server und zeige die App im Browser.
+Startet die App via `docker compose up --build` und öffnet sie im Browser.
 
 ## Ablauf
 
-1. **Prüfe ob Dev-Server läuft**:
+1. **Prüfe ob docker compose verfügbar ist**:
    ```bash
-   curl -s -o /dev/null -w "%{http_code}" http://localhost:5173
+   docker compose version
    ```
-   - Gibt `200` zurück → Server läuft bereits, direkt zu Schritt 3
-   - Sonst → Schritt 2
+   Schlägt fehl → Fehlermeldung ausgeben: "`docker compose` ist nicht installiert. Bitte Docker Desktop installieren: https://docs.docker.com/desktop/" — Abbruch.
 
-2. **Dev-Server starten** (im Hintergrund):
+2. **Laufende Container stoppen** (falls vorhanden):
    ```bash
-   npm run dev -- --port 5173
+   docker compose ps --services --filter "status=running"
    ```
-   Warte bis der Server antwortet (max. 10 Sekunden).
+   Hat die Ausgabe Inhalt → stoppen:
+   ```bash
+   docker compose down
+   ```
 
-3. **Screenshot aufnehmen** mit dem verfügbaren Browser-Tool und zeige ihn dem User.
-   Navigiere dabei zur Startseite: `http://localhost:5173`
+3. **Neu bauen und starten** (im Hintergrund):
+   ```bash
+   docker compose up --build -d
+   ```
 
-4. **Kurzes Feedback** — Beschreibe in 1-2 Sätzen was zu sehen ist und ob es wie erwartet aussieht.
+4. **Warten bis die App erreichbar ist** (max. 120 Sekunden, alle 5 Sekunden prüfen):
+   ```bash
+   curl -sf http://localhost:8080 > /dev/null
+   ```
+   Solange kein 200 → kurz warten und erneut prüfen. Nach 120 Sekunden ohne Antwort: Fehlermeldung "App nicht erreichbar — prüfe `docker compose logs app`".
+
+5. **Screenshot aufnehmen** und dem User zeigen.
+   Startseite: `http://localhost:8080`
+
+6. **Kurzes Feedback** — 1-2 Sätze was zu sehen ist.
 
 ## Hinweise
-- Port ist immer 5173 (in `vite.config.ts` nicht konfiguriert, Vite-Standard)
-- Dev-Server läuft im Hintergrund weiter bis der User ihn stoppt
+- App läuft unter `http://localhost:8080` (konfiguriert via `APP_PORT` in `docker-compose.yml`, Standard: 8080)
+- Erster Start dauert länger: VoiceVox-Image wird heruntergeladen und braucht ~60 Sekunden zum Initialisieren
+- `docker compose down` stoppt alle Services (App + VoiceVox)
