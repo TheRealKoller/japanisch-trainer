@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { numberToKanji, numberToHiragana, numberToRomaji, numberToHiraganaAlt, numberToRomajiAlt } from "../utils/numberConverter";
 import { speakText } from "../utils/voicevox";
+import { loadStats, saveStats, recordSession, LEVELS, type QuizStats } from "../utils/quizStats";
 
 const QUIZ_SIZE = 10;
 
@@ -13,8 +14,7 @@ interface NumberCard {
   romajiAlt: string | null;
 }
 
-function generateCard(): NumberCard {
-  const value = Math.floor(Math.random() * 100000);
+function makeCard(value: number): NumberCard {
   return {
     value,
     kanji: numberToKanji(value),
@@ -25,12 +25,23 @@ function generateCard(): NumberCard {
   };
 }
 
-function generateDeck(): NumberCard[] {
-  return Array.from({ length: QUIZ_SIZE }, generateCard);
+function shuffleSample(max: number, count: number): number[] {
+  const pool = Array.from({ length: max + 1 }, (_, i) => i);
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, count);
 }
 
-interface Props {
-  onBack: () => void;
+function generateDeck(level: number): NumberCard[] {
+  const { max } = LEVELS[level - 1];
+  if (level === 1) {
+    // Garantierte Abdeckung aller Werte 0–10 (max + 1 = 11 Karten)
+    return shuffleSample(max, max + 1).map(makeCard);
+  }
+  // Keine doppelten Zahlen: Sample ohne Wiederholung aus dem Bereich
+  return shuffleSample(max, QUIZ_SIZE).map(makeCard);
 }
 
 const WAVE_BARS = [
@@ -50,16 +61,28 @@ function WaveAnimation() {
   );
 }
 
+interface Props {
+  onBack: () => void;
+}
+
 export function NumberQuizSession({ onBack }: Props) {
-  const [queue, setQueue] = useState<NumberCard[]>(() => generateDeck());
+  const [stats, setStats] = useState<QuizStats>(loadStats);
+  const [queue, setQueue] = useState<NumberCard[]>(() => generateDeck(loadStats().currentLevel));
+  const [deckSize, setDeckSize] = useState(() => {
+    const level = loadStats().currentLevel;
+    return level === 1 ? LEVELS[0].max + 1 : QUIZ_SIZE;
+  });
+  const [started, setStarted] = useState(false);
   const [wrongCards, setWrongCards] = useState<NumberCard[]>([]);
   const [correctCount, setCorrectCount] = useState(0);
   const [wrongIds, setWrongIds] = useState<Set<number>>(() => new Set());
   const [flipped, setFlipped] = useState(false);
   const [done, setDone] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [leveledUp, setLeveledUp] = useState(false);
 
   const current = queue[0];
+  const currentLevel = stats.currentLevel;
 
   const handleSpeak = useCallback(() => {
     if (!current) return;
@@ -78,6 +101,11 @@ export function NumberQuizSession({ onBack }: Props) {
     if (next.length === 0) {
       const remaining = isCorrect ? wrongCards : [...wrongCards, current];
       if (remaining.length === 0) {
+        // Session complete — isCorrect is true here, so wrongIds is up-to-date
+        const updatedStats = recordSession(stats, currentLevel, wrongIds, deckSize);
+        setStats(updatedStats);
+        saveStats(updatedStats);
+        setLeveledUp(updatedStats.currentLevel > currentLevel);
         setDone(true);
       } else {
         setQueue([...remaining].sort(() => Math.random() - 0.5));
@@ -87,24 +115,107 @@ export function NumberQuizSession({ onBack }: Props) {
       setQueue(next);
     }
     setFlipped(false);
-  }, [queue, wrongCards, current]);
+  }, [queue, wrongCards, current, wrongIds, stats, currentLevel, deckSize]);
+
+  function selectLevel(level: number) {
+    const updated = { ...stats, currentLevel: level };
+    setStats(updated);
+    saveStats(updated);
+  }
+
+  function startQuiz(level: number) {
+    setQueue(generateDeck(level));
+    setDeckSize(level === 1 ? LEVELS[0].max + 1 : QUIZ_SIZE);
+    setStarted(true);
+  }
 
   function restart() {
-    setQueue(generateDeck());
     setWrongCards([]);
     setCorrectCount(0);
     setWrongIds(new Set());
     setDone(false);
     setFlipped(false);
+    setLeveledUp(false);
+    setStarted(false);
+  }
+
+  if (!started) {
+    const levelConfig = LEVELS[currentLevel - 1];
+    return (
+      <div className="flex flex-col items-center gap-8 w-full max-w-md">
+        <div className="flex items-center justify-between w-full">
+          <button onClick={onBack} className="text-gray-400 hover:text-gray-600 transition-colors text-sm">
+            ← Zurück
+          </button>
+          <h2 className="text-lg font-semibold text-gray-700">Zahlen-Quiz</h2>
+          <div className="w-8" />
+        </div>
+
+        <div className="flex flex-col items-center gap-2 text-center">
+          <p className="text-gray-500 text-sm">Wähle eine Stufe</p>
+          <p className="text-xs text-gray-400">0 – {levelConfig.max.toLocaleString("de-DE")}</p>
+        </div>
+
+        <div className="flex gap-2 justify-center w-full">
+          {LEVELS.map(l => (
+            <button
+              key={l.level}
+              onClick={() => selectLevel(l.level)}
+              className={`flex flex-col items-center px-2.5 py-3 rounded-xl border-2 transition-colors flex-1
+                ${currentLevel === l.level
+                  ? "border-orange-400 bg-orange-50 text-orange-700"
+                  : "border-gray-200 text-gray-500 hover:border-gray-300"
+                }`}
+            >
+              <span className="font-bold text-base">{l.level}</span>
+              <span className="text-[10px] text-gray-400 leading-tight mt-0.5">
+                0–{l.max >= 1000 ? `${l.max / 1000}k` : l.max}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => startQuiz(currentLevel)}
+          className="w-full py-4 rounded-2xl bg-indigo-600 text-white font-semibold text-lg hover:bg-indigo-700 transition-colors"
+        >
+          Quiz starten
+        </button>
+      </div>
+    );
   }
 
   if (done) {
-    const firstTryCorrect = QUIZ_SIZE - wrongIds.size;
-    const pct = Math.round((firstTryCorrect / QUIZ_SIZE) * 100);
+    const firstTryCorrect = deckSize - wrongIds.size;
+    const pct = Math.round((firstTryCorrect / deckSize) * 100);
+    const levelConfig = LEVELS[currentLevel - 1];
+
+    const levelEntries = LEVELS
+      .map(l => ({ l, rec: stats.levelRecords[l.level] }))
+      .filter((e): e is { l: typeof LEVELS[0]; rec: NonNullable<typeof e.rec> } => e.rec != null);
+
+    const digitEntries = (Object.entries(stats.digitErrors) as [string, number][])
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 3)
+      .map(([digit, count]) => ({ digit: Number(digit), count }));
+
     return (
-      <div className="flex flex-col items-center gap-6 py-16">
+      <div className="flex flex-col items-center gap-5 py-8 w-full max-w-md">
         <div className="text-6xl">🎉</div>
+
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-orange-100 text-orange-700">
+            Stufe {currentLevel} · 0–{levelConfig.max.toLocaleString("de-DE")}
+          </span>
+          {leveledUp && (
+            <p className="text-sm font-medium text-green-600">
+              🎊 Aufgestiegen auf Stufe {currentLevel + 1}!
+            </p>
+          )}
+        </div>
+
         <h2 className="text-2xl font-bold text-gray-800">Geschafft!</h2>
+
         <div className="flex gap-10 text-center">
           <div>
             <p className="text-4xl font-bold text-green-600">{firstTryCorrect}</p>
@@ -116,12 +227,83 @@ export function NumberQuizSession({ onBack }: Props) {
           </div>
         </div>
         <p className="text-lg font-semibold text-gray-600">{pct}% beim ersten Versuch</p>
-        <div className="flex gap-4 mt-4">
+
+        {/* Level selector */}
+        <div className="w-full">
+          <p className="text-xs text-gray-400 text-center mb-2">Stufe wählen</p>
+          <div className="flex gap-2 justify-center">
+            {LEVELS.map(l => (
+              <button
+                key={l.level}
+                onClick={() => selectLevel(l.level)}
+                className={`flex flex-col items-center px-2.5 py-2 rounded-xl border-2 transition-colors
+                  ${stats.currentLevel === l.level
+                    ? "border-orange-400 bg-orange-50 text-orange-700"
+                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                  }`}
+              >
+                <span className="font-bold text-sm">{l.level}</span>
+                <span className="text-[10px] text-gray-400 leading-tight">
+                  0–{l.max >= 1000 ? `${l.max / 1000}k` : l.max}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Cumulative stats per level */}
+        {levelEntries.length > 0 && (
+          <div className="w-full">
+            <p className="text-xs text-gray-400 text-center mb-2">Gesamtstatistik</p>
+            <div className="flex flex-col gap-1 w-full">
+              {levelEntries.map(({ l, rec }) => {
+                const acc = Math.round((rec.firstTryCorrect / rec.totalCards) * 100);
+                const reached = acc >= l.threshold * 100;
+                return (
+                  <div key={l.level} className="flex justify-between text-sm text-gray-600 px-1">
+                    <span>Stufe {l.level}</span>
+                    <span className="text-gray-400">{rec.sessions} Sitzung{rec.sessions !== 1 ? "en" : ""}</span>
+                    <span className={reached ? "text-green-600 font-medium" : "text-gray-500"}>
+                      {acc}% {reached ? "✓" : ""}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Problem digits */}
+        {digitEntries.length > 0 && (
+          <div className="w-full">
+            <p className="text-xs text-gray-400 text-center mb-2">Problematische Ziffern</p>
+            <div className="flex gap-2 justify-center">
+              {digitEntries.map(({ digit, count }) => (
+                <div key={digit} className="flex flex-col items-center px-4 py-2 bg-red-50 rounded-xl">
+                  <span className="text-2xl font-bold text-red-600">{digit}</span>
+                  <span className="text-xs text-red-400">{count}×</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recent wrong numbers */}
+        {stats.recentWrongNumbers.length > 0 && (
+          <div className="w-full">
+            <p className="text-xs text-gray-400 text-center mb-1">Letzte Fehler</p>
+            <p className="text-sm text-gray-500 text-center leading-relaxed">
+              {stats.recentWrongNumbers.slice(0, 10).map(n => n.toLocaleString("de-DE")).join(" · ")}
+            </p>
+          </div>
+        )}
+
+        <div className="flex gap-4 mt-2">
           <button onClick={restart} className="px-6 py-3 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors">
             Nochmal
           </button>
           <button onClick={onBack} className="px-6 py-3 rounded-xl bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors">
-            Zurück zur Auswahl
+            Zurück
           </button>
         </div>
       </div>
@@ -134,7 +316,12 @@ export function NumberQuizSession({ onBack }: Props) {
         <button onClick={onBack} className="text-gray-400 hover:text-gray-600 transition-colors text-sm">
           ← Zurück
         </button>
-        <h2 className="text-lg font-semibold text-gray-700">Zahlen-Quiz</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-gray-700">Zahlen-Quiz</h2>
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
+            Stufe {currentLevel}
+          </span>
+        </div>
         <div className="w-8" />
       </div>
 
@@ -194,10 +381,10 @@ export function NumberQuizSession({ onBack }: Props) {
       <div className="w-full max-w-md bg-gray-100 rounded-full h-2">
         <div
           className="bg-indigo-500 h-2 rounded-full transition-all duration-500"
-          style={{ width: `${(correctCount / QUIZ_SIZE) * 100}%` }}
+          style={{ width: `${(correctCount / deckSize) * 100}%` }}
         />
       </div>
-      <p className="text-sm text-gray-400">{correctCount} / {QUIZ_SIZE} gelernt</p>
+      <p className="text-sm text-gray-400">{correctCount} / {deckSize} gelernt</p>
     </div>
   );
 }
