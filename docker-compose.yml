@@ -11,8 +11,8 @@ services:
   generate-audio:
     image: node:22-alpine
     volumes:
-      - ./scripts:/app/scripts:ro
-      - ./src/data:/app/src/data:ro
+      - ./scripts:/app/scripts:ro,z
+      - ./src/data:/app/src/data:ro,z
       - audio:/audio
     environment:
       VOICEVOX_URL: http://voicevox:50021
