@@ -1,0 +1,37 @@
+services:
+  voicevox:
+    image: voicevox/voicevox_engine:cpu-ubuntu20.04-latest
+    healthcheck:
+      test: ["CMD", "/opt/python/bin/python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:50021/version')"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+
+  generate-audio:
+    image: node:22-alpine
+    volumes:
+      - ./scripts:/app/scripts:ro,z
+      - ./src/data:/app/src/data:ro,z
+      - audio:/audio
+    environment:
+      VOICEVOX_URL: http://voicevox:50021
+      AUDIO_OUT_DIR: /audio
+    working_dir: /app
+    command: node scripts/generate-audio.mjs
+    depends_on:
+      voicevox:
+        condition: service_healthy
+
+  app:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - audio:/usr/share/nginx/html/audio
+    depends_on:
+      generate-audio:
+        condition: service_completed_successfully
+
+volumes:
+  audio:

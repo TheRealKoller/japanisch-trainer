@@ -9,9 +9,9 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
-const OUT_DIR = join(ROOT, "public", "audio");
+const OUT_DIR = process.env.AUDIO_OUT_DIR ?? join(ROOT, "public", "audio");
 const SPEAKER_ID = 1; // ずんだもん (ノーマル)
-const BASE_URL = "http://localhost:50021";
+const BASE_URL = process.env.VOICEVOX_URL ?? "http://localhost:50021";
 
 mkdirSync(OUT_DIR, { recursive: true });
 
