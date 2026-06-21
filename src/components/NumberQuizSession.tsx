@@ -14,8 +14,7 @@ interface NumberCard {
   romajiAlt: string | null;
 }
 
-function generateCard(maxValue: number): NumberCard {
-  const value = Math.floor(Math.random() * (maxValue + 1));
+function makeCard(value: number): NumberCard {
   return {
     value,
     kanji: numberToKanji(value),
@@ -26,8 +25,18 @@ function generateCard(maxValue: number): NumberCard {
   };
 }
 
-function generateDeck(maxValue: number): NumberCard[] {
-  return Array.from({ length: QUIZ_SIZE }, () => generateCard(maxValue));
+function generateDeck(level: number): NumberCard[] {
+  const { max } = LEVELS[level - 1];
+  if (level === 1) {
+    // Garantierte Abdeckung aller Werte 0–10 per Fisher-Yates Shuffle
+    const values = Array.from({ length: max + 1 }, (_, i) => i);
+    for (let i = values.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [values[i], values[j]] = [values[j], values[i]];
+    }
+    return values.map(makeCard);
+  }
+  return Array.from({ length: QUIZ_SIZE }, () => makeCard(Math.floor(Math.random() * (max + 1))));
 }
 
 const WAVE_BARS = [
@@ -53,9 +62,10 @@ interface Props {
 
 export function NumberQuizSession({ onBack }: Props) {
   const [stats, setStats] = useState<QuizStats>(loadStats);
-  const [queue, setQueue] = useState<NumberCard[]>(() => {
-    const s = loadStats();
-    return generateDeck(LEVELS[s.currentLevel - 1].max);
+  const [queue, setQueue] = useState<NumberCard[]>(() => generateDeck(loadStats().currentLevel));
+  const [deckSize, setDeckSize] = useState(() => {
+    const level = loadStats().currentLevel;
+    return level === 1 ? LEVELS[0].max + 1 : QUIZ_SIZE;
   });
   const [wrongCards, setWrongCards] = useState<NumberCard[]>([]);
   const [correctCount, setCorrectCount] = useState(0);
@@ -86,7 +96,7 @@ export function NumberQuizSession({ onBack }: Props) {
       const remaining = isCorrect ? wrongCards : [...wrongCards, current];
       if (remaining.length === 0) {
         // Session complete — isCorrect is true here, so wrongIds is up-to-date
-        const updatedStats = recordSession(stats, currentLevel, wrongIds, QUIZ_SIZE);
+        const updatedStats = recordSession(stats, currentLevel, wrongIds, deckSize);
         setStats(updatedStats);
         saveStats(updatedStats);
         setLeveledUp(updatedStats.currentLevel > currentLevel);
@@ -109,7 +119,8 @@ export function NumberQuizSession({ onBack }: Props) {
 
   function restart() {
     const level = stats.currentLevel;
-    setQueue(generateDeck(LEVELS[level - 1].max));
+    setQueue(generateDeck(level));
+    setDeckSize(level === 1 ? LEVELS[0].max + 1 : QUIZ_SIZE);
     setWrongCards([]);
     setCorrectCount(0);
     setWrongIds(new Set());
@@ -119,8 +130,8 @@ export function NumberQuizSession({ onBack }: Props) {
   }
 
   if (done) {
-    const firstTryCorrect = QUIZ_SIZE - wrongIds.size;
-    const pct = Math.round((firstTryCorrect / QUIZ_SIZE) * 100);
+    const firstTryCorrect = deckSize - wrongIds.size;
+    const pct = Math.round((firstTryCorrect / deckSize) * 100);
     const levelConfig = LEVELS[currentLevel - 1];
 
     const levelEntries = LEVELS
@@ -314,10 +325,10 @@ export function NumberQuizSession({ onBack }: Props) {
       <div className="w-full max-w-md bg-gray-100 rounded-full h-2">
         <div
           className="bg-indigo-500 h-2 rounded-full transition-all duration-500"
-          style={{ width: `${(correctCount / QUIZ_SIZE) * 100}%` }}
+          style={{ width: `${(correctCount / deckSize) * 100}%` }}
         />
       </div>
-      <p className="text-sm text-gray-400">{correctCount} / {QUIZ_SIZE} gelernt</p>
+      <p className="text-sm text-gray-400">{correctCount} / {deckSize} gelernt</p>
     </div>
   );
 }
