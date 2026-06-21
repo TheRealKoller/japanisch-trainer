@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { numbers } from "./data/numbers";
 import { hiragana } from "./data/hiragana";
 import { katakana } from "./data/katakana";
 import { TrainingSession } from "./components/TrainingSession";
 import { NumberQuizSession } from "./components/NumberQuizSession";
 import { OptionsMenu } from "./components/OptionsMenu";
+import { SettingsPage } from "./components/SettingsPage";
 
 type Lesson = "numbers" | "hiragana" | "katakana" | "number-quiz";
+type View = Lesson | "settings" | null;
 
 const lessons = [
   {
@@ -51,65 +53,98 @@ const titleMap: Record<Lesson, string> = {
   "number-quiz": "",
 };
 
+function viewFromHash(): View {
+  return window.location.hash === "#/settings" ? "settings" : null;
+}
+
 function App() {
-  const [active, setActive] = useState<Lesson | null>(null);
+  const [view, setView] = useState<View>(viewFromHash);
+
+  useEffect(() => {
+    function onHashChange() {
+      if (window.location.hash === "#/settings") {
+        setView("settings");
+      } else if (!window.location.hash) {
+        setView(v => (v === "settings" ? null : v));
+      }
+    }
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
+  function goBack() {
+    window.location.hash = "";
+    // hashchange event handles the state update
+  }
+
+  if (view === "settings") {
+    return (
+      <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
+        <SettingsPage onBack={goBack} />
+      </main>
+    );
+  }
+
+  if (view === "number-quiz") {
+    return (
+      <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
+        <NumberQuizSession onBack={() => setView(null)} />
+      </main>
+    );
+  }
+
+  if (view) {
+    return (
+      <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
+        <TrainingSession
+          items={dataMap[view]}
+          title={titleMap[view]}
+          onBack={() => setView(null)}
+        />
+      </main>
+    );
+  }
 
   return (
-    <>
-      {active === "number-quiz" ? (
-        <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
-          <NumberQuizSession onBack={() => setActive(null)} />
-        </main>
-      ) : active ? (
-        <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
-          <TrainingSession
-            items={dataMap[active]}
-            title={titleMap[active]}
-            onBack={() => setActive(null)}
-          />
-        </main>
-      ) : (
-        <main className="min-h-screen flex flex-col items-center justify-center p-6 sm:p-8 bg-gray-50 dark:bg-slate-950">
-          <div className="fixed top-4 right-4 z-50">
-            <OptionsMenu />
-          </div>
-          <div className="max-w-md w-full flex flex-col gap-8">
-            <div className="text-center">
-              <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent mb-2">
-                日本語トレーナー
-              </h1>
-              <p className="text-gray-500 dark:text-slate-400 text-sm sm:text-base">
-                Japanisch Vokabeltrainer
-              </p>
-            </div>
+    <main className="min-h-screen flex flex-col items-center justify-center p-6 sm:p-8 bg-gray-50 dark:bg-slate-950">
+      <div className="fixed top-4 right-4 z-50">
+        <OptionsMenu />
+      </div>
+      <div className="max-w-md w-full flex flex-col gap-8">
+        <div className="text-center">
+          <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent mb-2">
+            日本語トレーナー
+          </h1>
+          <p className="text-gray-500 dark:text-slate-400 text-sm sm:text-base">
+            Japanisch Vokabeltrainer
+          </p>
+        </div>
 
-            <div className="flex flex-col gap-3">
-              {lessons.map((lesson) => (
-                <button
-                  key={lesson.id}
-                  onClick={() => setActive(lesson.id)}
-                  className={`border-2 rounded-2xl p-5 text-left transition-colors duration-200 ${lesson.color}`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100">
-                        {lesson.title}
-                      </h2>
-                      <p className="text-2xl mt-1 tracking-widest text-gray-700 dark:text-slate-300">
-                        {lesson.subtitle}
-                      </p>
-                    </div>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 mt-0.5 ${lesson.badge}`}>
-                      {lesson.description}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </main>
-      )}
-    </>
+        <div className="flex flex-col gap-3">
+          {lessons.map((lesson) => (
+            <button
+              key={lesson.id}
+              onClick={() => setView(lesson.id)}
+              className={`border-2 rounded-2xl p-5 text-left transition-colors duration-200 ${lesson.color}`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100">
+                    {lesson.title}
+                  </h2>
+                  <p className="text-2xl mt-1 tracking-widest text-gray-700 dark:text-slate-300">
+                    {lesson.subtitle}
+                  </p>
+                </div>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 mt-0.5 ${lesson.badge}`}>
+                  {lesson.description}
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </main>
   );
 }
 

@@ -78,6 +78,15 @@ export function OptionsMenu({ autoPlay, onAutoPlayChange }: Props) {
               </button>
             </div>
           )}
+
+          <button
+            onClick={() => { setOpen(false); window.location.hash = "#/settings"; }}
+            className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg
+              hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors text-left"
+          >
+            <span className="text-sm text-gray-700 dark:text-slate-300">Stimme</span>
+            <span className="text-gray-400 dark:text-slate-500 text-xs">›</span>
+          </button>
         </div>
       )}
     </div>
