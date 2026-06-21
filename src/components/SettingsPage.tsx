@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { toRomaji } from "wanakana";
 import { getSpeakerId, setSpeakerId } from "../utils/voicevox";
 
 interface SpeakerStyle {
@@ -121,10 +120,6 @@ const STYLE_LABELS: Record<string, string> = {
   "実況風":             "Kommentator",
   "絶望と敗北":         "Verzweiflung",
 };
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
 
 const WAVE_BARS = [
   { delay: "0ms",   h: "h-2" },
@@ -287,19 +282,13 @@ export function SettingsPage({ onBack }: Props) {
                       }`}>
                         {speaker.name}
                       </p>
-                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
-                        {capitalize(toRomaji(speaker.name))}
-                        {SPEAKER_LABELS[speaker.name] && (
-                          <span className="ml-1.5 text-gray-300 dark:text-slate-600">·</span>
-                        )}
-                        {SPEAKER_LABELS[speaker.name] && (
-                          <span className={`ml-1.5 ${
-                            hasSelected ? "text-indigo-400 dark:text-indigo-500" : "text-gray-400 dark:text-slate-500"
-                          }`}>
-                            {SPEAKER_LABELS[speaker.name]}
-                          </span>
-                        )}
-                      </p>
+                      {SPEAKER_LABELS[speaker.name] && (
+                        <p className={`text-xs mt-0.5 ${
+                          hasSelected ? "text-indigo-400 dark:text-indigo-500" : "text-gray-400 dark:text-slate-500"
+                        }`}>
+                          {SPEAKER_LABELS[speaker.name]}
+                        </p>
+                      )}
                       {hasSelected && selectedStyle && !isExpanded && (
                         <p className="text-xs text-indigo-500 dark:text-indigo-400 mt-1">
                           ✓ {selectedStyle.name}
