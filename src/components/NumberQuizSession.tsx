@@ -80,6 +80,7 @@ export function NumberQuizSession({ onBack }: Props) {
   const [done, setDone] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [leveledUp, setLeveledUp] = useState(false);
+  const [autoPlay, setAutoPlay] = useState(true);
 
   const current = queue[0];
   const currentLevel = stats.currentLevel;
@@ -322,12 +323,18 @@ export function NumberQuizSession({ onBack }: Props) {
             Stufe {currentLevel}
           </span>
         </div>
-        <div className="w-8" />
+        <button
+          onClick={() => setAutoPlay(p => !p)}
+          title={autoPlay ? "Auto-Play aus" : "Auto-Play ein"}
+          className={`text-lg transition-opacity ${autoPlay ? "opacity-100" : "opacity-30"}`}
+        >
+          🔊
+        </button>
       </div>
 
       {/* Card */}
       <div
-        onClick={!flipped ? () => { setFlipped(true); handleSpeak(); } : undefined}
+        onClick={!flipped ? () => { setFlipped(true); if (autoPlay) handleSpeak(); } : undefined}
         className={`w-72 min-h-64 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 select-none transition-colors duration-200 p-6
           ${flipped
             ? "bg-white border-gray-200 cursor-default"
