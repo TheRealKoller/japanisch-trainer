@@ -51,7 +51,7 @@ function WaveAnimation() {
       {WAVE_BARS.map((bar, i) => (
         <div
           key={i}
-          className={`w-1 ${bar.h} bg-indigo-500 rounded-full animate-bounce`}
+          className={`w-1 ${bar.h} bg-indigo-500 dark:bg-indigo-400 rounded-full animate-bounce`}
           style={{ animationDelay: bar.delay }}
         />
       ))}
@@ -113,28 +113,30 @@ export function TrainingSession({ items, title, onBack }: Props) {
     return (
       <div className="flex flex-col items-center gap-6">
         <div className="text-6xl">🎉</div>
-        <h2 className="text-2xl font-bold text-gray-800">Geschafft!</h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Geschafft!</h2>
         <div className="flex gap-8 text-center">
           <div>
-            <p className="text-4xl font-bold text-green-600">{firstTryCorrect}</p>
-            <p className="text-sm text-gray-400 mt-1">richtig</p>
+            <p className="text-4xl font-bold text-green-600 dark:text-green-400">{firstTryCorrect}</p>
+            <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">richtig</p>
           </div>
           <div>
-            <p className="text-4xl font-bold text-red-500">{wrongItemIds.size}</p>
-            <p className="text-sm text-gray-400 mt-1">falsch</p>
+            <p className="text-4xl font-bold text-red-500 dark:text-red-400">{wrongItemIds.size}</p>
+            <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">falsch</p>
           </div>
         </div>
-        <p className="text-lg font-semibold text-gray-600">{pct}% beim ersten Versuch</p>
-        <div className="flex gap-4 mt-4">
+        <p className="text-lg font-semibold text-gray-600 dark:text-slate-300">{pct}% beim ersten Versuch</p>
+        <div className="flex gap-4 mt-4 w-full max-w-xs sm:w-auto">
           <button
             onClick={restart}
-            className="px-6 py-3 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors"
+            className="flex-1 sm:flex-none px-6 py-3 rounded-xl font-medium text-white bg-gradient-to-r from-indigo-500 to-violet-500 hover:opacity-90 transition-opacity"
           >
             Nochmal
           </button>
           <button
             onClick={onBack}
-            className="px-6 py-3 rounded-xl bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors"
+            className="flex-1 sm:flex-none px-6 py-3 rounded-xl font-medium transition-colors
+              bg-gray-100 text-gray-700 hover:bg-gray-200
+              dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
           >
             Zurück zur Auswahl
           </button>
@@ -148,18 +150,20 @@ export function TrainingSession({ items, title, onBack }: Props) {
       <div className="flex items-center justify-between w-full max-w-md">
         <button
           onClick={onBack}
-          className="text-gray-400 hover:text-gray-600 transition-colors text-sm"
+          className="text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors text-sm"
         >
           ← Zurück
         </button>
-        <h2 className="text-lg font-semibold text-gray-700">{title}</h2>
+        <h2 className="text-lg font-semibold text-gray-700 dark:text-slate-200">{title}</h2>
         <div className="flex items-center gap-2">
           {isSpeaking ? (
             <WaveAnimation />
           ) : (
             <button
               onClick={handleSpeak}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+              className="p-1.5 rounded-lg transition-colors
+                text-gray-400 hover:text-indigo-600 hover:bg-indigo-50
+                dark:text-slate-500 dark:hover:text-indigo-400 dark:hover:bg-indigo-500/10"
               title="Aussprache anhören"
             >
               🔊
@@ -168,7 +172,9 @@ export function TrainingSession({ items, title, onBack }: Props) {
           <button
             onClick={() => setAutoSpeak((v) => !v)}
             title={autoSpeak ? "Automatische Sprachausgabe deaktivieren" : "Automatische Sprachausgabe aktivieren"}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${autoSpeak ? "bg-indigo-500" : "bg-gray-300"}`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+              autoSpeak ? "bg-indigo-500" : "bg-gray-300 dark:bg-slate-700"
+            }`}
           >
             <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${autoSpeak ? "translate-x-6" : "translate-x-1"}`} />
           </button>
@@ -184,13 +190,13 @@ export function TrainingSession({ items, title, onBack }: Props) {
         autoSpeak={autoSpeak}
       />
 
-      <div className="w-full max-w-md bg-gray-100 rounded-full h-2">
+      <div className="w-full max-w-md bg-gray-100 dark:bg-slate-800 rounded-full h-2">
         <div
-          className="bg-indigo-500 h-2 rounded-full transition-all duration-500"
+          className="bg-gradient-to-r from-indigo-500 to-violet-500 h-2 rounded-full transition-all duration-500"
           style={{ width: `${(correctCount / items.length) * 100}%` }}
         />
       </div>
-      <p className="text-sm text-gray-400">{correctCount} / {items.length} gelernt</p>
+      <p className="text-sm text-gray-400 dark:text-slate-500">{correctCount} / {items.length} gelernt</p>
     </div>
   );
 }
