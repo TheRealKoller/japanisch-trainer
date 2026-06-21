@@ -31,10 +31,15 @@ Analysiere den Diff anhand dieser projektspezifischen Checkliste:
 - Wird `VocabItem` aus `src/data/numbers.ts` importiert statt lokal redefiniert?
 - Keine `any`-Typen ohne Begründung?
 
-**Tailwind & Styling**
+**Tailwind & Design System**
 - Konsistente Verwendung von Tailwind-Klassen (keine gemischte CSS-Datei-Nutzung)?
 - Responsive Klassen wo sinnvoll (mobile-first)?
-- Farbpalette konsistent mit bestehenden Komponenten (indigo, rose, sky, amber)?
+- Farbpalette, Spacing, Border-Radius und Komponenten-Patterns entsprechen `DESIGN_SYSTEM.md`?
+  - Buttons: korrekte Variante (primary / secondary / danger / success / ghost / icon)?
+  - Karten: `rounded-2xl border-2` mit den definierten Farb-Tokens?
+  - Badges: `text-xs font-medium px-2 py-0.5 rounded-full`?
+  - Neue Farben außerhalb der Palette ohne Begründung?
+  - Abweichungen von definierten Spacing-Tokens (gap-xs bis gap-xl)?
 
 **Daten & Konventionen**
 - Neue `VocabItem`-Einträge folgen dem Schema: `id`, `japanese`, `reading`, `meaning`?
