@@ -8,6 +8,7 @@ export async function speakText(
   text: string,
   onStart: () => void,
   onEnd: () => void,
+  onError?: () => void,
 ): Promise<void> {
   // Stop any currently playing audio
   if (currentAudio) {
@@ -24,7 +25,7 @@ export async function speakText(
       `${BASE_URL}/audio_query?text=${encodeURIComponent(text)}&speaker=${SPEAKER_ID}`,
       { method: "POST" },
     );
-    if (!queryRes.ok) { onEnd(); return; }
+    if (!queryRes.ok) { onEnd(); onError?.(); return; }
     const query = await queryRes.json();
     query.volumeScale = 3.0;
 
@@ -33,7 +34,7 @@ export async function speakText(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(query),
     });
-    if (!synthRes.ok) { onEnd(); return; }
+    if (!synthRes.ok) { onEnd(); onError?.(); return; }
 
     const blob = await synthRes.blob();
     const url = URL.createObjectURL(blob);
@@ -53,9 +54,11 @@ export async function speakText(
       currentAudio = null;
       currentObjectUrl = null;
       onEnd();
+      onError?.();
     };
     await audio.play();
   } catch {
     onEnd();
+    onError?.();
   }
 }
