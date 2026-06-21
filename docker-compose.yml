@@ -2,11 +2,11 @@ services:
   voicevox:
     image: voicevox/voicevox_engine:cpu-ubuntu20.04-latest
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:50021/version || exit 1"]
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:50021/version')"]
       interval: 10s
       timeout: 5s
-      retries: 15
-      start_period: 30s
+      retries: 20
+      start_period: 60s
 
   generate-audio:
     image: node:22-alpine
