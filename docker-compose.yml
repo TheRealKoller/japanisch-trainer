@@ -2,9 +2,9 @@ services:
   voicevox:
     image: voicevox/voicevox_engine:cpu-ubuntu20.04-latest
     healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:50021/version')"]
+      test: ["CMD", "/opt/python/bin/python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:50021/version')"]
       interval: 10s
-      timeout: 5s
+      timeout: 10s
       retries: 20
       start_period: 60s
 
