@@ -323,13 +323,26 @@ export function NumberQuizSession({ onBack }: Props) {
             Stufe {currentLevel}
           </span>
         </div>
-        <button
-          onClick={() => setAutoPlay(p => !p)}
-          title={autoPlay ? "Automatische Sprachausgabe deaktivieren" : "Automatische Sprachausgabe aktivieren"}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${autoPlay ? "bg-indigo-500" : "bg-gray-300"}`}
-        >
-          <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${autoPlay ? "translate-x-6" : "translate-x-1"}`} />
-        </button>
+        <div className="flex items-center gap-2">
+          {isSpeaking ? (
+            <WaveAnimation />
+          ) : (
+            <button
+              onClick={handleSpeak}
+              className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+              title="Aussprache anhören"
+            >
+              🔊
+            </button>
+          )}
+          <button
+            onClick={() => setAutoPlay(p => !p)}
+            title={autoPlay ? "Automatische Sprachausgabe deaktivieren" : "Automatische Sprachausgabe aktivieren"}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${autoPlay ? "bg-indigo-500" : "bg-gray-300"}`}
+          >
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${autoPlay ? "translate-x-6" : "translate-x-1"}`} />
+          </button>
+        </div>
       </div>
 
       {/* Card */}
@@ -348,19 +361,6 @@ export function NumberQuizSession({ onBack }: Props) {
           </>
         ) : (
           <>
-            <div className="flex items-center gap-2">
-              {isSpeaking ? (
-                <WaveAnimation />
-              ) : (
-                <button
-                  onClick={e => { e.stopPropagation(); handleSpeak(); }}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-                  title="Nochmal anhören"
-                >
-                  🔊
-                </button>
-              )}
-            </div>
             <p className="text-xl text-indigo-600 font-medium text-center">{current.hiragana}</p>
             {current.hiraganaAlt && (
               <p className="text-base text-indigo-400 text-center">({current.hiraganaAlt})</p>
