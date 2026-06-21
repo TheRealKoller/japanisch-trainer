@@ -33,5 +33,11 @@ services:
       generate-audio:
         condition: service_completed_successfully
 
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+
 volumes:
   audio:
