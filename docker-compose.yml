@@ -11,6 +11,7 @@ services:
 
   generate-audio:
     image: node:22-alpine
+    user: node
     volumes:
       - ./scripts:/app/scripts:ro,z
       - ./src/data:/app/src/data:ro,z
@@ -27,7 +28,7 @@ services:
   app:
     build: .
     ports:
-      - "${APP_PORT:-8080}:80"
+      - "${APP_PORT:-8080}:8080"
     volumes:
       - audio:/usr/share/nginx/html/audio
     depends_on:
