@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import type { VocabItem } from "../data/types";
 import { Flashcard } from "./Flashcard";
 import { OptionsMenu } from "./OptionsMenu";
@@ -47,15 +47,16 @@ export function TrainingSession({ items, title, onBack }: Props) {
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speakError, setSpeakError] = useState(false);
+  const isSpeakingRef = useRef(false);
 
   const current = queue[0];
 
   const handleSpeak = useCallback(() => {
-    if (!current) return;
+    if (!current || isSpeakingRef.current) return;
     speakText(
       current.japanese,
-      () => { setIsSpeaking(true); setSpeakError(false); },
-      () => setIsSpeaking(false),
+      () => { isSpeakingRef.current = true; setIsSpeaking(true); setSpeakError(false); },
+      () => { isSpeakingRef.current = false; setIsSpeaking(false); },
       () => setSpeakError(true),
     );
   }, [current]);
@@ -175,6 +176,7 @@ export function TrainingSession({ items, title, onBack }: Props) {
           flipped={flipped}
           onFlip={() => setFlipped(true)}
           onSpeak={handleSpeak}
+          isSpeaking={isSpeaking}
           autoSpeak={autoSpeak}
         />
         <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-2">

@@ -1,8 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { numberToKanji, numberToHiragana, numberToRomaji, numberToHiraganaAlt, numberToRomajiAlt } from "../utils/numberConverter";
 import { speakText } from "../utils/voicevox";
 import { loadStats, saveStats, recordSession, LEVELS, type QuizStats } from "../utils/quizStats";
 import { OptionsMenu } from "./OptionsMenu";
+import { Flashcard } from "./Flashcard";
 
 const WAVE_BARS = [
   { delay: "0ms",   h: "h-2" },
@@ -81,13 +82,18 @@ export function NumberQuizSession({ onBack }: Props) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [leveledUp, setLeveledUp] = useState(false);
   const [autoPlay, setAutoPlay] = useState(true);
+  const isSpeakingRef = useRef(false);
 
   const current = queue[0];
   const currentLevel = stats.currentLevel;
 
   const handleSpeak = useCallback(() => {
-    if (!current) return;
-    speakText(current.hiragana, () => setIsSpeaking(true), () => setIsSpeaking(false));
+    if (!current || isSpeakingRef.current) return;
+    speakText(
+      current.hiragana,
+      () => { isSpeakingRef.current = true; setIsSpeaking(true); },
+      () => { isSpeakingRef.current = false; setIsSpeaking(false); },
+    );
   }, [current]);
 
   const advance = useCallback((isCorrect: boolean) => {
@@ -353,33 +359,32 @@ export function NumberQuizSession({ onBack }: Props) {
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center gap-6">
-        <div
-          onClick={!flipped ? () => { setFlipped(true); if (autoPlay) handleSpeak(); } : undefined}
-          className={`w-72 sm:w-80 min-h-64 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 select-none transition-colors duration-200 p-6
-            ${flipped
-              ? "bg-white border-gray-200 cursor-default dark:bg-slate-800 dark:border-slate-700"
-              : "bg-indigo-50 border-indigo-200 hover:bg-indigo-100 cursor-pointer dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:hover:bg-indigo-500/15"
-            }`}
-        >
-          {!flipped ? (
+        <Flashcard
+          front={
             <>
               <p className="text-6xl font-bold text-gray-800 dark:text-slate-100">{current.value.toLocaleString("de-DE")}</p>
               <p className="text-2xl text-indigo-600 dark:text-indigo-400">{current.kanji}</p>
               <p className="text-gray-400 dark:text-slate-500 text-sm mt-2">Tippen zum Umdrehen</p>
             </>
-          ) : (
-            <>
-              <p className="text-xl text-indigo-600 dark:text-indigo-300 font-medium text-center">{current.hiragana}</p>
+          }
+          back={
+            <div className="text-center px-4">
+              <p className="text-xl text-indigo-600 dark:text-indigo-300 font-medium">{current.hiragana}</p>
               {current.hiraganaAlt && (
-                <p className="text-base text-indigo-400 dark:text-indigo-500 text-center">({current.hiraganaAlt})</p>
+                <p className="text-base text-indigo-400 dark:text-indigo-500">({current.hiraganaAlt})</p>
               )}
-              <p className="text-gray-500 dark:text-slate-400 text-center">{current.romaji}</p>
+              <p className="text-gray-500 dark:text-slate-400 mt-1">{current.romaji}</p>
               {current.romajiAlt && (
-                <p className="text-gray-400 dark:text-slate-500 text-sm text-center">({current.romajiAlt})</p>
+                <p className="text-gray-400 dark:text-slate-500 text-sm">({current.romajiAlt})</p>
               )}
-            </>
-          )}
-        </div>
+            </div>
+          }
+          flipped={flipped}
+          onFlip={() => setFlipped(true)}
+          onSpeak={handleSpeak}
+          isSpeaking={isSpeaking}
+          autoSpeak={autoPlay}
+        />
 
         <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-2">
           <div
