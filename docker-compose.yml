@@ -11,7 +11,6 @@ services:
 
   generate-audio:
     image: node:22-alpine
-    user: node
     volumes:
       - ./scripts:/app/scripts:ro,z
       - ./src/data:/app/src/data:ro,z
