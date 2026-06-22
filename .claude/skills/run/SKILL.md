@@ -1,46 +1,97 @@
 ---
 name: run
-description: Startet die App lokal via docker compose (neu bauen + starten) und zeigt sie im Browser. Verwende diesen Skill wenn der User `/run` schreibt, die App lokal starten oder neu starten möchte.
+description: Startet die App lokal und zeigt die URL. Verwende diesen Skill wenn der User `/run` schreibt, die App lokal starten oder neu starten möchte. Unterstützt zwei Modi: Docker (Standard) und Vite Dev-Server (schnell, für reine Frontend-Entwicklung).
 ---
 
 # /run
 
-Startet die App via `docker compose up --build` und öffnet sie im Browser.
+Startet die App lokal und gibt die URL aus.
 
-## Ablauf
+## Modi
 
-1. **Prüfe ob docker compose verfügbar ist**:
-   ```bash
-   docker compose version
-   ```
-   Schlägt fehl → Fehlermeldung ausgeben: "`docker compose` ist nicht installiert. Bitte Docker Desktop installieren: https://docs.docker.com/desktop/" — Abbruch.
+- **`/run`** — Docker-Build (nginx, produktionsnah, Standard)
+- **`/run dev`** — Vite Dev-Server (schnell, HMR, nur Frontend)
 
-2. **Laufende Container stoppen** (falls vorhanden):
-   ```bash
-   docker compose ps --services --filter "status=running"
-   ```
-   Hat die Ausgabe Inhalt → stoppen:
-   ```bash
-   docker compose down
-   ```
+---
 
-3. **Neu bauen und starten** (im Hintergrund):
-   ```bash
-   docker compose up --build -d
-   ```
+## Docker-Modus (Standard)
 
-4. **Warten bis die App erreichbar ist** (max. 120 Sekunden, alle 5 Sekunden prüfen):
-   ```bash
-   curl -sf http://localhost:8080 > /dev/null
-   ```
-   Solange kein 200 → kurz warten und erneut prüfen. Nach 120 Sekunden ohne Antwort: Fehlermeldung "App nicht erreichbar — prüfe `docker compose logs app`".
+### 1. docker compose verfügbar?
 
-5. **Screenshot aufnehmen** und dem User zeigen.
-   Startseite: `http://localhost:8080`
+```bash
+docker compose version
+```
 
-6. **Kurzes Feedback** — 1-2 Sätze was zu sehen ist.
+Schlägt fehl → Fehlermeldung: "`docker compose` ist nicht installiert." — Abbruch.
+
+### 2. Laufende Container stoppen
+
+```bash
+docker compose ps --services --filter "status=running"
+```
+
+Hat die Ausgabe Inhalt → stoppen:
+
+```bash
+docker compose down
+```
+
+### 3. Bauen und starten
+
+```bash
+docker compose up --build -d
+```
+
+### 4. Warten bis erreichbar (max. 120 Sekunden)
+
+```bash
+until curl -sf http://localhost:8080 > /dev/null; do sleep 3; done
+```
+
+Nach 120 Sekunden ohne Antwort:
+
+```bash
+docker compose logs --tail=30
+```
+
+Logs ausgeben und Fehlermeldung: "App nicht erreichbar — siehe Logs oben."
+
+### 5. URL ausgeben
+
+```
+App läuft unter: http://localhost:8080
+```
+
+---
+
+## Dev-Modus (`/run dev`)
+
+Startet den Vite Dev-Server direkt (kein Docker, kein Build, ~1 Sekunde Startzeit).
+
+### 1. Abhängigkeiten installiert?
+
+```bash
+test -d node_modules || npm install
+```
+
+### 2. Dev-Server starten
+
+```bash
+npm run dev
+```
+
+Warte auf die Ausgabe `Local:` im Terminal (Vite gibt die URL selbst aus).
+
+### 3. URL ausgeben
+
+Vite gibt die URL direkt aus (typisch `http://localhost:5173`). Diese dem User zeigen.
+
+**Hinweis:** Im Dev-Modus läuft kein VoiceVox — TTS funktioniert nicht.
+
+---
 
 ## Hinweise
-- App läuft unter `http://localhost:8080` (konfiguriert via `APP_PORT` in `docker-compose.yml`, Standard: 8080)
-- Erster Start dauert länger: VoiceVox-Image wird heruntergeladen und braucht ~60 Sekunden zum Initialisieren
+
+- Docker-App läuft unter `http://localhost:8080`
 - `docker compose down` stoppt alle Services (App + VoiceVox)
+- Erster Docker-Start dauert länger wenn VoiceVox noch nicht gecacht ist (~60s)
