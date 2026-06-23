@@ -14,7 +14,9 @@
       "Skill(code-review:code-review)",
       "Bash(npm test *)",
       "Skill(code-review)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(docker compose *)",
+      "Bash(npx skills *)"
     ]
   }
 }
