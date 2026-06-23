@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { numberToKanji, numberToHiragana, numberToRomaji, numberToHiraganaAlt, numberToRomajiAlt } from "../utils/numberConverter";
-import { speakText } from "../utils/voicevox";
+import { speakText, prefetchAudio } from "../utils/voicevox";
 import { loadStats, saveStats, recordSession, LEVELS, type QuizStats } from "../utils/quizStats";
 import { OptionsMenu } from "./OptionsMenu";
 import { Flashcard } from "./Flashcard";
@@ -89,9 +89,10 @@ export function NumberQuizSession({ onBack }: Props) {
 
   const handleSpeak = useCallback(() => {
     if (!current || isSpeakingRef.current) return;
+    isSpeakingRef.current = true;
     speakText(
       current.hiragana,
-      () => { isSpeakingRef.current = true; setIsSpeaking(true); },
+      () => { setIsSpeaking(true); },
       () => { isSpeakingRef.current = false; setIsSpeaking(false); },
     );
   }, [current]);
@@ -114,10 +115,13 @@ export function NumberQuizSession({ onBack }: Props) {
         setLeveledUp(updatedStats.currentLevel > currentLevel);
         setDone(true);
       } else {
-        setQueue([...remaining].sort(() => Math.random() - 0.5));
+        const retry = [...remaining].sort(() => Math.random() - 0.5);
+        if (retry[0]) prefetchAudio(retry[0].hiragana);
+        setQueue(retry);
         setWrongCards([]);
       }
     } else {
+      if (next[0]) prefetchAudio(next[0].hiragana);
       setQueue(next);
     }
     setFlipped(false);
@@ -130,7 +134,9 @@ export function NumberQuizSession({ onBack }: Props) {
   }
 
   function startQuiz(level: number) {
-    setQueue(generateDeck(level));
+    const deck = generateDeck(level);
+    if (deck[0]) prefetchAudio(deck[0].hiragana);
+    setQueue(deck);
     setDeckSize(level === 1 ? LEVELS[0].max + 1 : QUIZ_SIZE);
     setStarted(true);
   }
