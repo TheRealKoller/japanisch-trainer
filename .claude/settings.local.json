@@ -16,7 +16,8 @@
       "Skill(code-review)",
       "Bash(git stash *)",
       "Bash(docker compose *)",
-      "Bash(npx skills *)"
+      "Bash(npx skills *)",
+      "Bash(grep -E '\\\\.\\(ts|tsx|js|json\\)$')"
     ]
   }
 }
