@@ -9,6 +9,7 @@ export function getSpeakerId(): number {
 
 export function setSpeakerId(id: number): void {
   localStorage.setItem(SPEAKER_STORAGE_KEY, String(id));
+  prefetchCache.clear();
 }
 
 export function stopAudio(): void {
@@ -24,6 +25,43 @@ export function stopAudio(): void {
 
 let currentAudio: HTMLAudioElement | null = null;
 let currentObjectUrl: string | null = null;
+const prefetchCache = new Map<string, Promise<Blob>>();
+
+function cacheKey(text: string, speakerId: number): string {
+  return `${speakerId}:${text}`;
+}
+
+function fetchBlob(text: string, speakerId: number): Promise<Blob> {
+  return fetch(
+    `${BASE_URL}/audio_query?text=${encodeURIComponent(text)}&speaker=${speakerId}`,
+    { method: "POST" },
+  )
+    .then(res => {
+      if (!res.ok) throw new Error("audio_query failed");
+      return res.json();
+    })
+    .then(query => {
+      query.volumeScale = 3.0;
+      return fetch(`${BASE_URL}/synthesis?speaker=${speakerId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(query),
+      });
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("synthesis failed");
+      return res.blob();
+    });
+}
+
+export function prefetchAudio(text: string, speakerIdOverride?: number): void {
+  const speakerId = speakerIdOverride ?? getSpeakerId();
+  const key = cacheKey(text, speakerId);
+  if (prefetchCache.has(key)) return;
+  const promise = fetchBlob(text, speakerId);
+  prefetchCache.set(key, promise);
+  promise.catch(() => prefetchCache.delete(key));
+}
 
 export async function speakText(
   text: string,
@@ -42,24 +80,23 @@ export async function speakText(
   }
 
   const speakerId = speakerIdOverride ?? getSpeakerId();
+  const key = cacheKey(text, speakerId);
 
   try {
-    const queryRes = await fetch(
-      `${BASE_URL}/audio_query?text=${encodeURIComponent(text)}&speaker=${speakerId}`,
-      { method: "POST" },
-    );
-    if (!queryRes.ok) { onEnd(); onError?.(); return; }
-    const query = await queryRes.json();
-    query.volumeScale = 3.0;
+    let blob: Blob;
+    const cached = prefetchCache.get(key);
+    prefetchCache.delete(key);
 
-    const synthRes = await fetch(`${BASE_URL}/synthesis?speaker=${speakerId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(query),
-    });
-    if (!synthRes.ok) { onEnd(); onError?.(); return; }
+    if (cached) {
+      try {
+        blob = await cached;
+      } catch {
+        blob = await fetchBlob(text, speakerId);
+      }
+    } else {
+      blob = await fetchBlob(text, speakerId);
+    }
 
-    const blob = await synthRes.blob();
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
     currentAudio = audio;
