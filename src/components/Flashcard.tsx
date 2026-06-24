@@ -36,7 +36,7 @@ export function Flashcard({ item, front, back, flipped, onFlip, onSpeak, isSpeak
     >
       {!flipped && (front ?? (
         <>
-          <span className="text-7xl sm:text-8xl">{item?.japanese}</span>
+          <span className="text-7xl sm:text-8xl text-gray-800 dark:text-slate-100">{item?.japanese}</span>
           {item?.reading && (
             <p className="text-lg text-indigo-500 dark:text-indigo-400">{item.reading}</p>
           )}
