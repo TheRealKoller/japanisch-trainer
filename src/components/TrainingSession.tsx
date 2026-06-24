@@ -3,6 +3,7 @@ import type { VocabItem } from "../data/types";
 import { Flashcard } from "./Flashcard";
 import { OptionsMenu } from "./OptionsMenu";
 import { speakText } from "../utils/voicevox";
+import { recordAnswer } from "../utils/itemStats";
 
 const WAVE_BARS = [
   { delay: "0ms",   h: "h-2" },
@@ -62,6 +63,8 @@ export function TrainingSession({ items, title, onBack }: Props) {
   }, [current]);
 
   const handleCorrect = useCallback(() => {
+    if (!current) return;
+    recordAnswer(current.id, true);
     setFlipped(false);
     setSpeakError(false);
     setCorrectCount((c) => c + 1);
@@ -74,9 +77,11 @@ export function TrainingSession({ items, title, onBack }: Props) {
     } else {
       setQueue(next);
     }
-  }, [queue, wrongItems]);
+  }, [queue, wrongItems, current]);
 
   const handleWrong = useCallback(() => {
+    if (!current) return;
+    recordAnswer(current.id, false);
     setFlipped(false);
     setSpeakError(false);
     setWrongItemIds((ids) => new Set([...ids, current.id]));

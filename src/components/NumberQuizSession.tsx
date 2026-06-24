@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef } from "react";
 import { numberToKanji, numberToHiragana, numberToRomaji, numberToHiraganaAlt, numberToRomajiAlt } from "../utils/numberConverter";
 import { speakText, prefetchAudio } from "../utils/voicevox";
-import { loadStats, saveStats, recordSession, LEVELS, type QuizStats } from "../utils/quizStats";
+import { loadStats, saveStats, recordSession, LEVELS, extractDigits, type QuizStats } from "../utils/quizStats";
+import { loadItemStats, saveItemStats, updateItemRecord } from "../utils/itemStats";
 import { OptionsMenu } from "./OptionsMenu";
 import { Flashcard } from "./Flashcard";
 
@@ -98,6 +99,13 @@ export function NumberQuizSession({ onBack }: Props) {
   }, [current]);
 
   const advance = useCallback((isCorrect: boolean) => {
+    if (!current) return;
+    let itemStore = loadItemStats();
+    for (const digit of extractDigits(current.value)) {
+      itemStore = updateItemRecord(itemStore, `d${digit}`, isCorrect);
+    }
+    saveItemStats(itemStore);
+
     if (!isCorrect) {
       setWrongIds(ids => new Set([...ids, current.value]));
       setWrongCards(w => [...w, current]);
