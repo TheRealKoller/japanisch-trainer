@@ -23,7 +23,7 @@ const lessons = [
   {
     id: "number-quiz" as Lesson,
     title: "Zahlen-Quiz",
-    subtitle: "3.847 · 92.105 · ...",
+    subtitle: "1 · 2 · 432 · 99999",
     description: "0 – 99.999",
     color: "bg-orange-50 border-orange-200 hover:bg-orange-100 dark:bg-orange-500/10 dark:border-orange-500/30 dark:hover:bg-orange-500/15",
     badge: "bg-orange-100 text-orange-700 dark:bg-orange-400/20 dark:text-orange-300",
