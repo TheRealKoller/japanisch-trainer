@@ -12,6 +12,7 @@ Object.defineProperty(globalThis, "localStorage", {
     clear: () => { storage.clear(); },
   },
   writable: true,
+  configurable: true,
 });
 
 describe("updateItemRecord", () => {
@@ -80,6 +81,8 @@ describe("localStorage persistence", () => {
   });
 });
 
+// Tests below verify the combination of quizStats.extractDigits + updateItemRecord,
+// matching the batch loop used in NumberQuizSession.advance().
 describe("digit extraction — all digits get credit", () => {
   it("single digit 5 credits only d5", () => {
     let store: ItemStatsStore = {};

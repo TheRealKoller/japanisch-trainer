@@ -63,6 +63,7 @@ export function TrainingSession({ items, title, onBack }: Props) {
   }, [current]);
 
   const handleCorrect = useCallback(() => {
+    if (!current) return;
     recordAnswer(current.id, true);
     setFlipped(false);
     setSpeakError(false);
@@ -79,6 +80,7 @@ export function TrainingSession({ items, title, onBack }: Props) {
   }, [queue, wrongItems, current]);
 
   const handleWrong = useCallback(() => {
+    if (!current) return;
     recordAnswer(current.id, false);
     setFlipped(false);
     setSpeakError(false);

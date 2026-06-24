@@ -99,6 +99,7 @@ export function NumberQuizSession({ onBack }: Props) {
   }, [current]);
 
   const advance = useCallback((isCorrect: boolean) => {
+    if (!current) return;
     let itemStore = loadItemStats();
     for (const digit of extractDigits(current.value)) {
       itemStore = updateItemRecord(itemStore, `d${digit}`, isCorrect);
