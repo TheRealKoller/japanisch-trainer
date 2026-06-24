@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { hiragana } from "../data/hiragana";
 import { katakana } from "../data/katakana";
 import { loadItemStats, type ItemStats, type ItemStatsStore } from "../utils/itemStats";
@@ -26,7 +27,7 @@ function CharTile({ japanese, romaji, stats }: CharTileProps) {
   return (
     <div className={`flex flex-col items-center py-2 px-1 rounded-lg transition-colors ${tileColor(stats)}`}>
       <span className="text-lg font-medium leading-none">{japanese}</span>
-      <span className="text-[10px] mt-1 leading-none opacity-70">{romaji}</span>
+      <span className="text-xs mt-1 leading-none opacity-70">{romaji}</span>
     </div>
   );
 }
@@ -59,7 +60,7 @@ function DigitSection({ store }: { store: ItemStatsStore }) {
   const digits = Array.from({ length: 10 }, (_, i) => i);
   return (
     <div>
-      <h3 className="text-sm font-medium text-gray-500 dark:text-slate-400 mb-3">Ziffern</h3>
+      <h3 className="text-sm font-medium text-gray-500 dark:text-slate-400 mb-3">Ziffern (Zahlen-Quiz)</h3>
       <div className="flex gap-1.5">
         {digits.map((d) => (
           <div
@@ -75,7 +76,7 @@ function DigitSection({ store }: { store: ItemStatsStore }) {
 }
 
 export function StatsPage({ onBack }: Props) {
-  const store = loadItemStats();
+  const [store] = useState(() => loadItemStats());
 
   return (
     <div className="flex flex-col w-full max-w-md mx-auto flex-1">
@@ -94,6 +95,7 @@ export function StatsPage({ onBack }: Props) {
         <CharSection title="Hiragana" items={hiragana} store={store} />
         <CharSection title="Katakana" items={katakana} store={store} />
         <DigitSection store={store} />
+
       </div>
     </div>
   );
