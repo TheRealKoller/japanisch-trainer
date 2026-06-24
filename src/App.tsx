@@ -6,9 +6,10 @@ import { TrainingSession } from "./components/TrainingSession";
 import { NumberQuizSession } from "./components/NumberQuizSession";
 import { OptionsMenu } from "./components/OptionsMenu";
 import { SettingsPage } from "./components/SettingsPage";
+import { StatsPage } from "./components/StatsPage";
 
 type Lesson = "numbers" | "hiragana" | "katakana" | "number-quiz";
-type View = Lesson | "settings" | null;
+type View = Lesson | "settings" | "stats" | null;
 
 const lessons = [
   {
@@ -54,7 +55,9 @@ const titleMap: Record<Lesson, string> = {
 };
 
 function viewFromHash(): View {
-  return window.location.hash === "#/settings" ? "settings" : null;
+  if (window.location.hash === "#/settings") return "settings";
+  if (window.location.hash === "#/stats") return "stats";
+  return null;
 }
 
 function App() {
@@ -64,8 +67,10 @@ function App() {
     function onHashChange() {
       if (window.location.hash === "#/settings") {
         setView("settings");
+      } else if (window.location.hash === "#/stats") {
+        setView("stats");
       } else if (!window.location.hash) {
-        setView(v => (v === "settings" ? null : v));
+        setView(v => (v === "settings" || v === "stats" ? null : v));
       }
     }
     window.addEventListener("hashchange", onHashChange);
@@ -81,6 +86,14 @@ function App() {
     return (
       <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
         <SettingsPage onBack={goBack} />
+      </main>
+    );
+  }
+
+  if (view === "stats") {
+    return (
+      <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
+        <StatsPage onBack={goBack} />
       </main>
     );
   }
