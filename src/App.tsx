@@ -5,12 +5,14 @@ import { katakana } from "./data/katakana";
 import { TrainingSession } from "./components/TrainingSession";
 import type { TrainingLevelConfig } from "./components/TrainingSession";
 import { NumberQuizSession } from "./components/NumberQuizSession";
+import { SegmentedProgressBar } from "./components/SegmentedProgressBar";
 import { OptionsMenu } from "./components/OptionsMenu";
 import { SettingsPage } from "./components/SettingsPage";
 import { StatsPage } from "./components/StatsPage";
 import { hiraganaLevels, katakanaLevels } from "./data/kanaLevels";
 import type { KanaLevel } from "./data/kanaLevels";
 import { loadUnlockedLevel, saveUnlockedLevel } from "./utils/kanaLevelStats";
+import { loadStats } from "./utils/quizStats";
 
 type Lesson = "numbers" | "hiragana" | "katakana" | "number-quiz";
 type View = Lesson | "settings" | "stats" | null;
@@ -31,6 +33,8 @@ const lessons = [
     description: "0 – 99.999",
     color: "bg-orange-50 border-orange-200 hover:bg-orange-100 dark:bg-orange-500/10 dark:border-orange-500/30 dark:hover:bg-orange-500/15",
     badge: "bg-orange-100 text-orange-700 dark:bg-orange-400/20 dark:text-orange-300",
+    progressTotal: 4,
+    accentClass: "bg-orange-400 dark:bg-orange-400",
   },
   {
     id: "hiragana" as Lesson,
@@ -39,6 +43,8 @@ const lessons = [
     description: "16 Level",
     color: "bg-rose-50 border-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:border-rose-500/30 dark:hover:bg-rose-500/15",
     badge: "bg-rose-100 text-rose-700 dark:bg-rose-400/20 dark:text-rose-300",
+    progressTotal: 16,
+    accentClass: "bg-rose-400 dark:bg-rose-400",
   },
   {
     id: "katakana" as Lesson,
@@ -47,6 +53,8 @@ const lessons = [
     description: "16 Level",
     color: "bg-sky-50 border-sky-200 hover:bg-sky-100 dark:bg-sky-500/10 dark:border-sky-500/30 dark:hover:bg-sky-500/15",
     badge: "bg-sky-100 text-sky-700 dark:bg-sky-400/20 dark:text-sky-300",
+    progressTotal: 16,
+    accentClass: "bg-sky-400 dark:bg-sky-400",
   },
 ];
 
@@ -65,7 +73,15 @@ function App() {
   const [view, setView] = useState<View>(viewFromHash);
   const [hiraganaUnlocked, setHiraganaUnlocked] = useState(() => loadUnlockedLevel("hiragana"));
   const [katakanaUnlocked, setKatakanaUnlocked] = useState(() => loadUnlockedLevel("katakana"));
+  const [quizLevel, setQuizLevel] = useState(() => loadStats().currentLevel);
   const [activeLevel, setActiveLevel] = useState<number | null>(null);
+
+  function getProgressCompleted(lessonId: string): number | null {
+    if (lessonId === "hiragana") return hiraganaUnlocked - 1;
+    if (lessonId === "katakana") return katakanaUnlocked - 1;
+    if (lessonId === "number-quiz") return quizLevel - 1;
+    return null;
+  }
 
   useEffect(() => {
     function onHashChange() {
@@ -105,7 +121,7 @@ function App() {
   if (view === "number-quiz") {
     return (
       <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
-        <NumberQuizSession onBack={() => setView(null)} />
+        <NumberQuizSession onBack={() => { setView(null); setQuizLevel(loadStats().currentLevel); }} />
       </main>
     );
   }
@@ -239,27 +255,37 @@ function App() {
         </div>
 
         <div className="flex flex-col gap-3">
-          {lessons.map((lesson) => (
-            <button
-              key={lesson.id}
-              onClick={() => setView(lesson.id)}
-              className={`border-2 rounded-2xl p-5 text-left transition-colors duration-200 ${lesson.color}`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100">
-                    {lesson.title}
-                  </h2>
-                  <p className="text-2xl mt-1 tracking-widest text-gray-700 dark:text-slate-300">
-                    {lesson.subtitle}
-                  </p>
+          {lessons.map((lesson) => {
+            const completed = getProgressCompleted(lesson.id);
+            return (
+              <button
+                key={lesson.id}
+                onClick={() => setView(lesson.id)}
+                className={`border-2 rounded-2xl p-5 text-left transition-colors duration-200 ${lesson.color}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100">
+                      {lesson.title}
+                    </h2>
+                    <p className="text-2xl mt-1 tracking-widest text-gray-700 dark:text-slate-300">
+                      {lesson.subtitle}
+                    </p>
+                  </div>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 mt-0.5 ${lesson.badge}`}>
+                    {lesson.description}
+                  </span>
                 </div>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 mt-0.5 ${lesson.badge}`}>
-                  {lesson.description}
-                </span>
-              </div>
-            </button>
-          ))}
+                {"progressTotal" in lesson && completed !== null && lesson.accentClass && (
+                  <SegmentedProgressBar
+                    completed={completed}
+                    total={lesson.progressTotal}
+                    accentClass={lesson.accentClass}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     </main>
