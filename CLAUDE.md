@@ -53,7 +53,8 @@ interface VocabItem {
 - Karten werden gemischt (Fisher-Yates)
 - Falsch beantwortete Karten kommen erneut in den Stapel
 - Fortschrittsbalken zeigt korrekt beantwortete Karten
-- Kein Backend, kein Persistenz — bewusst einfach gehalten
+- Kein Backend — bewusst einfach gehalten
+- Fortschritt wird via `localStorage` gespeichert (z.B. freigeschaltete Level)
 
 ## Git-Workflow
 
