@@ -61,8 +61,8 @@ export const katakana: VocabItem[] = [
   { id: "kzo",  japanese: "ゾ", romaji: "zo",  meaning: "zo" },
   // D-row (dakuten)
   { id: "kda",  japanese: "ダ", romaji: "da",  meaning: "da" },
-  { id: "kdi",  japanese: "ヂ", romaji: "di",  meaning: "di" },
-  { id: "kdu",  japanese: "ヅ", romaji: "du",  meaning: "du" },
+  { id: "kdi",  japanese: "ヂ", romaji: "ji",  meaning: "ji" },
+  { id: "kdu",  japanese: "ヅ", romaji: "zu",  meaning: "zu" },
   { id: "kde",  japanese: "デ", romaji: "de",  meaning: "de" },
   { id: "kdo",  japanese: "ド", romaji: "do",  meaning: "do" },
   // B-row (dakuten)

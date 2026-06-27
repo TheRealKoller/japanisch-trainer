@@ -71,8 +71,8 @@ export const hiragana: VocabItem[] = [
   { id: "hzo", japanese: "ぞ", romaji: "zo",  meaning: "zo" },
   // D-row (dakuten)
   { id: "hda", japanese: "だ", romaji: "da",  meaning: "da" },
-  { id: "hdi", japanese: "ぢ", romaji: "di",  meaning: "di" },
-  { id: "hdu", japanese: "づ", romaji: "du",  meaning: "du" },
+  { id: "hdi", japanese: "ぢ", romaji: "ji",  meaning: "ji" },
+  { id: "hdu", japanese: "づ", romaji: "zu",  meaning: "zu" },
   { id: "hde", japanese: "で", romaji: "de",  meaning: "de" },
   { id: "hdo", japanese: "ど", romaji: "do",  meaning: "do" },
   // B-row (dakuten)

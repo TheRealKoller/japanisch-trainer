@@ -41,10 +41,11 @@ Alle Vokabeln folgen dem `VocabItem`-Interface:
 
 ```ts
 interface VocabItem {
-  id: string;       // eindeutig, z.B. "n1", "ha", "kka"
-  japanese: string; // Kanji oder Kana
-  reading: string;  // Romaji oder Kana-Lesung
-  meaning: string;  // Deutsche/Englische Bedeutung
+  id: string;        // eindeutig, z.B. "n1", "ha", "kka"
+  japanese: string;  // Kanji oder Kana
+  romaji: string;    // Romaji-Lesung
+  reading?: string;  // optional: Kana-Lesung (nur bei Zahlen/Kanji)
+  meaning: string;   // Deutsche/Englische Bedeutung
 }
 ```
 
