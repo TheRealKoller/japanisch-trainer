@@ -22,9 +22,9 @@ function WaveAnimation() {
   );
 }
 
-export interface LevelConfig {
-  currentLevel: number;
-  totalLevels: number;
+export interface TrainingLevelConfig {
+  currentLevel: number;  // used in #93 for level display
+  totalLevels: number;   // used in #93 for level display
   onLevelComplete: () => void;
 }
 
@@ -32,7 +32,7 @@ interface Props {
   items: VocabItem[];
   title: string;
   onBack: () => void;
-  levelConfig?: LevelConfig;
+  levelConfig?: TrainingLevelConfig;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -57,11 +57,12 @@ export function TrainingSession({ items, title, onBack, levelConfig }: Props) {
   const [speakError, setSpeakError] = useState(false);
   const isSpeakingRef = useRef(false);
 
+  const onLevelComplete = levelConfig?.onLevelComplete;
   useEffect(() => {
-    if (done && levelConfig) {
-      levelConfig.onLevelComplete();
+    if (done && onLevelComplete) {
+      onLevelComplete();
     }
-  }, [done, levelConfig]);
+  }, [done, onLevelComplete]);
 
   const current = queue[0];
 
