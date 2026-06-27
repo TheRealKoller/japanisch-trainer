@@ -36,7 +36,7 @@ const lessons = [
     id: "hiragana" as Lesson,
     title: "Hiragana",
     subtitle: "あ い う え お ...",
-    description: "104 Zeichen",
+    description: "16 Level",
     color: "bg-rose-50 border-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:border-rose-500/30 dark:hover:bg-rose-500/15",
     badge: "bg-rose-100 text-rose-700 dark:bg-rose-400/20 dark:text-rose-300",
   },
@@ -44,14 +44,14 @@ const lessons = [
     id: "katakana" as Lesson,
     title: "Katakana",
     subtitle: "ア イ ウ エ オ ...",
-    description: "104 Zeichen",
+    description: "16 Level",
     color: "bg-sky-50 border-sky-200 hover:bg-sky-100 dark:bg-sky-500/10 dark:border-sky-500/30 dark:hover:bg-sky-500/15",
     badge: "bg-sky-100 text-sky-700 dark:bg-sky-400/20 dark:text-sky-300",
   },
 ];
 
 function getItemsUpToLevel<T extends { id: string }>(items: T[], levels: KanaLevel[], targetLevel: number): T[] {
-  const ids = new Set(levels.slice(0, targetLevel).flatMap((l) => l.ids));
+  const ids = new Set(levels.filter((l) => l.level <= targetLevel).flatMap((l) => l.ids));
   return items.filter((item) => ids.has(item.id));
 }
 
@@ -112,35 +112,25 @@ function App() {
 
   if (view === "hiragana" || view === "katakana") {
     const isHiragana = view === "hiragana";
-    const script = isHiragana ? "hiragana" : "katakana";
     const allItems = isHiragana ? hiragana : katakana;
     const levels = isHiragana ? hiraganaLevels : katakanaLevels;
     const unlocked = isHiragana ? hiraganaUnlocked : katakanaUnlocked;
     const setUnlocked = isHiragana ? setHiraganaUnlocked : setKatakanaUnlocked;
-    const title = isHiragana ? "Hiragana" : "Katakana";
-    const cardBase = isHiragana
-      ? "bg-rose-50 border-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:border-rose-500/30 dark:hover:bg-rose-500/15"
-      : "bg-sky-50 border-sky-200 hover:bg-sky-100 dark:bg-sky-500/10 dark:border-sky-500/30 dark:hover:bg-sky-500/15";
-    const badgeActive = isHiragana
-      ? "bg-rose-100 text-rose-700 dark:bg-rose-400/20 dark:text-rose-300"
-      : "bg-sky-100 text-sky-700 dark:bg-sky-400/20 dark:text-sky-300";
+    const { title, color: cardBase, badge: badgeActive } = lessons.find((l) => l.id === view)!;
 
     if (activeLevel !== null) {
       const level = activeLevel;
       const sessionItems = getItemsUpToLevel(allItems, levels, level);
 
-      function handleLevelComplete() {
+      const handleLevelComplete = () => {
         if (level >= unlocked) {
           const nextLevel = level + 1;
-          saveUnlockedLevel(script, nextLevel);
+          saveUnlockedLevel(view, nextLevel);
           setUnlocked(nextLevel);
         }
-        setActiveLevel(null);
-      }
+      };
 
       const levelConfig: TrainingLevelConfig = {
-        currentLevel: level,
-        totalLevels: levels.length,
         onLevelComplete: handleLevelComplete,
       };
 
@@ -220,6 +210,8 @@ function App() {
   }
 
   if (view) {
+    const _: "numbers" = view;
+    void _;
     return (
       <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
         <TrainingSession
