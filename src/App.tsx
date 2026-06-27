@@ -3,10 +3,14 @@ import { numbers } from "./data/numbers";
 import { hiragana } from "./data/hiragana";
 import { katakana } from "./data/katakana";
 import { TrainingSession } from "./components/TrainingSession";
+import type { TrainingLevelConfig } from "./components/TrainingSession";
 import { NumberQuizSession } from "./components/NumberQuizSession";
 import { OptionsMenu } from "./components/OptionsMenu";
 import { SettingsPage } from "./components/SettingsPage";
 import { StatsPage } from "./components/StatsPage";
+import { hiraganaLevels, katakanaLevels } from "./data/kanaLevels";
+import type { KanaLevel } from "./data/kanaLevels";
+import { loadUnlockedLevel, saveUnlockedLevel } from "./utils/kanaLevelStats";
 
 type Lesson = "numbers" | "hiragana" | "katakana" | "number-quiz";
 type View = Lesson | "settings" | "stats" | null;
@@ -46,13 +50,10 @@ const lessons = [
   },
 ];
 
-const dataMap = { numbers, hiragana, katakana, "number-quiz": [] as typeof numbers };
-const titleMap: Record<Lesson, string> = {
-  numbers: "Zahlen",
-  hiragana: "Hiragana",
-  katakana: "Katakana",
-  "number-quiz": "",
-};
+function getItemsUpToLevel<T extends { id: string }>(items: T[], levels: KanaLevel[], targetLevel: number): T[] {
+  const ids = new Set(levels.slice(0, targetLevel).flatMap((l) => l.ids));
+  return items.filter((item) => ids.has(item.id));
+}
 
 function viewFromHash(): View {
   if (window.location.hash === "#/settings") return "settings";
@@ -62,6 +63,9 @@ function viewFromHash(): View {
 
 function App() {
   const [view, setView] = useState<View>(viewFromHash);
+  const [hiraganaUnlocked, setHiraganaUnlocked] = useState(() => loadUnlockedLevel("hiragana"));
+  const [katakanaUnlocked, setKatakanaUnlocked] = useState(() => loadUnlockedLevel("katakana"));
+  const [activeLevel, setActiveLevel] = useState<number | null>(null);
 
   useEffect(() => {
     function onHashChange() {
@@ -70,7 +74,8 @@ function App() {
       } else if (window.location.hash === "#/stats") {
         setView("stats");
       } else if (!window.location.hash) {
-        setView(v => (v === "settings" || v === "stats" ? null : v));
+        setView((v) => (v === "settings" || v === "stats" ? null : v));
+        setActiveLevel(null);
       }
     }
     window.addEventListener("hashchange", onHashChange);
@@ -79,7 +84,6 @@ function App() {
 
   function goBack() {
     window.location.hash = "";
-    // hashchange event handles the state update
   }
 
   if (view === "settings") {
@@ -106,12 +110,121 @@ function App() {
     );
   }
 
+  if (view === "hiragana" || view === "katakana") {
+    const isHiragana = view === "hiragana";
+    const script = isHiragana ? "hiragana" : "katakana";
+    const allItems = isHiragana ? hiragana : katakana;
+    const levels = isHiragana ? hiraganaLevels : katakanaLevels;
+    const unlocked = isHiragana ? hiraganaUnlocked : katakanaUnlocked;
+    const setUnlocked = isHiragana ? setHiraganaUnlocked : setKatakanaUnlocked;
+    const title = isHiragana ? "Hiragana" : "Katakana";
+    const cardBase = isHiragana
+      ? "bg-rose-50 border-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:border-rose-500/30 dark:hover:bg-rose-500/15"
+      : "bg-sky-50 border-sky-200 hover:bg-sky-100 dark:bg-sky-500/10 dark:border-sky-500/30 dark:hover:bg-sky-500/15";
+    const badgeActive = isHiragana
+      ? "bg-rose-100 text-rose-700 dark:bg-rose-400/20 dark:text-rose-300"
+      : "bg-sky-100 text-sky-700 dark:bg-sky-400/20 dark:text-sky-300";
+
+    if (activeLevel !== null) {
+      const level = activeLevel;
+      const sessionItems = getItemsUpToLevel(allItems, levels, level);
+
+      function handleLevelComplete() {
+        if (level >= unlocked) {
+          const nextLevel = level + 1;
+          saveUnlockedLevel(script, nextLevel);
+          setUnlocked(nextLevel);
+        }
+        setActiveLevel(null);
+      }
+
+      const levelConfig: TrainingLevelConfig = {
+        currentLevel: level,
+        totalLevels: levels.length,
+        onLevelComplete: handleLevelComplete,
+      };
+
+      return (
+        <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
+          <TrainingSession
+            items={sessionItems}
+            title={`${title} – Level ${level}`}
+            onBack={() => setActiveLevel(null)}
+            levelConfig={levelConfig}
+          />
+        </main>
+      );
+    }
+
+    return (
+      <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-gray-50 dark:bg-slate-950">
+        <div className="fixed top-4 right-4 z-50">
+          <OptionsMenu />
+        </div>
+        <div className="max-w-md w-full mx-auto flex flex-col gap-8">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setView(null)}
+              className="text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors text-sm"
+            >
+              ← Zurück
+            </button>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-slate-100">{title}</h1>
+            <div className="w-14" />
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {levels.map((levelDef) => {
+              const isCompleted = levelDef.level < unlocked;
+              const isLocked = levelDef.level > unlocked;
+
+              return (
+                <button
+                  key={levelDef.level}
+                  onClick={() => !isLocked && setActiveLevel(levelDef.level)}
+                  disabled={isLocked}
+                  className={`border-2 rounded-2xl p-5 text-left transition-colors duration-200 ${
+                    isLocked
+                      ? "bg-gray-50 border-gray-100 opacity-40 cursor-not-allowed dark:bg-slate-900 dark:border-slate-800"
+                      : cardBase
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100">
+                        Level {levelDef.level} {isCompleted && "✓"}
+                      </h2>
+                      <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+                        {levelDef.ids.length} neue Zeichen
+                      </p>
+                    </div>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 mt-0.5 ${
+                        isLocked
+                          ? "bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-slate-500"
+                          : isCompleted
+                          ? "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400"
+                          : badgeActive
+                      }`}
+                    >
+                      {isLocked ? "Gesperrt" : isCompleted ? "Bestanden" : "Aktuell"}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (view) {
     return (
       <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
         <TrainingSession
-          items={dataMap[view]}
-          title={titleMap[view]}
+          items={numbers}
+          title="Zahlen"
           onBack={() => setView(null)}
         />
       </main>
