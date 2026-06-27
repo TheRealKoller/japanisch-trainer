@@ -23,8 +23,6 @@ function WaveAnimation() {
 }
 
 export interface TrainingLevelConfig {
-  currentLevel: number;  // used in #93 for level display
-  totalLevels: number;   // used in #93 for level display
   onLevelComplete: () => void;
 }
 
