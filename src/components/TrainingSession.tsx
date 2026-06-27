@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import type { VocabItem } from "../data/types";
 import { Flashcard } from "./Flashcard";
 import { OptionsMenu } from "./OptionsMenu";
@@ -22,10 +22,17 @@ function WaveAnimation() {
   );
 }
 
+export interface LevelConfig {
+  currentLevel: number;
+  totalLevels: number;
+  onLevelComplete: () => void;
+}
+
 interface Props {
   items: VocabItem[];
   title: string;
   onBack: () => void;
+  levelConfig?: LevelConfig;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -38,7 +45,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 
-export function TrainingSession({ items, title, onBack }: Props) {
+export function TrainingSession({ items, title, onBack, levelConfig }: Props) {
   const [queue, setQueue] = useState<VocabItem[]>(() => shuffle(items));
   const [wrongItems, setWrongItems] = useState<VocabItem[]>([]);
   const [correctCount, setCorrectCount] = useState(0);
@@ -49,6 +56,12 @@ export function TrainingSession({ items, title, onBack }: Props) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speakError, setSpeakError] = useState(false);
   const isSpeakingRef = useRef(false);
+
+  useEffect(() => {
+    if (done && levelConfig) {
+      levelConfig.onLevelComplete();
+    }
+  }, [done, levelConfig]);
 
   const current = queue[0];
 
