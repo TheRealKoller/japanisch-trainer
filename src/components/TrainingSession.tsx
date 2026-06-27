@@ -4,6 +4,7 @@ import { Flashcard } from "./Flashcard";
 import { OptionsMenu } from "./OptionsMenu";
 import { speakText } from "../utils/voicevox";
 import { recordAnswer } from "../utils/itemStats";
+import { usePrefetchNext } from "../hooks/usePrefetchNext";
 
 const WAVE_BARS = [
   { delay: "0ms",   h: "h-2" },
@@ -61,6 +62,8 @@ export function TrainingSession({ items, title, onBack, levelConfig }: Props) {
       onLevelComplete();
     }
   }, [done, onLevelComplete]);
+
+  usePrefetchNext(queue[0]?.japanese);
 
   const current = queue[0];
 
