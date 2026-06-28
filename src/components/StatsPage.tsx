@@ -20,18 +20,24 @@ function tileColor(stats: ItemStats | undefined): string {
 
 // --- Gojūon grid structure ---
 
-const COL_LABELS = ["−", "k", "s", "t", "n", "h", "m", "y", "r", "w"];
-const ROW_LABELS = ["a", "i", "u", "e", "o"];
+const COL_LABELS = ["a", "i", "u", "e", "o"];
+const ROW_LABELS = ["−", "k", "s", "t", "n", "h", "m", "y", "r", "w", "n"];
 const DAKUTEN_LABELS = ["G", "Z", "D", "B", "P"];
 const YOUON_LABELS = ["ky", "sh", "ch", "ny", "hy", "my", "ry", "gy", "j", "by", "py"];
 
 function gojuonGrid(p: string): (string | null)[][] {
   return [
-    [`${p}a`, `${p}ka`, `${p}sa`, `${p}ta`,  `${p}na`, `${p}ha`, `${p}ma`, `${p}ya`, `${p}ra`, `${p}wa`],
-    [`${p}i`, `${p}ki`, `${p}si`, `${p}chi`, `${p}ni`, `${p}hi`, `${p}mi`, null,      `${p}ri`, null],
-    [`${p}u`, `${p}ku`, `${p}su`, `${p}tsu`, `${p}nu`, `${p}fu`, `${p}mu`, `${p}yu`, `${p}ru`, null],
-    [`${p}e`, `${p}ke`, `${p}se`, `${p}te`,  `${p}ne`, `${p}he`, `${p}me`, null,      `${p}re`, null],
-    [`${p}o`, `${p}ko`, `${p}so`, `${p}to`,  `${p}no`, `${p}ho`, `${p}mo`, `${p}yo`, `${p}ro`, `${p}wo`],
+    [`${p}a`,  `${p}i`,   `${p}u`,   `${p}e`,  `${p}o`],
+    [`${p}ka`, `${p}ki`,  `${p}ku`,  `${p}ke`, `${p}ko`],
+    [`${p}sa`, `${p}si`,  `${p}su`,  `${p}se`, `${p}so`],
+    [`${p}ta`, `${p}chi`, `${p}tsu`, `${p}te`, `${p}to`],
+    [`${p}na`, `${p}ni`,  `${p}nu`,  `${p}ne`, `${p}no`],
+    [`${p}ha`, `${p}hi`,  `${p}fu`,  `${p}he`, `${p}ho`],
+    [`${p}ma`, `${p}mi`,  `${p}mu`,  `${p}me`, `${p}mo`],
+    [`${p}ya`, null,       `${p}yu`,  null,     `${p}yo`],
+    [`${p}ra`, `${p}ri`,  `${p}ru`,  `${p}re`, `${p}ro`],
+    [`${p}wa`, null,       null,      null,     `${p}wo`],
+    [`${p}nn`, null,       null,      null,     null],
   ];
 }
 
@@ -93,10 +99,9 @@ interface GridProps {
 
 function GojuonMainGrid({ prefix, lookup, store }: GridProps) {
   const grid = gojuonGrid(prefix);
-  const nId = `${prefix}nn`;
   return (
     <div className="flex flex-col gap-1">
-      <div className="grid grid-cols-11 gap-1">
+      <div className="grid grid-cols-6 gap-1">
         <div />
         {COL_LABELS.map((label) => (
           <div key={label} className="text-center text-xs font-medium text-gray-400 dark:text-slate-500">
@@ -105,7 +110,7 @@ function GojuonMainGrid({ prefix, lookup, store }: GridProps) {
         ))}
       </div>
       {grid.map((row, ri) => (
-        <div key={ri} className="grid grid-cols-11 gap-1">
+        <div key={ri} className="grid grid-cols-6 gap-1">
           <div className="flex items-center justify-center text-xs font-medium text-gray-400 dark:text-slate-500">
             {ROW_LABELS[ri]}
           </div>
@@ -114,13 +119,6 @@ function GojuonMainGrid({ prefix, lookup, store }: GridProps) {
           ))}
         </div>
       ))}
-      <div className="grid grid-cols-11 gap-1">
-        <div className="flex items-center justify-center text-xs font-medium text-gray-400 dark:text-slate-500">n</div>
-        <KanaTile item={lookup[nId]} stats={store[nId]} />
-        {Array.from({ length: 9 }, (_, i) => (
-          <div key={i} />
-        ))}
-      </div>
     </div>
   );
 }
