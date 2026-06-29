@@ -40,9 +40,6 @@ export function Flashcard({ item, front, back, flipped, onFlip, onSpeak, isSpeak
           {item?.reading && (
             <p className="text-lg text-indigo-500 dark:text-indigo-400">{item.reading}</p>
           )}
-          {!item?.reading && item?.romaji && (
-            <p className="text-lg text-indigo-500 dark:text-indigo-400">{item.romaji}</p>
-          )}
           <p className="text-gray-400 dark:text-slate-500 text-sm">Tippen zum Umdrehen</p>
         </>
       ))}
