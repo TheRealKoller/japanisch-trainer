@@ -25,13 +25,15 @@ services:
         condition: service_healthy
 
   db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_DB: japanisch
       POSTGRES_USER: japanisch
       POSTGRES_PASSWORD: ${DB_PASSWORD:-japanisch-dev-only}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      # Ab dem postgres:18-Image liegt PGDATA unter /var/lib/postgresql/<major>/…
+      # — Mount auf das Elternverzeichnis, sonst landen Daten im Container-Layer.
+      - pgdata:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U japanisch"]
       interval: 5s
