@@ -203,8 +203,8 @@ Zeile: flex items-center justify-between px-3 py-2.5 rounded-lg transition-color
 ```
 
 **Inhalte je nach Kontext:**
-- **Startseite:** nur Theme-Toggle
-- **Sessions:** Theme-Toggle + Auto-Wiedergabe-Toggle
+- **Immer:** Theme-Toggle, Navigation zu Statistik, Stimme und Konto (Anmelden bzw. E-Mail des Users)
+- **Sessions zusätzlich:** Auto-Wiedergabe-Toggle
 
 ### Session-Header
 
@@ -271,7 +271,7 @@ main: min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950
 ## Was NICHT verwendet wird
 
 - Keine Schatten (`shadow-*`) außer `shadow-sm` am Toggle-Thumb und `shadow-lg` am OptionsMenu-Panel
-- Kein globales State-Management — lokaler `useState` reicht
+- Kein globales State-Management — lokaler `useState` reicht (Ausnahme: `AuthContext` für den Login-Status)
 - Keine CSS-Klassen-Extraktion — Tailwind direkt im JSX
 - Keine beliebigen Werte (`w-[123px]`) — nur Tailwind-Skala
 - `ThemeToggle.tsx` ist veraltet und nicht mehr in Verwendung (durch `OptionsMenu` ersetzt)

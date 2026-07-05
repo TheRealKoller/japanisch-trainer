@@ -9,13 +9,14 @@ import { SegmentedProgressBar } from "./components/SegmentedProgressBar";
 import { OptionsMenu } from "./components/OptionsMenu";
 import { SettingsPage } from "./components/SettingsPage";
 import { StatsPage } from "./components/StatsPage";
+import { LoginPage } from "./components/LoginPage";
 import { hiraganaLevels, katakanaLevels } from "./data/kanaLevels";
 import type { KanaLevel } from "./data/kanaLevels";
 import { loadUnlockedLevel, saveUnlockedLevel } from "./utils/kanaLevelStats";
 import { loadStats } from "./utils/quizStats";
 
 type Lesson = "numbers" | "hiragana" | "katakana" | "number-quiz";
-type View = Lesson | "settings" | "stats" | null;
+type View = Lesson | "settings" | "stats" | "login" | null;
 
 const lessons = [
   {
@@ -66,6 +67,7 @@ function getItemsUpToLevel<T extends { id: string }>(items: T[], levels: KanaLev
 function viewFromHash(): View {
   if (window.location.hash === "#/settings") return "settings";
   if (window.location.hash === "#/stats") return "stats";
+  if (window.location.hash === "#/login") return "login";
   return null;
 }
 
@@ -85,12 +87,11 @@ function App() {
 
   useEffect(() => {
     function onHashChange() {
-      if (window.location.hash === "#/settings") {
-        setView("settings");
-      } else if (window.location.hash === "#/stats") {
-        setView("stats");
+      const next = viewFromHash();
+      if (next !== null) {
+        setView(next);
       } else if (!window.location.hash) {
-        setView((v) => (v === "settings" || v === "stats" ? null : v));
+        setView((v) => (v === "settings" || v === "stats" || v === "login" ? null : v));
         setActiveLevel(null);
       }
     }
@@ -106,6 +107,14 @@ function App() {
     return (
       <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
         <SettingsPage onBack={goBack} />
+      </main>
+    );
+  }
+
+  if (view === "login") {
+    return (
+      <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
+        <LoginPage onBack={goBack} />
       </main>
     );
   }

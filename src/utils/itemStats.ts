@@ -1,3 +1,5 @@
+import { pushProgress } from "./progressSync";
+
 export interface ItemStats {
   id: string;
   correct: number;
@@ -25,6 +27,7 @@ export function saveItemStats(store: ItemStatsStore): void {
   } catch {
     // ignore storage quota errors
   }
+  pushProgress("item-stats", store);
 }
 
 export function updateItemRecord(store: ItemStatsStore, id: string, correct: boolean): ItemStatsStore {

@@ -1,6 +1,10 @@
+import { pushProgress } from "./progressSync";
+
 const PREFIX = "japanisch-trainer:kana-level-";
 
-export function loadUnlockedLevel(key: string): number {
+export type KanaKey = "hiragana" | "katakana";
+
+export function loadUnlockedLevel(key: KanaKey): number {
   try {
     const raw = localStorage.getItem(PREFIX + key);
     if (!raw) return 1;
@@ -11,10 +15,11 @@ export function loadUnlockedLevel(key: string): number {
   }
 }
 
-export function saveUnlockedLevel(key: string, level: number): void {
+export function saveUnlockedLevel(key: KanaKey, level: number): void {
   try {
     localStorage.setItem(PREFIX + key, String(level));
   } catch {
     // ignore storage quota errors
   }
+  pushProgress(`kana-level-${key}`, level);
 }

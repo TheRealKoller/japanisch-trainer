@@ -29,6 +29,14 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Install API dependencies
+        run: npm ci
+        working-directory: api
+
+      - name: Build API
+        run: npm run build
+        working-directory: api
+
   smoketest:
     name: Smoketest
     runs-on: ubuntu-latest
@@ -68,6 +76,41 @@ jobs:
             -D - -o /dev/null | grep -i "x-cache-status" | tr -d '\r')
           echo "Cache status: $STATUS"
           echo "$STATUS" | grep -qi "HIT"
+
+      - name: Wait for API
+        run: |
+          for i in $(seq 1 30); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/health)
+            [ "$STATUS" = "200" ] && exit 0
+            sleep 2
+          done
+          echo "API nicht erreichbar (letzter Status: $STATUS)"
+          exit 1
+
+      - name: API rejects unauthenticated requests
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/auth/me)
+          echo "Status: $STATUS"
+          test "$STATUS" = "401"
+
+      - name: API register, login and progress round-trip
+        run: |
+          curl -sf -X POST http://localhost:8080/api/auth/register \
+            -H "Content-Type: application/json" \
+            -d '{"email":"ci@example.com","password":"ci-password-123"}' \
+            -c /tmp/cookies.txt -o /dev/null
+          curl -sf http://localhost:8080/api/auth/me -b /tmp/cookies.txt
+          curl -sf -X PUT http://localhost:8080/api/progress/quiz-stats \
+            -H "Content-Type: application/json" \
+            -d '{"value":{"currentLevel":3}}' \
+            -b /tmp/cookies.txt -o /dev/null
+          RESULT=$(curl -sf http://localhost:8080/api/progress -b /tmp/cookies.txt)
+          echo "Progress: $RESULT"
+          echo "$RESULT" | grep -q '"currentLevel":3'
+
+      - name: Dump service logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.ci.yml logs db api app
 
       - name: Teardown
         if: always()
