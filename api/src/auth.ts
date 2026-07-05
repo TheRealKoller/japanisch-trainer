@@ -25,6 +25,9 @@ export const AUTH_COOKIE = "token";
 export const authCookieOptions = {
   httpOnly: true,
   sameSite: "strict",
+  // Opt-in statt Default: secure-Cookies würden Login über LAN-HTTP
+  // (z.B. http://192.168.x.x:8080) brechen. Hinter TLS: COOKIE_SECURE=true setzen.
+  secure: process.env.COOKIE_SECURE === "true",
   path: "/",
   maxAge: 30 * 24 * 60 * 60,
 } as const;

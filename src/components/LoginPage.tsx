@@ -5,10 +5,6 @@ interface Props {
   onBack: () => void;
 }
 
-const inputClass = `w-full rounded-xl border-2 px-4 py-3 outline-none transition-colors
-  border-gray-200 bg-white text-gray-700 focus:border-indigo-500
-  dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:focus:border-indigo-400`;
-
 export function LoginPage({ onBack }: Props) {
   const { user, login, register, logout } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -43,7 +39,7 @@ export function LoginPage({ onBack }: Props) {
           ← Zurück
         </button>
         <h2 className="text-lg font-semibold text-gray-700 dark:text-slate-200">Konto</h2>
-        <div className="w-14" />
+        <div className="w-8" />
       </div>
 
       <div className="flex-1 flex flex-col justify-center gap-6">
@@ -85,7 +81,9 @@ export function LoginPage({ onBack }: Props) {
                 placeholder="E-Mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={inputClass}
+                className="w-full rounded-xl border-2 px-4 py-3 outline-none transition-colors
+                  border-gray-200 bg-white text-gray-700 focus:border-indigo-500
+                  dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:focus:border-indigo-400"
               />
               <input
                 type="password"
@@ -96,7 +94,9 @@ export function LoginPage({ onBack }: Props) {
                 placeholder="Passwort (mind. 8 Zeichen)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={inputClass}
+                className="w-full rounded-xl border-2 px-4 py-3 outline-none transition-colors
+                  border-gray-200 bg-white text-gray-700 focus:border-indigo-500
+                  dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:focus:border-indigo-400"
               />
 
               {error && (

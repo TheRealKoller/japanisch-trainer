@@ -203,8 +203,8 @@ Zeile: flex items-center justify-between px-3 py-2.5 rounded-lg transition-color
 ```
 
 **Inhalte je nach Kontext:**
-- **Startseite:** nur Theme-Toggle
-- **Sessions:** Theme-Toggle + Auto-Wiedergabe-Toggle
+- **Immer:** Theme-Toggle, Navigation zu Statistik, Stimme und Konto (Anmelden bzw. E-Mail des Users)
+- **Sessions zusätzlich:** Auto-Wiedergabe-Toggle
 
 ### Session-Header
 

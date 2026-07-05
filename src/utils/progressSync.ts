@@ -1,3 +1,4 @@
+// Muss mit ALLOWED_KEYS in api/src/routes/progress.ts synchron gehalten werden.
 const API_KEYS = ["item-stats", "quiz-stats", "kana-level-hiragana", "kana-level-katakana"] as const;
 
 export type ProgressKey = (typeof API_KEYS)[number];
@@ -12,14 +13,38 @@ export function setSyncEnabled(enabled: boolean): void {
   syncEnabled = enabled;
 }
 
-export function pushProgress(key: ProgressKey, value: unknown): void {
-  if (!syncEnabled) return;
-  void fetch(`/api/progress/${key}`, {
+function putProgress(key: string, value: unknown): Promise<Response> {
+  return fetch(`/api/progress/${key}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify({ value }),
-  }).catch((err) => console.warn("[sync] PUT fehlgeschlagen:", err));
+  });
+}
+
+// Pro Key höchstens ein PUT gleichzeitig, Zwischenstände werden verworfen —
+// parallele PUTs könnten sonst in falscher Reihenfolge ankommen und am Server
+// einen neueren Stand mit einem älteren überschreiben.
+const pendingValues = new Map<string, unknown>();
+const inFlightKeys = new Set<string>();
+
+function flushKey(key: string): void {
+  if (inFlightKeys.has(key) || !pendingValues.has(key)) return;
+  const value = pendingValues.get(key);
+  pendingValues.delete(key);
+  inFlightKeys.add(key);
+  putProgress(key, value)
+    .catch((err) => console.warn("[sync] PUT fehlgeschlagen:", err))
+    .finally(() => {
+      inFlightKeys.delete(key);
+      flushKey(key);
+    });
+}
+
+export function pushProgress(key: ProgressKey, value: unknown): void {
+  if (!syncEnabled) return;
+  pendingValues.set(key, value);
+  flushKey(key);
 }
 
 export async function fetchServerProgress(): Promise<Record<string, unknown>> {
@@ -39,7 +64,7 @@ export function mirrorServerProgress(data: Record<string, unknown>): void {
   }
 }
 
-export function collectLocalProgress(): Partial<Record<ProgressKey, unknown>> {
+function collectLocalProgress(): Partial<Record<ProgressKey, unknown>> {
   const out: Partial<Record<ProgressKey, unknown>> = {};
   for (const key of API_KEYS) {
     const raw = localStorage.getItem(LS_PREFIX + key);
@@ -56,13 +81,9 @@ export function collectLocalProgress(): Partial<Record<ProgressKey, unknown>> {
 export async function seedServerProgress(): Promise<void> {
   const local = collectLocalProgress();
   await Promise.all(
-    Object.entries(local).map(([key, value]) =>
-      fetch(`/api/progress/${key}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ value }),
-      }),
-    ),
+    Object.entries(local).map(async ([key, value]) => {
+      const res = await putProgress(key, value);
+      if (!res.ok) throw new Error(`PUT ${key} fehlgeschlagen: ${res.status}`);
+    }),
   );
 }

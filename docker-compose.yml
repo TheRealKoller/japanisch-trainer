@@ -43,6 +43,8 @@ services:
     environment:
       DATABASE_URL: postgres://japanisch:${DB_PASSWORD:-japanisch-dev-only}@db:5432/japanisch
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      # Hinter TLS auf "true" setzen (Cookie nur über HTTPS)
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
     depends_on:
       db:
         condition: service_healthy
@@ -56,6 +58,8 @@ services:
     depends_on:
       generate-audio:
         condition: service_completed_successfully
+      api:
+        condition: service_started
 
 networks:
   default:

@@ -72,7 +72,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function register(email: string, password: string) {
     const registered = await postCredentials("/api/auth/register", email, password);
     // Neues Konto: lokalen Fortschritt als Startstand zum Server hochladen.
-    await seedServerProgress();
+    // Konto und Cookie existieren ab hier — ein Seed-Fehler darf die
+    // Registrierung nicht scheitern lassen (sonst 409-Falle beim Retry).
+    try {
+      await seedServerProgress();
+    } catch (err) {
+      console.warn("[sync] Fortschritt-Upload nach Registrierung fehlgeschlagen:", err);
+    }
     setUser(registered);
     window.location.hash = "";
   }

@@ -4,6 +4,7 @@ import { db } from "../db/client.js";
 import { progress } from "../db/schema.js";
 import { verifyAuth } from "../auth.js";
 
+// Muss mit API_KEYS in src/utils/progressSync.ts synchron gehalten werden.
 const ALLOWED_KEYS = new Set(["item-stats", "quiz-stats", "kana-level-hiragana", "kana-level-katakana"]);
 
 export async function progressRoutes(app: FastifyInstance): Promise<void> {

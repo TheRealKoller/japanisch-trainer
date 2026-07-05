@@ -87,12 +87,9 @@ function App() {
 
   useEffect(() => {
     function onHashChange() {
-      if (window.location.hash === "#/settings") {
-        setView("settings");
-      } else if (window.location.hash === "#/stats") {
-        setView("stats");
-      } else if (window.location.hash === "#/login") {
-        setView("login");
+      const next = viewFromHash();
+      if (next !== null) {
+        setView(next);
       } else if (!window.location.hash) {
         setView((v) => (v === "settings" || v === "stats" || v === "login" ? null : v));
         setActiveLevel(null);
