@@ -8,6 +8,10 @@ import { progressRoutes } from "./routes/progress.js";
 export function buildApp(): FastifyInstance {
   const app = Fastify({ logger: true });
 
+  if (!process.env.JWT_SECRET) {
+    app.log.warn("JWT_SECRET nicht gesetzt — unsicherer Dev-Default aktiv. Für den Betrieb JWT_SECRET setzen!");
+  }
+
   app.register(cookie);
   app.register(jwt, {
     secret: process.env.JWT_SECRET ?? "dev-secret-change-me",

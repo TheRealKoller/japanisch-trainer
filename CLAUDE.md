@@ -106,5 +106,5 @@ Bei neuen UI-Komponenten und bei Code-Reviews: prüfen ob die Klassen den Tokens
 ## Konventionen
 
 - Keine CSS-Klassen-Extraktion — Tailwind direkt im JSX
-- Kein globales State-Management — lokaler `useState` reicht
+- Kein globales State-Management — lokaler `useState` reicht; einzige Ausnahme: `AuthContext` für den Login-Status (wird app-weit gebraucht)
 - Neue Lektionen: neue Datei in `src/data/`, Eintrag in `App.tsx`

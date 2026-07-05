@@ -27,15 +27,25 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.post<{ Body: Credentials }>("/register", { schema: credentialsSchema }, async (request, reply) => {
     const email = request.body.email.toLowerCase();
 
-    const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
-    if (existing.length > 0) {
-      return reply.code(409).send({ message: "E-Mail ist bereits registriert" });
+    // Schema-maxLength zählt Zeichen, bcrypt schneidet aber bei 72 Bytes ab —
+    // Multibyte-Passwörter (Umlaute, Emoji) hier explizit auf Bytes prüfen.
+    if (Buffer.byteLength(request.body.password, "utf8") > 72) {
+      return reply.code(400).send({ message: "Passwort zu lang (max. 72 Bytes)" });
     }
 
     const passwordHash = await bcrypt.hash(request.body.password, 12);
-    const [user] = await db.insert(users).values({ email, passwordHash }).returning({ id: users.id });
+    // Kein SELECT-then-INSERT (Race bei gleichzeitiger Registrierung) —
+    // der Unique-Constraint entscheidet atomar.
+    const inserted = await db
+      .insert(users)
+      .values({ email, passwordHash })
+      .onConflictDoNothing({ target: users.email })
+      .returning({ id: users.id });
+    if (inserted.length === 0) {
+      return reply.code(409).send({ message: "E-Mail ist bereits registriert" });
+    }
 
-    const token = app.jwt.sign({ sub: user.id, email });
+    const token = app.jwt.sign({ sub: inserted[0].id, email });
     reply.setCookie(AUTH_COOKIE, token, authCookieOptions);
     return reply.code(201).send({ email });
   });

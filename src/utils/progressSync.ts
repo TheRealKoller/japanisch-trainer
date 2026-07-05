@@ -34,6 +34,9 @@ function flushKey(key: string): void {
   pendingValues.delete(key);
   inFlightKeys.add(key);
   putProgress(key, value)
+    .then((res) => {
+      if (!res.ok) console.warn(`[sync] PUT ${key}: HTTP ${res.status}`);
+    })
     .catch((err) => console.warn("[sync] PUT fehlgeschlagen:", err))
     .finally(() => {
       inFlightKeys.delete(key);
@@ -49,7 +52,9 @@ export function pushProgress(key: ProgressKey, value: unknown): void {
 
 export async function fetchServerProgress(): Promise<Record<string, unknown>> {
   const res = await fetch("/api/progress", { credentials: "include" });
-  if (!res.ok) return {};
+  // Fehler darf nicht als "leerer Account" durchgehen — mirrorServerProgress
+  // würde sonst bei einem transienten 500/502 den lokalen Fortschritt löschen.
+  if (!res.ok) throw new Error(`Fortschritt konnte nicht geladen werden (HTTP ${res.status})`);
   return (await res.json()) as Record<string, unknown>;
 }
 

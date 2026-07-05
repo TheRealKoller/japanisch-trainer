@@ -43,7 +43,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetch("/api/auth/me", { credentials: "include" })
       .then((res) => (res.ok ? (res.json() as Promise<AuthUser>) : null))
       .then((data) => {
-        if (!cancelled) setUser(data);
+        if (cancelled) return;
+        // setSyncEnabled direkt statt per useEffect: Kind-Effekte feuern vor
+        // Eltern-Effekten — ein Save beim ersten Mount würde sonst verpuffen.
+        setSyncEnabled(data !== null);
+        setUser(data);
       })
       .catch(() => {
         if (!cancelled) setUser(null);
@@ -55,10 +59,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    setSyncEnabled(user !== null);
-  }, [user]);
 
   async function login(email: string, password: string) {
     await postCredentials("/api/auth/login", email, password);
@@ -79,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.warn("[sync] Fortschritt-Upload nach Registrierung fehlgeschlagen:", err);
     }
+    setSyncEnabled(true);
     setUser(registered);
     window.location.hash = "";
   }
@@ -86,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" }).catch(() => {});
     // localStorage bleibt unverändert — Gerät läuft im lokalen Modus weiter.
+    setSyncEnabled(false);
     setUser(null);
   }
 
