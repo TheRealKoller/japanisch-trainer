@@ -1,3 +1,5 @@
+import { pushProgress } from "./progressSync";
+
 export interface LevelConfig {
   level: number;
   max: number;
@@ -51,6 +53,7 @@ export function saveStats(stats: QuizStats): void {
   } catch {
     // ignore storage quota errors
   }
+  pushProgress("quiz-stats", stats);
 }
 
 export function extractDigits(n: number): number[] {

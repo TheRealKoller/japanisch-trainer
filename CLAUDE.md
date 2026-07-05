@@ -1,23 +1,27 @@
 # Japanisch Trainer
 
-Interaktiver Vokabeltrainer für Japanisch als statische Web-App.
+Interaktiver Vokabeltrainer für Japanisch als Web-App mit optionalem Konto für Cross-Device-Sync.
 
 ## Tech Stack
 
 - **React 19 + TypeScript** — Komponenten und Logik
 - **Vite** — Build-Tool und Dev-Server
 - **Tailwind CSS v4** (via `@tailwindcss/vite`) — Styling
-- **nginx** — Statischer Dateiserver im Docker-Container
+- **nginx** — Statischer Dateiserver + Reverse-Proxy (`/api/`, `/voicevox/`) im Docker-Container
+- **Fastify + TypeScript** (`api/`) — Auth- und Progress-API
+- **PostgreSQL + Drizzle ORM** — serverseitige Persistenz (JWT-Auth via httpOnly-Cookie)
 
 ## Deployment
 
 ```bash
-# Entwicklung
+# Entwicklung (Frontend; API-Calls werden auf localhost:3000 geproxied)
 npm run dev
 
-# Docker-Build und Start
-docker build -t japanisch-trainer .
-docker run -p 8080:80 japanisch-trainer
+# API-Entwicklung (braucht laufende Postgres, siehe docker-compose.yml)
+cd api && npm run dev
+
+# Alle Dienste (frontend, api, db, voicevox, audio-generierung)
+docker compose up --build
 # → http://localhost:8080
 ```
 
@@ -32,7 +36,18 @@ src/
   components/
     Flashcard.tsx        # Einzelne Lernkarte (vorne/hinten)
     TrainingSession.tsx  # Kartenstapel-Logik mit Wiederholung falsch beantworteter Karten
+    LoginPage.tsx        # Login/Registrierung (#/login)
+  contexts/
+    AuthContext.tsx      # Auth-State (user, login, register, logout)
+  utils/
+    progressSync.ts      # Server-Sync des Lernfortschritts (fire-and-forget PUTs)
   App.tsx       # Hauptnavigation (Lektionsauswahl)
+api/
+  src/
+    app.ts      # Fastify-Instanz (Routen, JWT, Cookies)
+    routes/     # auth.ts (register/login/logout/me), progress.ts (GET/PUT)
+    db/         # Drizzle-Schema (users, progress) + Client
+  drizzle/      # Generierte SQL-Migrationen (laufen beim API-Start)
 ```
 
 ## Datenformat
@@ -54,8 +69,11 @@ interface VocabItem {
 - Karten werden gemischt (Fisher-Yates)
 - Falsch beantwortete Karten kommen erneut in den Stapel
 - Fortschrittsbalken zeigt korrekt beantwortete Karten
-- Kein Backend — bewusst einfach gehalten
-- Fortschritt wird via `localStorage` gespeichert (z.B. freigeschaltete Level)
+- Fortschritt liegt in `localStorage` (synchroner Lese-Cache); mit Konto wird jede Änderung
+  zusätzlich fire-and-forget an die API gepusht (`src/utils/progressSync.ts`)
+- Beim Login ist der Server-Stand führend: localStorage wird überschrieben, danach Reload
+- Ohne Konto funktioniert alles rein lokal (localStorage-Fallback)
+- Theme und Sprecher-Stimme bleiben bewusst gerätelokal
 
 ## Git-Workflow
 

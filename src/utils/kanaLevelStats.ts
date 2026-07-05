@@ -1,3 +1,6 @@
+import { pushProgress } from "./progressSync";
+import type { ProgressKey } from "./progressSync";
+
 const PREFIX = "japanisch-trainer:kana-level-";
 
 export function loadUnlockedLevel(key: string): number {
@@ -17,4 +20,5 @@ export function saveUnlockedLevel(key: string, level: number): void {
   } catch {
     // ignore storage quota errors
   }
+  pushProgress(`kana-level-${key}` as ProgressKey, level);
 }

@@ -5,6 +5,8 @@ export interface ItemStats {
   lastSeen: number;
 }
 
+import { pushProgress } from "./progressSync";
+
 export type ItemStatsStore = Record<string, ItemStats>;
 
 const STORAGE_KEY = "japanisch-trainer:item-stats";
@@ -25,6 +27,7 @@ export function saveItemStats(store: ItemStatsStore): void {
   } catch {
     // ignore storage quota errors
   }
+  pushProgress("item-stats", store);
 }
 
 export function updateItemRecord(store: ItemStatsStore, id: string, correct: boolean): ItemStatsStore {
