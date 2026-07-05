@@ -12,11 +12,12 @@ declare module "@fastify/jwt" {
   }
 }
 
-export async function verifyAuth(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+export async function verifyAuth(request: FastifyRequest, reply: FastifyReply) {
   try {
     await request.jwtVerify();
   } catch {
-    reply.code(401).send({ message: "Nicht angemeldet" });
+    // reply zurückgeben, damit Fastify den Handler sicher nicht mehr ausführt
+    return reply.code(401).send({ message: "Nicht angemeldet" });
   }
 }
 

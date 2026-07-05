@@ -1,11 +1,11 @@
+import { pushProgress } from "./progressSync";
+
 export interface ItemStats {
   id: string;
   correct: number;
   incorrect: number;
   lastSeen: number;
 }
-
-import { pushProgress } from "./progressSync";
 
 export type ItemStatsStore = Record<string, ItemStats>;
 
