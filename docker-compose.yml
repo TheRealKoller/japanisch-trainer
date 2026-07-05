@@ -45,6 +45,11 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
       # Hinter TLS auf "true" setzen (Cookie nur über HTTPS)
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
     depends_on:
       db:
         condition: service_healthy
@@ -59,7 +64,7 @@ services:
       generate-audio:
         condition: service_completed_successfully
       api:
-        condition: service_started
+        condition: service_healthy
 
 networks:
   default:

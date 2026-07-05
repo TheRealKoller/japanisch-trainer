@@ -27,6 +27,11 @@ services:
     environment:
       DATABASE_URL: postgres://japanisch:ci-secret@db:5432/japanisch
       JWT_SECRET: ci-jwt-secret
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
     depends_on:
       db:
         condition: service_healthy
@@ -39,4 +44,4 @@ services:
       voicevox:
         condition: service_healthy
       api:
-        condition: service_started
+        condition: service_healthy
