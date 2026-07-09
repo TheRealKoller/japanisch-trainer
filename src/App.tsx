@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { numbers } from "./data/numbers";
 import { hiragana } from "./data/hiragana";
 import { katakana } from "./data/katakana";
+import { coreVocab, coreVocabLevels } from "./data/coreVocab";
+import { dailyPhrases, dailyPhraseLevels } from "./data/dailyPhrases";
+import { travelPhrases, travelPhraseLevels } from "./data/travelPhrases";
+import type { VocabItem } from "./data/types";
 import { TrainingSession } from "./components/TrainingSession";
 import type { TrainingLevelConfig } from "./components/TrainingSession";
 import { NumberQuizSession } from "./components/NumberQuizSession";
@@ -11,11 +15,20 @@ import { SettingsPage } from "./components/SettingsPage";
 import { StatsPage } from "./components/StatsPage";
 import { LoginPage } from "./components/LoginPage";
 import { hiraganaLevels, katakanaLevels } from "./data/kanaLevels";
-import type { KanaLevel } from "./data/kanaLevels";
-import { loadUnlockedLevel, saveUnlockedLevel } from "./utils/kanaLevelStats";
+import { itemsForLevel } from "./data/levels";
+import type { Level } from "./data/levels";
+import { loadUnlockedLevel, saveUnlockedLevel } from "./utils/levelStats";
+import type { LevelKey } from "./utils/levelStats";
 import { loadStats } from "./utils/quizStats";
 
-type Lesson = "numbers" | "hiragana" | "katakana" | "number-quiz";
+type Lesson =
+  | "numbers"
+  | "hiragana"
+  | "katakana"
+  | "number-quiz"
+  | "core-vocab"
+  | "daily-phrases"
+  | "travel-phrases";
 type View = Lesson | "settings" | "stats" | "login" | null;
 
 const lessons = [
@@ -57,11 +70,58 @@ const lessons = [
     progressTotal: 16,
     accentClass: "bg-sky-400 dark:bg-sky-400",
   },
+  {
+    id: "core-vocab" as Lesson,
+    title: "Grundwortschatz",
+    subtitle: "水 家 食べる ...",
+    description: `${coreVocabLevels.length} Level`,
+    color: "bg-violet-50 border-violet-200 hover:bg-violet-100 dark:bg-violet-500/10 dark:border-violet-500/30 dark:hover:bg-violet-500/15",
+    badge: "bg-violet-100 text-violet-700 dark:bg-violet-400/20 dark:text-violet-300",
+    progressTotal: coreVocabLevels.length,
+    accentClass: "bg-violet-400 dark:bg-violet-400",
+  },
+  {
+    id: "daily-phrases" as Lesson,
+    title: "Alltags-Floskeln",
+    subtitle: "こんにちは ...",
+    description: `${dailyPhraseLevels.length} Level`,
+    color: "bg-teal-50 border-teal-200 hover:bg-teal-100 dark:bg-teal-500/10 dark:border-teal-500/30 dark:hover:bg-teal-500/15",
+    badge: "bg-teal-100 text-teal-700 dark:bg-teal-400/20 dark:text-teal-300",
+    progressTotal: dailyPhraseLevels.length,
+    accentClass: "bg-teal-400 dark:bg-teal-400",
+  },
+  {
+    id: "travel-phrases" as Lesson,
+    title: "Reise-Floskeln",
+    subtitle: "いくらですか ...",
+    description: `${travelPhraseLevels.length} Level`,
+    color: "bg-lime-50 border-lime-200 hover:bg-lime-100 dark:bg-lime-500/10 dark:border-lime-500/30 dark:hover:bg-lime-500/15",
+    badge: "bg-lime-100 text-lime-700 dark:bg-lime-400/20 dark:text-lime-300",
+    progressTotal: travelPhraseLevels.length,
+    accentClass: "bg-lime-400 dark:bg-lime-400",
+  },
 ];
 
-function getItemsUpToLevel<T extends { id: string }>(items: T[], levels: KanaLevel[], targetLevel: number): T[] {
-  const ids = new Set(levels.filter((l) => l.level <= targetLevel).flatMap((l) => l.ids));
-  return items.filter((item) => ids.has(item.id));
+interface LevelLessonConfig {
+  items: VocabItem[];
+  levels: Level[];
+  progressKey: LevelKey;
+  cumulative: boolean; // Kana-Sessions üben alle Karten bis zum Level, Vokabel-Sessions nur das Level selbst
+  unit: string;
+}
+
+const levelLessons = {
+  hiragana: { items: hiragana, levels: hiraganaLevels, progressKey: "kana-level-hiragana", cumulative: true, unit: "neue Zeichen" },
+  katakana: { items: katakana, levels: katakanaLevels, progressKey: "kana-level-katakana", cumulative: true, unit: "neue Zeichen" },
+  "core-vocab": { items: coreVocab, levels: coreVocabLevels, progressKey: "level-core-vocab", cumulative: false, unit: "Wörter" },
+  "daily-phrases": { items: dailyPhrases, levels: dailyPhraseLevels, progressKey: "level-daily-phrases", cumulative: false, unit: "Floskeln" },
+  "travel-phrases": { items: travelPhrases, levels: travelPhraseLevels, progressKey: "level-travel-phrases", cumulative: false, unit: "Floskeln" },
+} satisfies Record<string, LevelLessonConfig>;
+
+type LevelLessonId = keyof typeof levelLessons;
+
+function isLevelLesson(view: View): view is LevelLessonId {
+  return view !== null && view in levelLessons;
 }
 
 function viewFromHash(): View {
@@ -73,14 +133,16 @@ function viewFromHash(): View {
 
 function App() {
   const [view, setView] = useState<View>(viewFromHash);
-  const [hiraganaUnlocked, setHiraganaUnlocked] = useState(() => loadUnlockedLevel("hiragana"));
-  const [katakanaUnlocked, setKatakanaUnlocked] = useState(() => loadUnlockedLevel("katakana"));
+  const [unlockedLevels, setUnlockedLevels] = useState<Record<LevelLessonId, number>>(() =>
+    Object.fromEntries(
+      (Object.keys(levelLessons) as LevelLessonId[]).map((id) => [id, loadUnlockedLevel(levelLessons[id].progressKey)]),
+    ) as Record<LevelLessonId, number>,
+  );
   const [quizLevel, setQuizLevel] = useState(() => loadStats().currentLevel);
   const [activeLevel, setActiveLevel] = useState<number | null>(null);
 
-  function getProgressCompleted(lessonId: string): number | null {
-    if (lessonId === "hiragana") return hiraganaUnlocked - 1;
-    if (lessonId === "katakana") return katakanaUnlocked - 1;
+  function getProgressCompleted(lessonId: Lesson): number | null {
+    if (isLevelLesson(lessonId)) return unlockedLevels[lessonId] - 1;
     if (lessonId === "number-quiz") return quizLevel - 1;
     return null;
   }
@@ -135,23 +197,21 @@ function App() {
     );
   }
 
-  if (view === "hiragana" || view === "katakana") {
-    const isHiragana = view === "hiragana";
-    const allItems = isHiragana ? hiragana : katakana;
-    const levels = isHiragana ? hiraganaLevels : katakanaLevels;
-    const unlocked = isHiragana ? hiraganaUnlocked : katakanaUnlocked;
-    const setUnlocked = isHiragana ? setHiraganaUnlocked : setKatakanaUnlocked;
-    const { title, color: cardBase, badge: badgeActive } = lessons.find((l) => l.id === view)!;
+  if (isLevelLesson(view)) {
+    const lessonId = view;
+    const { items: allItems, levels, progressKey, cumulative, unit } = levelLessons[lessonId];
+    const unlocked = unlockedLevels[lessonId];
+    const { title, color: cardBase, badge: badgeActive } = lessons.find((l) => l.id === lessonId)!;
 
     if (activeLevel !== null) {
       const level = activeLevel;
-      const sessionItems = getItemsUpToLevel(allItems, levels, level);
+      const sessionItems = itemsForLevel(allItems, levels, level, cumulative);
 
       const handleLevelComplete = () => {
         if (level >= unlocked) {
           const nextLevel = level + 1;
-          saveUnlockedLevel(view, nextLevel);
-          setUnlocked(nextLevel);
+          saveUnlockedLevel(progressKey, nextLevel);
+          setUnlockedLevels((prev) => ({ ...prev, [lessonId]: nextLevel }));
         }
       };
 
@@ -210,7 +270,7 @@ function App() {
                         Level {levelDef.level} {isCompleted && "✓"}
                       </h2>
                       <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
-                        {levelDef.ids.length} neue Zeichen
+                        {levelDef.ids.length} {unit}
                       </p>
                     </div>
                     <span

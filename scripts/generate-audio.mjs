@@ -36,6 +36,9 @@ const allItems = [
   ...parseItems(join(DATA_DIR, "numbers.ts")),
   ...parseItems(join(DATA_DIR, "hiragana.ts")),
   ...parseItems(join(DATA_DIR, "katakana.ts")),
+  ...parseItems(join(DATA_DIR, "coreVocab.ts")),
+  ...parseItems(join(DATA_DIR, "dailyPhrases.ts")),
+  ...parseItems(join(DATA_DIR, "travelPhrases.ts")),
 ];
 
 // For numbers: use the first kana reading (more deterministic than kanji).

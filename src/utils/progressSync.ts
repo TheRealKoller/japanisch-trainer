@@ -1,5 +1,13 @@
 // Muss mit ALLOWED_KEYS in api/src/routes/progress.ts synchron gehalten werden.
-const API_KEYS = ["item-stats", "quiz-stats", "kana-level-hiragana", "kana-level-katakana"] as const;
+const API_KEYS = [
+  "item-stats",
+  "quiz-stats",
+  "kana-level-hiragana",
+  "kana-level-katakana",
+  "level-core-vocab",
+  "level-daily-phrases",
+  "level-travel-phrases",
+] as const;
 
 export type ProgressKey = (typeof API_KEYS)[number];
 

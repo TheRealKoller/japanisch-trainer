@@ -1,0 +1,98 @@
+import type { VocabItem } from "./types";
+import { buildLevels } from "./levels";
+
+// Grundwortschatz — 80 Wörter in 10 thematischen Leveln à 8 Karten.
+export const coreVocab: VocabItem[] = [
+  // Level 1 — Menschen
+  { id: "w1",  japanese: "私",     reading: "わたし",   romaji: "watashi",   meaning: "ich" },
+  { id: "w2",  japanese: "あなた",                      romaji: "anata",     meaning: "du / Sie" },
+  { id: "w3",  japanese: "人",     reading: "ひと",     romaji: "hito",      meaning: "Mensch, Person" },
+  { id: "w4",  japanese: "友達",   reading: "ともだち", romaji: "tomodachi", meaning: "Freund / Freundin" },
+  { id: "w5",  japanese: "家族",   reading: "かぞく",   romaji: "kazoku",    meaning: "Familie" },
+  { id: "w6",  japanese: "男",     reading: "おとこ",   romaji: "otoko",     meaning: "Mann" },
+  { id: "w7",  japanese: "女",     reading: "おんな",   romaji: "onna",      meaning: "Frau" },
+  { id: "w8",  japanese: "子供",   reading: "こども",   romaji: "kodomo",    meaning: "Kind" },
+  // Level 2 — Essen & Trinken
+  { id: "w9",  japanese: "水",     reading: "みず",     romaji: "mizu",      meaning: "Wasser" },
+  { id: "w10", japanese: "お茶",   reading: "おちゃ",   romaji: "ocha",      meaning: "Tee" },
+  { id: "w11", japanese: "ご飯",   reading: "ごはん",   romaji: "gohan",     meaning: "Reis, Mahlzeit" },
+  { id: "w12", japanese: "パン",                        romaji: "pan",       meaning: "Brot" },
+  { id: "w13", japanese: "魚",     reading: "さかな",   romaji: "sakana",    meaning: "Fisch" },
+  { id: "w14", japanese: "肉",     reading: "にく",     romaji: "niku",      meaning: "Fleisch" },
+  { id: "w15", japanese: "卵",     reading: "たまご",   romaji: "tamago",    meaning: "Ei" },
+  { id: "w16", japanese: "果物",   reading: "くだもの", romaji: "kudamono",  meaning: "Obst" },
+  // Level 3 — Orte
+  { id: "w17", japanese: "家",     reading: "いえ",       romaji: "ie",      meaning: "Haus, Zuhause" },
+  { id: "w18", japanese: "学校",   reading: "がっこう",   romaji: "gakkou",  meaning: "Schule" },
+  { id: "w19", japanese: "会社",   reading: "かいしゃ",   romaji: "kaisha",  meaning: "Firma" },
+  { id: "w20", japanese: "駅",     reading: "えき",       romaji: "eki",     meaning: "Bahnhof" },
+  { id: "w21", japanese: "店",     reading: "みせ",       romaji: "mise",    meaning: "Geschäft, Laden" },
+  { id: "w22", japanese: "病院",   reading: "びょういん", romaji: "byouin",  meaning: "Krankenhaus" },
+  { id: "w23", japanese: "銀行",   reading: "ぎんこう",   romaji: "ginkou",  meaning: "Bank" },
+  { id: "w24", japanese: "トイレ",                        romaji: "toire",   meaning: "Toilette" },
+  // Level 4 — Zeit
+  { id: "w25", japanese: "今日",   reading: "きょう",   romaji: "kyou",   meaning: "heute" },
+  { id: "w26", japanese: "明日",   reading: "あした",   romaji: "ashita", meaning: "morgen" },
+  { id: "w27", japanese: "昨日",   reading: "きのう",   romaji: "kinou",  meaning: "gestern" },
+  { id: "w28", japanese: "今",     reading: "いま",     romaji: "ima",    meaning: "jetzt" },
+  { id: "w29", japanese: "朝",     reading: "あさ",     romaji: "asa",    meaning: "Morgen (Tageszeit)" },
+  { id: "w30", japanese: "昼",     reading: "ひる",     romaji: "hiru",   meaning: "Mittag" },
+  { id: "w31", japanese: "夜",     reading: "よる",     romaji: "yoru",   meaning: "Nacht, Abend" },
+  { id: "w32", japanese: "時間",   reading: "じかん",   romaji: "jikan",  meaning: "Zeit, Stunde" },
+  // Level 5 — Natur & Wetter
+  { id: "w33", japanese: "山",     reading: "やま",     romaji: "yama",   meaning: "Berg" },
+  { id: "w34", japanese: "川",     reading: "かわ",     romaji: "kawa",   meaning: "Fluss" },
+  { id: "w35", japanese: "海",     reading: "うみ",     romaji: "umi",    meaning: "Meer" },
+  { id: "w36", japanese: "空",     reading: "そら",     romaji: "sora",   meaning: "Himmel" },
+  { id: "w37", japanese: "雨",     reading: "あめ",     romaji: "ame",    meaning: "Regen" },
+  { id: "w38", japanese: "雪",     reading: "ゆき",     romaji: "yuki",   meaning: "Schnee" },
+  { id: "w39", japanese: "花",     reading: "はな",     romaji: "hana",   meaning: "Blume" },
+  { id: "w40", japanese: "木",     reading: "き",       romaji: "ki",     meaning: "Baum, Holz" },
+  // Level 6 — Adjektive I
+  { id: "w41", japanese: "大きい", reading: "おおきい",   romaji: "ookii",     meaning: "groß" },
+  { id: "w42", japanese: "小さい", reading: "ちいさい",   romaji: "chiisai",   meaning: "klein" },
+  { id: "w43", japanese: "新しい", reading: "あたらしい", romaji: "atarashii", meaning: "neu" },
+  { id: "w44", japanese: "古い",   reading: "ふるい",     romaji: "furui",     meaning: "alt (Dinge)" },
+  { id: "w45", japanese: "高い",   reading: "たかい",     romaji: "takai",     meaning: "teuer, hoch" },
+  { id: "w46", japanese: "安い",   reading: "やすい",     romaji: "yasui",     meaning: "billig" },
+  { id: "w47", japanese: "おいしい",                      romaji: "oishii",    meaning: "lecker" },
+  { id: "w48", japanese: "いい",                          romaji: "ii",        meaning: "gut" },
+  // Level 7 — Adjektive II
+  { id: "w49", japanese: "暑い",   reading: "あつい",     romaji: "atsui",      meaning: "heiß (Wetter)" },
+  { id: "w50", japanese: "寒い",   reading: "さむい",     romaji: "samui",      meaning: "kalt (Wetter)" },
+  { id: "w51", japanese: "楽しい", reading: "たのしい",   romaji: "tanoshii",   meaning: "macht Spaß, unterhaltsam" },
+  { id: "w52", japanese: "難しい", reading: "むずかしい", romaji: "muzukashii", meaning: "schwierig" },
+  { id: "w53", japanese: "簡単",   reading: "かんたん",   romaji: "kantan",     meaning: "einfach" },
+  { id: "w54", japanese: "忙しい", reading: "いそがしい", romaji: "isogashii",  meaning: "beschäftigt" },
+  { id: "w55", japanese: "元気",   reading: "げんき",     romaji: "genki",      meaning: "gesund, munter" },
+  { id: "w56", japanese: "きれい",                        romaji: "kirei",      meaning: "schön, sauber" },
+  // Level 8 — Verben I
+  { id: "w57", japanese: "食べる", reading: "たべる", romaji: "taberu", meaning: "essen" },
+  { id: "w58", japanese: "飲む",   reading: "のむ",   romaji: "nomu",   meaning: "trinken" },
+  { id: "w59", japanese: "行く",   reading: "いく",   romaji: "iku",    meaning: "gehen" },
+  { id: "w60", japanese: "来る",   reading: "くる",   romaji: "kuru",   meaning: "kommen" },
+  { id: "w61", japanese: "帰る",   reading: "かえる", romaji: "kaeru",  meaning: "zurückkehren, heimgehen" },
+  { id: "w62", japanese: "見る",   reading: "みる",   romaji: "miru",   meaning: "sehen" },
+  { id: "w63", japanese: "聞く",   reading: "きく",   romaji: "kiku",   meaning: "hören, fragen" },
+  { id: "w64", japanese: "話す",   reading: "はなす", romaji: "hanasu", meaning: "sprechen" },
+  // Level 9 — Verben II
+  { id: "w65", japanese: "読む",     reading: "よむ",           romaji: "yomu",         meaning: "lesen" },
+  { id: "w66", japanese: "書く",     reading: "かく",           romaji: "kaku",         meaning: "schreiben" },
+  { id: "w67", japanese: "買う",     reading: "かう",           romaji: "kau",          meaning: "kaufen" },
+  { id: "w68", japanese: "する",                                romaji: "suru",         meaning: "machen, tun" },
+  { id: "w69", japanese: "勉強する", reading: "べんきょうする", romaji: "benkyou suru", meaning: "lernen" },
+  { id: "w70", japanese: "寝る",     reading: "ねる",           romaji: "neru",         meaning: "schlafen" },
+  { id: "w71", japanese: "起きる",   reading: "おきる",         romaji: "okiru",        meaning: "aufstehen" },
+  { id: "w72", japanese: "働く",     reading: "はたらく",       romaji: "hataraku",     meaning: "arbeiten" },
+  // Level 10 — Alltagsgegenstände
+  { id: "w73", japanese: "本",     reading: "ほん",     romaji: "hon",    meaning: "Buch" },
+  { id: "w74", japanese: "車",     reading: "くるま",   romaji: "kuruma", meaning: "Auto" },
+  { id: "w75", japanese: "電車",   reading: "でんしゃ", romaji: "densha", meaning: "Zug" },
+  { id: "w76", japanese: "電話",   reading: "でんわ",   romaji: "denwa",  meaning: "Telefon" },
+  { id: "w77", japanese: "時計",   reading: "とけい",   romaji: "tokei",  meaning: "Uhr" },
+  { id: "w78", japanese: "かばん",                      romaji: "kaban",  meaning: "Tasche" },
+  { id: "w79", japanese: "服",     reading: "ふく",     romaji: "fuku",   meaning: "Kleidung" },
+  { id: "w80", japanese: "お金",   reading: "おかね",   romaji: "okane",  meaning: "Geld" },
+];
+
+export const coreVocabLevels = buildLevels(coreVocab, 8);
