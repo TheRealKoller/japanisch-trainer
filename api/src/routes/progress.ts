@@ -5,7 +5,15 @@ import { progress } from "../db/schema.js";
 import { verifyAuth } from "../auth.js";
 
 // Muss mit API_KEYS in src/utils/progressSync.ts synchron gehalten werden.
-const ALLOWED_KEYS = new Set(["item-stats", "quiz-stats", "kana-level-hiragana", "kana-level-katakana"]);
+const ALLOWED_KEYS = new Set([
+  "item-stats",
+  "quiz-stats",
+  "kana-level-hiragana",
+  "kana-level-katakana",
+  "level-core-vocab",
+  "level-daily-phrases",
+  "level-travel-phrases",
+]);
 
 export async function progressRoutes(app: FastifyInstance): Promise<void> {
   app.addHook("preHandler", verifyAuth);

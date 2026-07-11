@@ -1,7 +1,6 @@
-export interface KanaLevel {
-  level: number;
-  ids: string[];
-}
+import type { Level } from "./levels";
+
+export type KanaLevel = Level;
 
 export const hiraganaLevels: KanaLevel[] = [
   { level: 1,  ids: ["ha", "hi", "hu", "he", "ho"] },

@@ -70,6 +70,9 @@ Jede Lektion hat eine eigene Tintfarbe — nur auf der Startseite und für Badge
 | Zahlen-Quiz | `bg-orange-50 border-orange-200 hover:bg-orange-100` | `dark:bg-orange-500/10 dark:border-orange-500/30 dark:hover:bg-orange-500/15` | `bg-orange-100 text-orange-700` | `dark:bg-orange-400/20 dark:text-orange-300` |
 | Hiragana | `bg-rose-50 border-rose-200 hover:bg-rose-100` | `dark:bg-rose-500/10 dark:border-rose-500/30 dark:hover:bg-rose-500/15` | `bg-rose-100 text-rose-700` | `dark:bg-rose-400/20 dark:text-rose-300` |
 | Katakana | `bg-sky-50 border-sky-200 hover:bg-sky-100` | `dark:bg-sky-500/10 dark:border-sky-500/30 dark:hover:bg-sky-500/15` | `bg-sky-100 text-sky-700` | `dark:bg-sky-400/20 dark:text-sky-300` |
+| Grundwortschatz | `bg-violet-50 border-violet-200 hover:bg-violet-100` | `dark:bg-violet-500/10 dark:border-violet-500/30 dark:hover:bg-violet-500/15` | `bg-violet-100 text-violet-700` | `dark:bg-violet-400/20 dark:text-violet-300` |
+| Alltags-Floskeln | `bg-teal-50 border-teal-200 hover:bg-teal-100` | `dark:bg-teal-500/10 dark:border-teal-500/30 dark:hover:bg-teal-500/15` | `bg-teal-100 text-teal-700` | `dark:bg-teal-400/20 dark:text-teal-300` |
+| Reise-Floskeln | `bg-lime-50 border-lime-200 hover:bg-lime-100` | `dark:bg-lime-500/10 dark:border-lime-500/30 dark:hover:bg-lime-500/15` | `bg-lime-100 text-lime-700` | `dark:bg-lime-400/20 dark:text-lime-300` |
 
 ---
 
@@ -81,7 +84,7 @@ Jede Lektion hat eine eigene Tintfarbe — nur auf der Startseite und für Badge
 | heading-lg | `text-2xl font-bold text-gray-800 dark:text-slate-100` | Ergebnis-Überschriften |
 | heading-md | `text-xl font-semibold text-gray-800 dark:text-slate-100` | Lektions-Titel auf Startseite |
 | heading-sm | `text-lg font-semibold text-gray-700 dark:text-slate-200` | Session-Header-Titel |
-| japanese-xl | `text-7xl sm:text-8xl` | Zeichen auf Flashcard (Hiragana/Katakana) |
+| japanese-xl | `text-7xl sm:text-8xl` | Zeichen auf Flashcard, ≤ 2 Zeichen (Hiragana/Katakana) — weitere Stufen siehe „Flashcard / Lernkarte“ unten |
 | japanese-lg | `text-6xl font-bold text-gray-800 dark:text-slate-100` | Zahlen auf Quiz-Karte |
 | japanese-md | `text-2xl text-indigo-600 dark:text-indigo-400` | Kanji-Darstellung |
 | reading-lg | `text-xl text-indigo-600 dark:text-indigo-300 font-medium` | Primäre Lesung (Rückseite) |
@@ -156,6 +159,15 @@ Rückseite:   w-72 h-72 sm:w-80 sm:h-80 rounded-2xl border-2
 - Übergangsanimation: `transition-colors duration-200`
 - Hinweis auf Vorderseite: `text-gray-400 dark:text-slate-500 text-sm` — "Tippen zum Umdrehen"
 - Quiz-Karte (Zahlen): `w-72 sm:w-80 min-h-64` (variable Höhe)
+
+**Dynamische Schriftgröße (Vorderseite):** `japaneseSizeClass()` in `Flashcard.tsx` staffelt die Zeichengröße nach Textlänge, damit auch mehrzeichige Vokabeln und Floskeln (Grundwortschatz, Alltags-/Reise-Floskeln) auf die Karte passen:
+
+| Zeichenlänge | Klassen |
+|---|---|
+| ≤ 2 | `text-7xl sm:text-8xl` |
+| ≤ 4 | `text-5xl sm:text-6xl` |
+| ≤ 8 | `text-3xl sm:text-4xl` |
+| > 8 | `text-xl sm:text-2xl` |
 
 ### Badge / Pill
 

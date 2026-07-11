@@ -1,9 +1,17 @@
 // Muss mit ALLOWED_KEYS in api/src/routes/progress.ts synchron gehalten werden.
-const API_KEYS = ["item-stats", "quiz-stats", "kana-level-hiragana", "kana-level-katakana"] as const;
+const API_KEYS = [
+  "item-stats",
+  "quiz-stats",
+  "kana-level-hiragana",
+  "kana-level-katakana",
+  "level-core-vocab",
+  "level-daily-phrases",
+  "level-travel-phrases",
+] as const;
 
 export type ProgressKey = (typeof API_KEYS)[number];
 
-const LS_PREFIX = "japanisch-trainer:";
+export const LS_PREFIX = "japanisch-trainer:";
 
 // Modul-Flag statt React-State, damit die save*-Utils ohne Hook-Kontext syncen können.
 // Der AuthProvider setzt es bei Login/Logout.

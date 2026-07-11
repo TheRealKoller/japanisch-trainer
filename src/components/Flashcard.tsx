@@ -12,6 +12,14 @@ interface Props {
   autoSpeak?: boolean;
 }
 
+// Schriftgröße nach Textlänge, damit auch Wörter und Floskeln auf die Karte passen.
+function japaneseSizeClass(text: string): string {
+  if (text.length <= 2) return "text-7xl sm:text-8xl";
+  if (text.length <= 4) return "text-5xl sm:text-6xl";
+  if (text.length <= 8) return "text-3xl sm:text-4xl";
+  return "text-xl sm:text-2xl";
+}
+
 export function Flashcard({ item, front, back, flipped, onFlip, onSpeak, isSpeaking = false, autoSpeak = true }: Props) {
   useEffect(() => {
     if (flipped && autoSpeak) onSpeak();
@@ -36,7 +44,9 @@ export function Flashcard({ item, front, back, flipped, onFlip, onSpeak, isSpeak
     >
       {!flipped && (front ?? (
         <>
-          <span className="text-7xl sm:text-8xl text-gray-800 dark:text-slate-100">{item?.japanese}</span>
+          <span className={`${japaneseSizeClass(item?.japanese ?? "")} text-center px-4 text-gray-800 dark:text-slate-100`}>
+            {item?.japanese}
+          </span>
           {item?.reading && (
             <p className="text-lg text-indigo-500 dark:text-indigo-400">{item.reading}</p>
           )}
