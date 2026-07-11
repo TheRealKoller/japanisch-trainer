@@ -84,7 +84,7 @@ Jede Lektion hat eine eigene Tintfarbe — nur auf der Startseite und für Badge
 | heading-lg | `text-2xl font-bold text-gray-800 dark:text-slate-100` | Ergebnis-Überschriften |
 | heading-md | `text-xl font-semibold text-gray-800 dark:text-slate-100` | Lektions-Titel auf Startseite |
 | heading-sm | `text-lg font-semibold text-gray-700 dark:text-slate-200` | Session-Header-Titel |
-| japanese-xl | `text-7xl sm:text-8xl` | Zeichen auf Flashcard (Hiragana/Katakana) |
+| japanese-xl | `text-7xl sm:text-8xl` | Zeichen auf Flashcard, ≤ 2 Zeichen (Hiragana/Katakana) — weitere Stufen siehe „Flashcard / Lernkarte“ unten |
 | japanese-lg | `text-6xl font-bold text-gray-800 dark:text-slate-100` | Zahlen auf Quiz-Karte |
 | japanese-md | `text-2xl text-indigo-600 dark:text-indigo-400` | Kanji-Darstellung |
 | reading-lg | `text-xl text-indigo-600 dark:text-indigo-300 font-medium` | Primäre Lesung (Rückseite) |
@@ -159,6 +159,15 @@ Rückseite:   w-72 h-72 sm:w-80 sm:h-80 rounded-2xl border-2
 - Übergangsanimation: `transition-colors duration-200`
 - Hinweis auf Vorderseite: `text-gray-400 dark:text-slate-500 text-sm` — "Tippen zum Umdrehen"
 - Quiz-Karte (Zahlen): `w-72 sm:w-80 min-h-64` (variable Höhe)
+
+**Dynamische Schriftgröße (Vorderseite):** `japaneseSizeClass()` in `Flashcard.tsx` staffelt die Zeichengröße nach Textlänge, damit auch mehrzeichige Vokabeln und Floskeln (Grundwortschatz, Alltags-/Reise-Floskeln) auf die Karte passen:
+
+| Zeichenlänge | Klassen |
+|---|---|
+| ≤ 2 | `text-7xl sm:text-8xl` |
+| ≤ 4 | `text-5xl sm:text-6xl` |
+| ≤ 8 | `text-3xl sm:text-4xl` |
+| > 8 | `text-xl sm:text-2xl` |
 
 ### Badge / Pill
 

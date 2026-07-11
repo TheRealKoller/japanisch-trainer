@@ -1,13 +1,8 @@
-import { pushProgress, type ProgressKey } from "./progressSync";
+import { pushProgress, LS_PREFIX, type ProgressKey } from "./progressSync";
 
-const LS_PREFIX = "japanisch-trainer:";
-
-// Progress-Keys der Lektionen mit Level-Freischaltung.
+// Progress-Keys der Lektionen mit Level-Freischaltung (alle außer item-stats/quiz-stats).
 // Die Kana-Keys behalten ihr historisches "kana-level-"-Präfix (localStorage-Kompatibilität).
-export type LevelKey = Extract<
-  ProgressKey,
-  "kana-level-hiragana" | "kana-level-katakana" | "level-core-vocab" | "level-daily-phrases" | "level-travel-phrases"
->;
+export type LevelKey = Exclude<ProgressKey, "item-stats" | "quiz-stats">;
 
 export function loadUnlockedLevel(key: LevelKey): number {
   try {

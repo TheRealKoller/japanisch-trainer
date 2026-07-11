@@ -11,7 +11,7 @@ const API_KEYS = [
 
 export type ProgressKey = (typeof API_KEYS)[number];
 
-const LS_PREFIX = "japanisch-trainer:";
+export const LS_PREFIX = "japanisch-trainer:";
 
 // Modul-Flag statt React-State, damit die save*-Utils ohne Hook-Kontext syncen können.
 // Der AuthProvider setzt es bei Login/Logout.

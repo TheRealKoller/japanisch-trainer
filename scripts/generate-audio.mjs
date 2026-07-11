@@ -57,10 +57,10 @@ if (pending.length === 0) {
 
 console.log(`Generating ${pending.length}/${allItems.length} audio files (Voicevox speaker ${SPEAKER_ID})...\n`);
 
-let ok = 0;
-let fail = 0;
+// Anfragen sind pro Item unabhängig — begrenzte Nebenläufigkeit statt einer Anfrage nach der anderen.
+const CONCURRENCY = 6;
 
-for (const item of pending) {
+async function generateOne(item) {
   const text = ttsText(item);
   const outPath = join(OUT_DIR, `${item.id}.wav`);
   try {
@@ -80,11 +80,23 @@ for (const item of pending) {
     if (!synthRes.ok) throw new Error(`synthesis ${synthRes.status}`);
 
     writeFileSync(outPath, Buffer.from(await synthRes.arrayBuffer()));
-    ok++;
     console.log(`  OK   ${item.id}.wav  "${text}"`);
+    return true;
   } catch (err) {
-    fail++;
     console.error(`  FAIL ${item.id}.wav  "${text}": ${err.message}`);
+    return false;
+  }
+}
+
+let ok = 0;
+let fail = 0;
+
+for (let i = 0; i < pending.length; i += CONCURRENCY) {
+  const chunk = pending.slice(i, i + CONCURRENCY);
+  const results = await Promise.all(chunk.map(generateOne));
+  for (const success of results) {
+    if (success) ok++;
+    else fail++;
   }
 }
 

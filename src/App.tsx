@@ -31,17 +31,26 @@ type Lesson =
   | "travel-phrases";
 type View = Lesson | "settings" | "stats" | "login" | null;
 
-const lessons = [
-  {
-    id: "numbers" as Lesson,
+interface LessonMeta {
+  title: string;
+  subtitle: string;
+  description: string;
+  color: string;
+  badge: string;
+  progressTotal?: number;
+  accentClass?: string;
+}
+
+// Record statt Array: TypeScript erzwingt so einen Eintrag pro Lesson-Variante.
+const lessons: Record<Lesson, LessonMeta> = {
+  numbers: {
     title: "Zahlen",
     subtitle: "一 二 三 ...",
     description: "0 – 10.000",
     color: "bg-amber-50 border-amber-200 hover:bg-amber-100 dark:bg-amber-500/10 dark:border-amber-500/30 dark:hover:bg-amber-500/15",
     badge: "bg-amber-100 text-amber-700 dark:bg-amber-400/20 dark:text-amber-300",
   },
-  {
-    id: "number-quiz" as Lesson,
+  "number-quiz": {
     title: "Zahlen-Quiz",
     subtitle: "1 · 2 · 432 · 99999",
     description: "0 – 99.999",
@@ -50,8 +59,7 @@ const lessons = [
     progressTotal: 4,
     accentClass: "bg-orange-400 dark:bg-orange-400",
   },
-  {
-    id: "hiragana" as Lesson,
+  hiragana: {
     title: "Hiragana",
     subtitle: "あ い う え お ...",
     description: "16 Level",
@@ -60,8 +68,7 @@ const lessons = [
     progressTotal: 16,
     accentClass: "bg-rose-400 dark:bg-rose-400",
   },
-  {
-    id: "katakana" as Lesson,
+  katakana: {
     title: "Katakana",
     subtitle: "ア イ ウ エ オ ...",
     description: "16 Level",
@@ -70,8 +77,7 @@ const lessons = [
     progressTotal: 16,
     accentClass: "bg-sky-400 dark:bg-sky-400",
   },
-  {
-    id: "core-vocab" as Lesson,
+  "core-vocab": {
     title: "Grundwortschatz",
     subtitle: "水 家 食べる ...",
     description: `${coreVocabLevels.length} Level`,
@@ -80,8 +86,7 @@ const lessons = [
     progressTotal: coreVocabLevels.length,
     accentClass: "bg-violet-400 dark:bg-violet-400",
   },
-  {
-    id: "daily-phrases" as Lesson,
+  "daily-phrases": {
     title: "Alltags-Floskeln",
     subtitle: "こんにちは ...",
     description: `${dailyPhraseLevels.length} Level`,
@@ -90,8 +95,7 @@ const lessons = [
     progressTotal: dailyPhraseLevels.length,
     accentClass: "bg-teal-400 dark:bg-teal-400",
   },
-  {
-    id: "travel-phrases" as Lesson,
+  "travel-phrases": {
     title: "Reise-Floskeln",
     subtitle: "いくらですか ...",
     description: `${travelPhraseLevels.length} Level`,
@@ -100,7 +104,7 @@ const lessons = [
     progressTotal: travelPhraseLevels.length,
     accentClass: "bg-lime-400 dark:bg-lime-400",
   },
-];
+};
 
 interface LevelLessonConfig {
   items: VocabItem[];
@@ -201,7 +205,7 @@ function App() {
     const lessonId = view;
     const { items: allItems, levels, progressKey, cumulative, unit } = levelLessons[lessonId];
     const unlocked = unlockedLevels[lessonId];
-    const { title, color: cardBase, badge: badgeActive } = lessons.find((l) => l.id === lessonId)!;
+    const { title, color: cardBase, badge: badgeActive } = lessons[lessonId];
 
     if (activeLevel !== null) {
       const level = activeLevel;
@@ -324,12 +328,12 @@ function App() {
         </div>
 
         <div className="flex flex-col gap-3">
-          {lessons.map((lesson) => {
-            const completed = getProgressCompleted(lesson.id);
+          {(Object.entries(lessons) as [Lesson, LessonMeta][]).map(([id, lesson]) => {
+            const completed = getProgressCompleted(id);
             return (
               <button
-                key={lesson.id}
-                onClick={() => setView(lesson.id)}
+                key={id}
+                onClick={() => setView(id)}
                 className={`border-2 rounded-2xl p-5 text-left transition-colors duration-200 ${lesson.color}`}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -345,7 +349,7 @@ function App() {
                     {lesson.description}
                   </span>
                 </div>
-                {"progressTotal" in lesson && completed !== null && lesson.accentClass && (
+                {lesson.progressTotal !== undefined && completed !== null && lesson.accentClass && (
                   <SegmentedProgressBar
                     completed={completed}
                     total={lesson.progressTotal}
