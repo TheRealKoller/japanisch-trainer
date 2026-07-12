@@ -3,11 +3,16 @@ import type { VocabItem } from "../data/types";
 
 export type FlashcardVariant = "default" | "vocab";
 
+// Nur bei variant="vocab" relevant: "forward" zeigt vorne Romaji/Kana/Kanji (wie bisher),
+// "reversed" vertauscht Vorder- und Rückseite (vorne nur Bedeutung).
+export type CardOrientation = "forward" | "reversed";
+
 interface Props {
   item?: VocabItem;
   front?: ReactNode;
   back?: ReactNode;
   variant?: FlashcardVariant;
+  orientation?: CardOrientation;
   flipped: boolean;
   onFlip: () => void;
   onSpeak: () => void;
@@ -32,7 +37,36 @@ function romajiSizeClass(text: string): string {
   return "text-lg sm:text-xl";
 }
 
-export function Flashcard({ item, front, back, variant = "default", flipped, onFlip, onSpeak, isSpeaking = false, autoSpeak = true }: Props) {
+// Schriftgröße nach Bedeutungs-Länge — deutsche Bedeutungen reichen von kurzen
+// Wörtern bis zu ganzen Sätzen (Reise-/Alltags-Floskeln), daher eigene Staffelung.
+function meaningSizeClass(text: string): string {
+  if (text.length <= 6) return "text-5xl sm:text-6xl";
+  if (text.length <= 12) return "text-4xl sm:text-5xl";
+  if (text.length <= 20) return "text-2xl sm:text-3xl";
+  if (text.length <= 30) return "text-xl sm:text-2xl";
+  return "text-lg sm:text-xl";
+}
+
+// Gemeinsamer Romaji/Kana/Kanji-Block — bei orientation="forward" auf der Vorderseite,
+// bei orientation="reversed" gespiegelt auf der Rückseite (identischer Inhalt/Reihenfolge).
+function RomajiKanaKanji({ item }: { item?: VocabItem }) {
+  const kanaLine = item?.reading ?? item?.japanese;
+  return (
+    <>
+      <span className={`${romajiSizeClass(item?.romaji ?? "")} text-center px-4 text-gray-800 dark:text-slate-100`}>
+        {item?.romaji}
+      </span>
+      {kanaLine && (
+        <p className="text-lg text-indigo-500 dark:text-indigo-400 text-center px-4">{kanaLine}</p>
+      )}
+      {item?.reading && (
+        <p className="text-2xl text-indigo-600 dark:text-indigo-400 text-center px-4">{item.japanese}</p>
+      )}
+    </>
+  );
+}
+
+export function Flashcard({ item, front, back, variant = "default", orientation = "forward", flipped, onFlip, onSpeak, isSpeaking = false, autoSpeak = true }: Props) {
   useEffect(() => {
     if (flipped && autoSpeak) onSpeak();
   }, [flipped, autoSpeak, onSpeak]);
@@ -41,10 +75,6 @@ export function Flashcard({ item, front, back, variant = "default", flipped, onF
     if (!flipped) onFlip();
     else if (!isSpeaking) onSpeak();
   }
-
-  // item.reading ist nur gesetzt, wenn japanese Kanji enthält (siehe types.ts) —
-  // ohne reading ist japanese bereits die Kana-Lesung.
-  const kanaLine = item?.reading ?? item?.japanese;
 
   return (
     <div
@@ -61,17 +91,13 @@ export function Flashcard({ item, front, back, variant = "default", flipped, onF
       {!flipped && (front ?? (
         <>
           {variant === "vocab" ? (
-            <>
-              <span className={`${romajiSizeClass(item?.romaji ?? "")} text-center px-4 text-gray-800 dark:text-slate-100`}>
-                {item?.romaji}
+            orientation === "reversed" ? (
+              <span className={`${meaningSizeClass(item?.meaning ?? "")} text-center px-4 text-gray-800 dark:text-slate-100`}>
+                {item?.meaning}
               </span>
-              {kanaLine && (
-                <p className="text-lg text-indigo-500 dark:text-indigo-400 text-center px-4">{kanaLine}</p>
-              )}
-              {item?.reading && (
-                <p className="text-2xl text-indigo-600 dark:text-indigo-400 text-center px-4">{item.japanese}</p>
-              )}
-            </>
+            ) : (
+              <RomajiKanaKanji item={item} />
+            )
           ) : (
             <>
               <span className={`${japaneseSizeClass(item?.japanese ?? "")} text-center px-4 text-gray-800 dark:text-slate-100`}>
@@ -87,9 +113,13 @@ export function Flashcard({ item, front, back, variant = "default", flipped, onF
       ))}
 
       {flipped && (back ?? (variant === "vocab" ? (
-        <div className="text-center px-4">
-          <p className="text-2xl font-medium text-gray-700 dark:text-slate-200">{item?.meaning}</p>
-        </div>
+        orientation === "reversed" ? (
+          <RomajiKanaKanji item={item} />
+        ) : (
+          <div className="text-center px-4">
+            <p className="text-2xl font-medium text-gray-700 dark:text-slate-200">{item?.meaning}</p>
+          </div>
+        )
       ) : (
         <div className="text-center px-4">
           {item?.reading && (

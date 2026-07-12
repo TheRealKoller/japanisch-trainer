@@ -1,10 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import type { VocabItem } from "../data/types";
 import { Flashcard } from "./Flashcard";
-import type { FlashcardVariant } from "./Flashcard";
+import type { FlashcardVariant, CardOrientation } from "./Flashcard";
 import { OptionsMenu } from "./OptionsMenu";
 import { speakText } from "../utils/voicevox";
 import { recordAnswer } from "../utils/itemStats";
+import { buildOrientations } from "../utils/cardOrientation";
 import { usePrefetchNext } from "../hooks/usePrefetchNext";
 
 const WAVE_BARS = [
@@ -45,9 +46,11 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-
 export function TrainingSession({ items, title, onBack, levelConfig, cardVariant }: Props) {
   const [queue, setQueue] = useState<VocabItem[]>(() => shuffle(items));
+  const [orientations, setOrientations] = useState<Partial<Record<string, CardOrientation>>>(
+    () => (cardVariant === "vocab" ? buildOrientations(items) : {}),
+  );
   const [wrongItems, setWrongItems] = useState<VocabItem[]>([]);
   const [correctCount, setCorrectCount] = useState(0);
   const [wrongItemIds, setWrongItemIds] = useState<Set<string>>(() => new Set());
@@ -114,6 +117,7 @@ export function TrainingSession({ items, title, onBack, levelConfig, cardVariant
 
   function restart() {
     setQueue(shuffle(items));
+    setOrientations(cardVariant === "vocab" ? buildOrientations(items) : {});
     setWrongItems([]);
     setCorrectCount(0);
     setWrongItemIds(new Set());
@@ -196,6 +200,7 @@ export function TrainingSession({ items, title, onBack, levelConfig, cardVariant
         <Flashcard
           item={current}
           variant={cardVariant}
+          orientation={current ? orientations[current.id] : undefined}
           flipped={flipped}
           onFlip={() => setFlipped(true)}
           onSpeak={handleSpeak}

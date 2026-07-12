@@ -189,6 +189,21 @@ Rückseite (`variant="vocab"`): nur `item.meaning`, Stil `meaning-lg`.
 | ≤ 22 | `text-xl sm:text-2xl` |
 | > 22 | `text-lg sm:text-xl` |
 
+**Kartenausrichtung `orientation` (nur `variant="vocab"`):** Jede Karte bekommt beim Sessionstart zufällig (~50/50) eine `orientation` (`"forward" | "reversed"`), zugewiesen in `TrainingSession` über `buildOrientations()` (`src/utils/cardOrientation.ts`), gekeyt nach `item.id` und daher stabil über die gesamte Session hinweg — auch beim Requeue falsch beantworteter Karten. Bei "Nochmal" (Neustart) wird neu gewürfelt, analog zur Kartenreihenfolge selbst.
+
+- `orientation="forward"` (Standard): wie oben beschrieben — Vorderseite Romaji/Kana/Kanji, Rückseite nur Bedeutung.
+- `orientation="reversed"`: **gespiegelt** — Vorderseite zeigt nur `item.meaning` (groß, `meaningSizeClass()`), Rückseite zeigt denselben Romaji/Kana/Kanji-Block wie sonst die Vorderseite (identischer Inhalt/Reihenfolge, via gemeinsame `RomajiKanaKanji`-Komponente in `Flashcard.tsx`).
+
+**Dynamische Schriftgröße (Bedeutung, `orientation="reversed"`):** `meaningSizeClass()` in `Flashcard.tsx` — deutsche Bedeutungen reichen von kurzen Wörtern bis zu ganzen Sätzen (Reise-/Alltags-Floskeln), daher eigene Staffelung:
+
+| Zeichenlänge | Klassen |
+|---|---|
+| ≤ 6 | `text-5xl sm:text-6xl` |
+| ≤ 12 | `text-4xl sm:text-5xl` |
+| ≤ 20 | `text-2xl sm:text-3xl` |
+| ≤ 30 | `text-xl sm:text-2xl` |
+| > 30 | `text-lg sm:text-xl` |
+
 ### Badge / Pill
 
 ```
