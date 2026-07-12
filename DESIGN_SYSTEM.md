@@ -204,6 +204,26 @@ Rückseite (`variant="vocab"`): nur `item.meaning`, Stil `meaning-lg`.
 | ≤ 30 | `text-xl sm:text-2xl` |
 | > 30 | `text-lg sm:text-xl` |
 
+### StatsPage / Statistik-Seite
+
+Zeigt pro Zeichen/Wort eine Kachel `flex flex-col items-center py-1.5 rounded-lg transition-colors` (`KanaTile`), Hintergrundfarbe via `tileColor()` nach Erfolgsquote:
+
+| Erfolgsquote | Klassen |
+|---|---|
+| ≥ 80% | `bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400` |
+| ≥ 50% | `bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400` |
+| < 50% | `bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400` |
+| keine Daten | `bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-slate-500` |
+
+Hiragana/Katakana: Gojūon-Raster (`grid-cols-6`, Zeilen/Spalten nach Aussprache). Grundwortschatz/Alltags-/Reise-Floskeln (`LevelGroupedSection`): nach Level gruppiert (Überschrift „Level N"), `grid grid-cols-4 gap-1.5` pro Level — **alle** Wörter werden angezeigt, unabhängig vom Freischaltungsstatus.
+
+**Dynamische Schriftgröße:** `tileTextSizeClass()` in `StatsPage.tsx` — dieselbe Funktion für Kana- und Wort-Kacheln (Kana ist immer 1-2 Zeichen und fällt automatisch in die erste Stufe). Bleibt bewusst innerhalb der Standard-Tailwind-Skala (keine beliebigen Werte); lange Floskeln brechen stattdessen mehrzeilig um (`text-center` auf der Zeichen-Zeile):
+
+| Zeichenlänge | Klassen |
+|---|---|
+| ≤ 4 | `text-sm leading-none` |
+| > 4 | `text-xs leading-tight` |
+
 ### Badge / Pill
 
 ```

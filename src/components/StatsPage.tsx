@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { hiragana } from "../data/hiragana";
 import { katakana } from "../data/katakana";
+import { coreVocab, coreVocabLevels } from "../data/coreVocab";
+import { dailyPhrases, dailyPhraseLevels } from "../data/dailyPhrases";
+import { travelPhrases, travelPhraseLevels } from "../data/travelPhrases";
 import type { VocabItem } from "../data/types";
+import type { Level } from "../data/levels";
 import { loadItemStats, type ItemStats, type ItemStatsStore } from "../utils/itemStats";
 
 interface Props {
@@ -16,6 +20,10 @@ function tileColor(stats: ItemStats | undefined): string {
   if (rate >= 0.8) return "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400";
   if (rate >= 0.5) return "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400";
   return "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400";
+}
+
+function buildLookup(items: VocabItem[]): Record<string, VocabItem> {
+  return Object.fromEntries(items.map((item) => [item.id, item]));
 }
 
 // --- Gojūon grid structure ---
@@ -69,6 +77,14 @@ function youonRows(p: string): string[][] {
 
 // --- Components ---
 
+// Schriftgröße nach Textlänge — Kana-Zeichen sind immer 1-2 Zeichen (fällt automatisch
+// in die erste Stufe), Vokabeln/Floskeln reichen bis zu 13 Zeichen. Bleibt innerhalb der
+// Standard-Tailwind-Skala; lange Wörter brechen stattdessen mehrzeilig um.
+function tileTextSizeClass(text: string): string {
+  if (text.length <= 4) return "text-sm leading-none";
+  return "text-xs leading-tight";
+}
+
 interface TileProps {
   item: VocabItem | undefined;
   stats: ItemStats | undefined;
@@ -84,7 +100,7 @@ function KanaTile({ item, stats, showRomaji }: TileProps) {
   const pct = total > 0 ? `${Math.round((correct / total) * 100)}%` : "—";
   return (
     <div className={`flex flex-col items-center py-1.5 rounded-lg transition-colors ${tileColor(stats)}`}>
-      <span className="text-sm font-medium leading-none">{item.japanese}</span>
+      <span className={`${tileTextSizeClass(item.japanese)} font-medium text-center`}>{item.japanese}</span>
       {showRomaji && <span className="text-xs leading-none mt-0.5 opacity-60">{item.romaji}</span>}
       <span className="text-xs leading-none mt-0.5 opacity-70">{pct}</span>
     </div>
@@ -173,7 +189,7 @@ interface GojuonSectionProps {
 }
 
 function GojuonSection({ title, items, prefix, store }: GojuonSectionProps) {
-  const lookup = Object.fromEntries(items.map((item) => [item.id, item]));
+  const lookup = buildLookup(items);
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-sm font-medium text-gray-500 dark:text-slate-400">{title}</h3>
@@ -203,6 +219,34 @@ function DigitSection({ store }: { store: ItemStatsStore }) {
   );
 }
 
+interface LevelGroupedSectionProps {
+  title: string;
+  items: VocabItem[];
+  levels: Level[];
+  store: ItemStatsStore;
+}
+
+// Zeigt alle Wörter/Floskeln einer Lektion, gruppiert nach Level — unabhängig vom
+// Freischaltungsstatus (bewusste Vollansicht, siehe Issue #124).
+function LevelGroupedSection({ title, items, levels, store }: LevelGroupedSectionProps) {
+  const lookup = buildLookup(items);
+  return (
+    <div className="flex flex-col gap-4">
+      <h3 className="text-sm font-medium text-gray-500 dark:text-slate-400">{title}</h3>
+      {levels.map((level) => (
+        <div key={level.level}>
+          <h4 className="text-xs font-medium text-gray-500 dark:text-slate-400 mb-1.5">Level {level.level}</h4>
+          <div className="grid grid-cols-4 gap-1.5">
+            {level.ids.map((id) => (
+              <KanaTile key={id} item={lookup[id]} stats={store[id]} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function StatsPage({ onBack }: Props) {
   const [store] = useState(() => loadItemStats());
 
@@ -223,6 +267,9 @@ export function StatsPage({ onBack }: Props) {
         <GojuonSection title="Hiragana" items={hiragana} prefix="h" store={store} />
         <GojuonSection title="Katakana" items={katakana} prefix="k" store={store} />
         <DigitSection store={store} />
+        <LevelGroupedSection title="Grundwortschatz" items={coreVocab} levels={coreVocabLevels} store={store} />
+        <LevelGroupedSection title="Alltags-Floskeln" items={dailyPhrases} levels={dailyPhraseLevels} store={store} />
+        <LevelGroupedSection title="Reise-Floskeln" items={travelPhrases} levels={travelPhraseLevels} store={store} />
       </div>
     </div>
   );
