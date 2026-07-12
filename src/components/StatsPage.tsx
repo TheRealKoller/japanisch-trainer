@@ -7,6 +7,7 @@ import { travelPhrases, travelPhraseLevels } from "../data/travelPhrases";
 import type { VocabItem } from "../data/types";
 import type { Level } from "../data/levels";
 import { loadItemStats, successRate, type ItemStats, type ItemStatsStore } from "../utils/itemStats";
+import { MASTERY_THRESHOLD } from "../utils/levelMastery";
 
 interface Props {
   onBack: () => void;
@@ -17,7 +18,7 @@ function tileColor(stats: ItemStats | undefined): string {
     return "bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-slate-500";
   }
   const rate = successRate(stats);
-  if (rate >= 0.8) return "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400";
+  if (rate >= MASTERY_THRESHOLD) return "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400";
   if (rate >= 0.5) return "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400";
   return "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400";
 }
