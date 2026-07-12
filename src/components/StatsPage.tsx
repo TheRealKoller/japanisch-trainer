@@ -6,7 +6,7 @@ import { dailyPhrases, dailyPhraseLevels } from "../data/dailyPhrases";
 import { travelPhrases, travelPhraseLevels } from "../data/travelPhrases";
 import type { VocabItem } from "../data/types";
 import type { Level } from "../data/levels";
-import { loadItemStats, type ItemStats, type ItemStatsStore } from "../utils/itemStats";
+import { loadItemStats, successRate, type ItemStats, type ItemStatsStore } from "../utils/itemStats";
 
 interface Props {
   onBack: () => void;
@@ -16,7 +16,7 @@ function tileColor(stats: ItemStats | undefined): string {
   if (!stats || stats.correct + stats.incorrect === 0) {
     return "bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-slate-500";
   }
-  const rate = stats.correct / (stats.correct + stats.incorrect);
+  const rate = successRate(stats);
   if (rate >= 0.8) return "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400";
   if (rate >= 0.5) return "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400";
   return "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400";
@@ -95,9 +95,8 @@ function KanaTile({ item, stats, showRomaji }: TileProps) {
   if (!item) {
     return <div className="rounded-lg bg-gray-100 dark:bg-slate-800/50" />;
   }
-  const correct = stats?.correct ?? 0;
-  const total = correct + (stats?.incorrect ?? 0);
-  const pct = total > 0 ? `${Math.round((correct / total) * 100)}%` : "—";
+  const total = (stats?.correct ?? 0) + (stats?.incorrect ?? 0);
+  const pct = total > 0 ? `${Math.round(successRate(stats) * 100)}%` : "—";
   return (
     <div className={`flex flex-col items-center py-1.5 rounded-lg transition-colors ${tileColor(stats)}`}>
       <span className={`${tileTextSizeClass(item.japanese)} font-medium text-center`}>{item.japanese}</span>
