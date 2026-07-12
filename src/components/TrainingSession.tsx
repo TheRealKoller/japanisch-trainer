@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import type { VocabItem } from "../data/types";
 import { Flashcard } from "./Flashcard";
+import type { FlashcardVariant } from "./Flashcard";
 import { OptionsMenu } from "./OptionsMenu";
 import { speakText } from "../utils/voicevox";
 import { recordAnswer } from "../utils/itemStats";
@@ -32,6 +33,7 @@ interface Props {
   title: string;
   onBack: () => void;
   levelConfig?: TrainingLevelConfig;
+  cardVariant?: FlashcardVariant;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -44,7 +46,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 
-export function TrainingSession({ items, title, onBack, levelConfig }: Props) {
+export function TrainingSession({ items, title, onBack, levelConfig, cardVariant }: Props) {
   const [queue, setQueue] = useState<VocabItem[]>(() => shuffle(items));
   const [wrongItems, setWrongItems] = useState<VocabItem[]>([]);
   const [correctCount, setCorrectCount] = useState(0);
@@ -193,6 +195,7 @@ export function TrainingSession({ items, title, onBack, levelConfig }: Props) {
       <div className="flex-1 flex flex-col items-center justify-center gap-6">
         <Flashcard
           item={current}
+          variant={cardVariant}
           flipped={flipped}
           onFlip={() => setFlipped(true)}
           onSpeak={handleSpeak}

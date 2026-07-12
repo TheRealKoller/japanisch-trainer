@@ -8,6 +8,7 @@ import { travelPhrases, travelPhraseLevels } from "./data/travelPhrases";
 import type { VocabItem } from "./data/types";
 import { TrainingSession } from "./components/TrainingSession";
 import type { TrainingLevelConfig } from "./components/TrainingSession";
+import type { FlashcardVariant } from "./components/Flashcard";
 import { NumberQuizSession } from "./components/NumberQuizSession";
 import { SegmentedProgressBar } from "./components/SegmentedProgressBar";
 import { OptionsMenu } from "./components/OptionsMenu";
@@ -112,14 +113,15 @@ interface LevelLessonConfig {
   progressKey: LevelKey;
   cumulative: boolean; // Kana-Sessions üben alle Karten bis zum Level, Vokabel-Sessions nur das Level selbst
   unit: string;
+  cardVariant: FlashcardVariant; // Kana-Sessions zeigen Kanji/Kana groß, Vokabel-Sessions Romaji groß (siehe Issue #119)
 }
 
 const levelLessons = {
-  hiragana: { items: hiragana, levels: hiraganaLevels, progressKey: "kana-level-hiragana", cumulative: true, unit: "neue Zeichen" },
-  katakana: { items: katakana, levels: katakanaLevels, progressKey: "kana-level-katakana", cumulative: true, unit: "neue Zeichen" },
-  "core-vocab": { items: coreVocab, levels: coreVocabLevels, progressKey: "level-core-vocab", cumulative: false, unit: "Wörter" },
-  "daily-phrases": { items: dailyPhrases, levels: dailyPhraseLevels, progressKey: "level-daily-phrases", cumulative: false, unit: "Floskeln" },
-  "travel-phrases": { items: travelPhrases, levels: travelPhraseLevels, progressKey: "level-travel-phrases", cumulative: false, unit: "Floskeln" },
+  hiragana: { items: hiragana, levels: hiraganaLevels, progressKey: "kana-level-hiragana", cumulative: true, unit: "neue Zeichen", cardVariant: "default" },
+  katakana: { items: katakana, levels: katakanaLevels, progressKey: "kana-level-katakana", cumulative: true, unit: "neue Zeichen", cardVariant: "default" },
+  "core-vocab": { items: coreVocab, levels: coreVocabLevels, progressKey: "level-core-vocab", cumulative: false, unit: "Wörter", cardVariant: "vocab" },
+  "daily-phrases": { items: dailyPhrases, levels: dailyPhraseLevels, progressKey: "level-daily-phrases", cumulative: false, unit: "Floskeln", cardVariant: "vocab" },
+  "travel-phrases": { items: travelPhrases, levels: travelPhraseLevels, progressKey: "level-travel-phrases", cumulative: false, unit: "Floskeln", cardVariant: "vocab" },
 } satisfies Record<string, LevelLessonConfig>;
 
 type LevelLessonId = keyof typeof levelLessons;
@@ -203,7 +205,7 @@ function App() {
 
   if (isLevelLesson(view)) {
     const lessonId = view;
-    const { items: allItems, levels, progressKey, cumulative, unit } = levelLessons[lessonId];
+    const { items: allItems, levels, progressKey, cumulative, unit, cardVariant } = levelLessons[lessonId];
     const unlocked = unlockedLevels[lessonId];
     const { title, color: cardBase, badge: badgeActive } = lessons[lessonId];
 
@@ -230,6 +232,7 @@ function App() {
             title={`${title} – Level ${level}`}
             onBack={() => setActiveLevel(null)}
             levelConfig={levelConfig}
+            cardVariant={cardVariant}
           />
         </main>
       );

@@ -94,6 +94,7 @@ Jede Lektion hat eine eigene Tintfarbe — nur auf der Startseite und für Badge
 | body-sm | `text-sm text-gray-400 dark:text-slate-500` | Hinweistexte, Fortschritts-Labels |
 | label | `text-xs font-medium` | Badges, kleine Labels |
 | stat-number | `text-4xl font-bold` | Große Kennzahlen im Ergebnis-Screen |
+| meaning-lg | `text-2xl font-medium text-gray-700 dark:text-slate-200` | Bedeutung auf Kartenrückseite (Vokabel-/Floskel-Karten, `cardVariant="vocab"`) |
 
 ---
 
@@ -168,6 +169,25 @@ Rückseite:   w-72 h-72 sm:w-80 sm:h-80 rounded-2xl border-2
 | ≤ 4 | `text-5xl sm:text-6xl` |
 | ≤ 8 | `text-3xl sm:text-4xl` |
 | > 8 | `text-xl sm:text-2xl` |
+
+**Kartenvariante `vocab` (Grundwortschatz, Alltags-/Reise-Floskeln):** `Flashcard` erhält einen `variant`-Prop (`"default" | "vocab"`), gesteuert über `cardVariant` in `levelLessons` (`App.tsx`) und durchgereicht über `TrainingSession`. Bei `variant="vocab"` steht die westliche Schreibweise im Vordergrund, nicht die Schriftzeichen (Ziel: Wörter/Floskeln lernen, nicht die Schrift) — Hiragana/Katakana/Zahlen-Lektionen bleiben unverändert bei `"default"`.
+
+Vorderseite (`variant="vocab"`), von oben nach unten:
+1. Romaji (`item.romaji`) groß, Größe via `romajiSizeClass()`
+2. Kana-Lesung (`item.reading`, oder `item.japanese` falls dieses bereits vollständig Kana ist) — `reading-md`
+3. Korrekte Schreibweise (`item.japanese`) klein — `japanese-md`; **ausgeblendet**, wenn `item.reading` nicht gesetzt ist (reine Kana-Wörter ohne Kanji, `japanese` ist dann bereits identisch mit Zeile 2)
+
+Rückseite (`variant="vocab"`): nur `item.meaning`, Stil `meaning-lg`.
+
+**Dynamische Schriftgröße (Romaji, Vorderseite):** `romajiSizeClass()` in `Flashcard.tsx` — Romaji-Strings sind deutlich länger als Kana/Kanji, daher eigene Staffelung:
+
+| Zeichenlänge | Klassen |
+|---|---|
+| ≤ 4 | `text-5xl sm:text-6xl` |
+| ≤ 8 | `text-4xl sm:text-5xl` |
+| ≤ 14 | `text-2xl sm:text-3xl` |
+| ≤ 22 | `text-xl sm:text-2xl` |
+| > 22 | `text-lg sm:text-xl` |
 
 ### Badge / Pill
 
