@@ -4,8 +4,9 @@ import { Flashcard } from "./Flashcard";
 import type { FlashcardVariant, CardOrientation } from "./Flashcard";
 import { OptionsMenu } from "./OptionsMenu";
 import { speakText } from "../utils/voicevox";
-import { recordAnswer } from "../utils/itemStats";
+import { recordAnswer, loadItemStats } from "../utils/itemStats";
 import { buildOrientations } from "../utils/cardOrientation";
+import { selectSessionItems, shuffle } from "../utils/sessionSelection";
 import { usePrefetchNext } from "../hooks/usePrefetchNext";
 
 const WAVE_BARS = [
@@ -37,19 +38,13 @@ interface Props {
   cardVariant?: FlashcardVariant;
 }
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
 export function TrainingSession({ items, title, onBack, levelConfig, cardVariant }: Props) {
-  const [queue, setQueue] = useState<VocabItem[]>(() => shuffle(items));
+  const [selectedItems, setSelectedItems] = useState<VocabItem[]>(
+    () => selectSessionItems(items, loadItemStats()),
+  );
+  const [queue, setQueue] = useState<VocabItem[]>(() => shuffle(selectedItems));
   const [orientations, setOrientations] = useState<Partial<Record<string, CardOrientation>>>(
-    () => (cardVariant === "vocab" ? buildOrientations(items) : {}),
+    () => (cardVariant === "vocab" ? buildOrientations(selectedItems) : {}),
   );
   const [wrongItems, setWrongItems] = useState<VocabItem[]>([]);
   const [correctCount, setCorrectCount] = useState(0);
@@ -116,8 +111,10 @@ export function TrainingSession({ items, title, onBack, levelConfig, cardVariant
   }, [queue, wrongItems, current]);
 
   function restart() {
-    setQueue(shuffle(items));
-    setOrientations(cardVariant === "vocab" ? buildOrientations(items) : {});
+    const nextSelected = selectSessionItems(items, loadItemStats());
+    setSelectedItems(nextSelected);
+    setQueue(shuffle(nextSelected));
+    setOrientations(cardVariant === "vocab" ? buildOrientations(nextSelected) : {});
     setWrongItems([]);
     setCorrectCount(0);
     setWrongItemIds(new Set());
@@ -126,8 +123,8 @@ export function TrainingSession({ items, title, onBack, levelConfig, cardVariant
   }
 
   if (done) {
-    const firstTryCorrect = items.length - wrongItemIds.size;
-    const pct = Math.round((firstTryCorrect / items.length) * 100);
+    const firstTryCorrect = selectedItems.length - wrongItemIds.size;
+    const pct = Math.round((firstTryCorrect / selectedItems.length) * 100);
     return (
       <div className="flex flex-col items-center gap-6 w-full max-w-md mx-auto">
         <div className="text-6xl">🎉</div>
@@ -210,10 +207,10 @@ export function TrainingSession({ items, title, onBack, levelConfig, cardVariant
         <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-2">
           <div
             className="bg-gradient-to-r from-indigo-500 to-violet-500 h-2 rounded-full transition-all duration-500"
-            style={{ width: `${(correctCount / items.length) * 100}%` }}
+            style={{ width: `${(correctCount / selectedItems.length) * 100}%` }}
           />
         </div>
-        <p className="text-sm text-gray-400 dark:text-slate-500">{correctCount} / {items.length} gelernt</p>
+        <p className="text-sm text-gray-400 dark:text-slate-500">{correctCount} / {selectedItems.length} gelernt</p>
       </div>
 
       <div className="pb-4">

@@ -111,7 +111,8 @@ interface LevelLessonConfig {
   items: VocabItem[];
   levels: Level[];
   progressKey: LevelKey;
-  cumulative: boolean; // true: Session übt alle Karten bis einschließlich des Levels, nicht nur das Level selbst
+  cumulative: boolean; // true: Level-Pool umfasst alle Karten bis einschließlich des Levels, nicht nur das Level selbst
+                        // (bei Pools über 20 Karten wählt TrainingSession daraus eine gewichtete Session-Teilmenge aus, siehe Issue #127)
   unit: string;
   cardVariant: FlashcardVariant; // Kana-Sessions zeigen Kanji/Kana groß, Vokabel-Sessions Romaji groß (siehe Issue #119)
 }

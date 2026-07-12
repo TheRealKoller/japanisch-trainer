@@ -46,3 +46,10 @@ export function updateItemRecord(store: ItemStatsStore, id: string, correct: boo
 export function recordAnswer(id: string, correct: boolean): void {
   saveItemStats(updateItemRecord(loadItemStats(), id, correct));
 }
+
+// Erfolgsquote 0..1; kein Datensatz oder keine Antworten (nie geübt) zählt als 0.
+export function successRate(stats: ItemStats | undefined): number {
+  if (!stats) return 0;
+  const total = stats.correct + stats.incorrect;
+  return total === 0 ? 0 : stats.correct / total;
+}

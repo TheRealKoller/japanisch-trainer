@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { updateItemRecord, loadItemStats, saveItemStats, type ItemStatsStore } from "./itemStats";
+import { updateItemRecord, loadItemStats, saveItemStats, successRate, type ItemStatsStore } from "./itemStats";
 import { extractDigits } from "./quizStats";
 
 // localStorage mock for node environment
@@ -78,6 +78,24 @@ describe("localStorage persistence", () => {
     expect(loaded["hka"]?.correct).toBe(1);
     expect(loaded["hka"]?.incorrect).toBe(1);
     expect(loaded["hi"]?.correct).toBe(1);
+  });
+});
+
+describe("successRate", () => {
+  it("liefert 0 für fehlenden Eintrag", () => {
+    expect(successRate(undefined)).toBe(0);
+  });
+
+  it("liefert 0 für einen Eintrag ohne jede Antwort", () => {
+    expect(successRate({ id: "ha", correct: 0, incorrect: 0, lastSeen: 0 })).toBe(0);
+  });
+
+  it("liefert 1 wenn alle Antworten richtig waren", () => {
+    expect(successRate({ id: "ha", correct: 3, incorrect: 0, lastSeen: 0 })).toBe(1);
+  });
+
+  it("liefert die korrekte Quote bei gemischten Antworten", () => {
+    expect(successRate({ id: "ha", correct: 3, incorrect: 1, lastSeen: 0 })).toBe(0.75);
   });
 });
 
