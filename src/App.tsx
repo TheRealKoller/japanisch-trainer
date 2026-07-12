@@ -111,7 +111,7 @@ interface LevelLessonConfig {
   items: VocabItem[];
   levels: Level[];
   progressKey: LevelKey;
-  cumulative: boolean; // Kana-Sessions üben alle Karten bis zum Level, Vokabel-Sessions nur das Level selbst
+  cumulative: boolean; // true: Session übt alle Karten bis einschließlich des Levels, nicht nur das Level selbst
   unit: string;
   cardVariant: FlashcardVariant; // Kana-Sessions zeigen Kanji/Kana groß, Vokabel-Sessions Romaji groß (siehe Issue #119)
 }
@@ -119,9 +119,9 @@ interface LevelLessonConfig {
 const levelLessons = {
   hiragana: { items: hiragana, levels: hiraganaLevels, progressKey: "kana-level-hiragana", cumulative: true, unit: "neue Zeichen", cardVariant: "default" },
   katakana: { items: katakana, levels: katakanaLevels, progressKey: "kana-level-katakana", cumulative: true, unit: "neue Zeichen", cardVariant: "default" },
-  "core-vocab": { items: coreVocab, levels: coreVocabLevels, progressKey: "level-core-vocab", cumulative: false, unit: "Wörter", cardVariant: "vocab" },
-  "daily-phrases": { items: dailyPhrases, levels: dailyPhraseLevels, progressKey: "level-daily-phrases", cumulative: false, unit: "Floskeln", cardVariant: "vocab" },
-  "travel-phrases": { items: travelPhrases, levels: travelPhraseLevels, progressKey: "level-travel-phrases", cumulative: false, unit: "Floskeln", cardVariant: "vocab" },
+  "core-vocab": { items: coreVocab, levels: coreVocabLevels, progressKey: "level-core-vocab", cumulative: true, unit: "neue Wörter", cardVariant: "vocab" },
+  "daily-phrases": { items: dailyPhrases, levels: dailyPhraseLevels, progressKey: "level-daily-phrases", cumulative: true, unit: "neue Floskeln", cardVariant: "vocab" },
+  "travel-phrases": { items: travelPhrases, levels: travelPhraseLevels, progressKey: "level-travel-phrases", cumulative: true, unit: "neue Floskeln", cardVariant: "vocab" },
 } satisfies Record<string, LevelLessonConfig>;
 
 type LevelLessonId = keyof typeof levelLessons;
