@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import type { VocabItem } from "../data/types";
 import { Flashcard } from "./Flashcard";
 import type { FlashcardVariant, CardOrientation } from "./Flashcard";
@@ -26,19 +26,14 @@ function WaveAnimation() {
   );
 }
 
-export interface TrainingLevelConfig {
-  onLevelComplete: () => void;
-}
-
 interface Props {
   items: VocabItem[];
   title: string;
   onBack: () => void;
-  levelConfig?: TrainingLevelConfig;
   cardVariant?: FlashcardVariant;
 }
 
-export function TrainingSession({ items, title, onBack, levelConfig, cardVariant }: Props) {
+export function TrainingSession({ items, title, onBack, cardVariant }: Props) {
   const [selectedItems, setSelectedItems] = useState<VocabItem[]>(
     () => selectSessionItems(items, loadItemStats()),
   );
@@ -55,13 +50,6 @@ export function TrainingSession({ items, title, onBack, levelConfig, cardVariant
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speakError, setSpeakError] = useState(false);
   const isSpeakingRef = useRef(false);
-
-  const onLevelComplete = levelConfig?.onLevelComplete;
-  useEffect(() => {
-    if (done && onLevelComplete) {
-      onLevelComplete();
-    }
-  }, [done, onLevelComplete]);
 
   usePrefetchNext(queue[0]?.japanese);
 

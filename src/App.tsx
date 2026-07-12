@@ -7,7 +7,6 @@ import { dailyPhrases, dailyPhraseLevels } from "./data/dailyPhrases";
 import { travelPhrases, travelPhraseLevels } from "./data/travelPhrases";
 import type { VocabItem } from "./data/types";
 import { TrainingSession } from "./components/TrainingSession";
-import type { TrainingLevelConfig } from "./components/TrainingSession";
 import type { FlashcardVariant } from "./components/Flashcard";
 import { NumberQuizSession } from "./components/NumberQuizSession";
 import { SegmentedProgressBar } from "./components/SegmentedProgressBar";
@@ -18,8 +17,9 @@ import { LoginPage } from "./components/LoginPage";
 import { hiraganaLevels, katakanaLevels } from "./data/kanaLevels";
 import { itemsForLevel } from "./data/levels";
 import type { Level } from "./data/levels";
-import { loadUnlockedLevel, saveUnlockedLevel } from "./utils/levelStats";
-import type { LevelKey } from "./utils/levelStats";
+import { loadItemStats } from "./utils/itemStats";
+import type { ItemStatsStore } from "./utils/itemStats";
+import { highestUnlockedLevel } from "./utils/levelMastery";
 import { loadStats } from "./utils/quizStats";
 
 type Lesson =
@@ -110,7 +110,6 @@ const lessons: Record<Lesson, LessonMeta> = {
 interface LevelLessonConfig {
   items: VocabItem[];
   levels: Level[];
-  progressKey: LevelKey;
   cumulative: boolean; // true: Level-Pool umfasst alle Karten bis einschließlich des Levels, nicht nur das Level selbst
                         // (bei Pools über 20 Karten wählt TrainingSession daraus eine gewichtete Session-Teilmenge aus, siehe Issue #127)
   unit: string;
@@ -118,11 +117,11 @@ interface LevelLessonConfig {
 }
 
 const levelLessons = {
-  hiragana: { items: hiragana, levels: hiraganaLevels, progressKey: "kana-level-hiragana", cumulative: true, unit: "neue Zeichen", cardVariant: "default" },
-  katakana: { items: katakana, levels: katakanaLevels, progressKey: "kana-level-katakana", cumulative: true, unit: "neue Zeichen", cardVariant: "default" },
-  "core-vocab": { items: coreVocab, levels: coreVocabLevels, progressKey: "level-core-vocab", cumulative: true, unit: "neue Wörter", cardVariant: "vocab" },
-  "daily-phrases": { items: dailyPhrases, levels: dailyPhraseLevels, progressKey: "level-daily-phrases", cumulative: true, unit: "neue Floskeln", cardVariant: "vocab" },
-  "travel-phrases": { items: travelPhrases, levels: travelPhraseLevels, progressKey: "level-travel-phrases", cumulative: true, unit: "neue Floskeln", cardVariant: "vocab" },
+  hiragana: { items: hiragana, levels: hiraganaLevels, cumulative: true, unit: "neue Zeichen", cardVariant: "default" },
+  katakana: { items: katakana, levels: katakanaLevels, cumulative: true, unit: "neue Zeichen", cardVariant: "default" },
+  "core-vocab": { items: coreVocab, levels: coreVocabLevels, cumulative: true, unit: "neue Wörter", cardVariant: "vocab" },
+  "daily-phrases": { items: dailyPhrases, levels: dailyPhraseLevels, cumulative: true, unit: "neue Floskeln", cardVariant: "vocab" },
+  "travel-phrases": { items: travelPhrases, levels: travelPhraseLevels, cumulative: true, unit: "neue Floskeln", cardVariant: "vocab" },
 } satisfies Record<string, LevelLessonConfig>;
 
 type LevelLessonId = keyof typeof levelLessons;
@@ -140,16 +139,14 @@ function viewFromHash(): View {
 
 function App() {
   const [view, setView] = useState<View>(viewFromHash);
-  const [unlockedLevels, setUnlockedLevels] = useState<Record<LevelLessonId, number>>(() =>
-    Object.fromEntries(
-      (Object.keys(levelLessons) as LevelLessonId[]).map((id) => [id, loadUnlockedLevel(levelLessons[id].progressKey)]),
-    ) as Record<LevelLessonId, number>,
-  );
   const [quizLevel, setQuizLevel] = useState(() => loadStats().currentLevel);
   const [activeLevel, setActiveLevel] = useState<number | null>(null);
 
-  function getProgressCompleted(lessonId: Lesson): number | null {
-    if (isLevelLesson(lessonId)) return unlockedLevels[lessonId] - 1;
+  function getProgressCompleted(lessonId: Lesson, itemStats: ItemStatsStore): number | null {
+    if (isLevelLesson(lessonId)) {
+      const { items, levels } = levelLessons[lessonId];
+      return highestUnlockedLevel(items, levels, itemStats) - 1;
+    }
     if (lessonId === "number-quiz") return quizLevel - 1;
     return null;
   }
@@ -206,25 +203,12 @@ function App() {
 
   if (isLevelLesson(view)) {
     const lessonId = view;
-    const { items: allItems, levels, progressKey, cumulative, unit, cardVariant } = levelLessons[lessonId];
-    const unlocked = unlockedLevels[lessonId];
+    const { items: allItems, levels, cumulative, unit, cardVariant } = levelLessons[lessonId];
     const { title, color: cardBase, badge: badgeActive } = lessons[lessonId];
 
     if (activeLevel !== null) {
       const level = activeLevel;
       const sessionItems = itemsForLevel(allItems, levels, level, cumulative);
-
-      const handleLevelComplete = () => {
-        if (level >= unlocked) {
-          const nextLevel = level + 1;
-          saveUnlockedLevel(progressKey, nextLevel);
-          setUnlockedLevels((prev) => ({ ...prev, [lessonId]: nextLevel }));
-        }
-      };
-
-      const levelConfig: TrainingLevelConfig = {
-        onLevelComplete: handleLevelComplete,
-      };
 
       return (
         <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
@@ -232,12 +216,13 @@ function App() {
             items={sessionItems}
             title={`${title} – Level ${level}`}
             onBack={() => setActiveLevel(null)}
-            levelConfig={levelConfig}
             cardVariant={cardVariant}
           />
         </main>
       );
     }
+
+    const unlocked = highestUnlockedLevel(allItems, levels, loadItemStats());
 
     return (
       <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-gray-50 dark:bg-slate-950">
@@ -316,6 +301,8 @@ function App() {
     );
   }
 
+  const homeScreenItemStats = loadItemStats();
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-6 sm:p-8 bg-gray-50 dark:bg-slate-950">
       <div className="fixed top-4 right-4 z-50">
@@ -333,7 +320,7 @@ function App() {
 
         <div className="flex flex-col gap-3">
           {(Object.entries(lessons) as [Lesson, LessonMeta][]).map(([id, lesson]) => {
-            const completed = getProgressCompleted(id);
+            const completed = getProgressCompleted(id, homeScreenItemStats);
             return (
               <button
                 key={id}
