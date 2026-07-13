@@ -18,7 +18,12 @@
       "Bash(docker compose *)",
       "Bash(npx skills *)",
       "Bash(grep -E '\\\\.\\(ts|tsx|js|json\\)$')",
-      "Bash(npx vitest *)"
+      "Bash(npx vitest *)",
+      "Bash(node *)",
+      "WebFetch(domain:github.com)",
+      "Bash(NODE_PATH=/home/thekoller/projekte/japanisch-trainer/node_modules node *)",
+      "Bash(git status *)",
+      "Bash(disown)"
     ]
   }
 }
