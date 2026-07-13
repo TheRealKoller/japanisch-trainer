@@ -9,7 +9,15 @@ const levels = buildLevels(items, 8); // Level 1: x1-x8, Level 2: x9-x16, Level 
 function statsFor(ids: string[], rate: number): ItemStatsStore {
   const store: ItemStatsStore = {};
   for (const id of ids) {
-    store[id] = { id, correct: Math.round(rate * 10), incorrect: 10 - Math.round(rate * 10), lastSeen: 0 };
+    const correct = Math.round(rate * 10);
+    const incorrect = 10 - correct;
+    store[id] = {
+      id,
+      correct,
+      incorrect,
+      history: [...Array(correct).fill(true), ...Array(incorrect).fill(false)],
+      lastSeen: 0,
+    };
   }
   return store;
 }
@@ -22,7 +30,13 @@ describe("isLevelMastered", () => {
 
   it("ist nicht bestanden, wenn ein einzelner Begriff unter 90% liegt", () => {
     const stats = statsFor(levels[0].ids, 1);
-    stats[levels[0].ids[0]] = { id: levels[0].ids[0], correct: 8, incorrect: 2, lastSeen: 0 }; // 80%
+    stats[levels[0].ids[0]] = {
+      id: levels[0].ids[0],
+      correct: 8,
+      incorrect: 2,
+      history: [...Array(8).fill(true), ...Array(2).fill(false)],
+      lastSeen: 0,
+    }; // 80%
     expect(isLevelMastered(items, levels, 1, stats)).toBe(false);
   });
 
@@ -60,7 +74,16 @@ describe("highestUnlockedLevel", () => {
     const mastered = { ...statsFor(levels[0].ids, 1), ...statsFor(levels[1].ids, 1) };
     expect(highestUnlockedLevel(items, levels, mastered)).toBe(3);
 
-    const regressed = { ...mastered, [levels[0].ids[0]]: { id: levels[0].ids[0], correct: 1, incorrect: 9, lastSeen: 0 } };
+    const regressed = {
+      ...mastered,
+      [levels[0].ids[0]]: {
+        id: levels[0].ids[0],
+        correct: 1,
+        incorrect: 9,
+        history: [true, ...Array(9).fill(false)],
+        lastSeen: 0,
+      },
+    };
     expect(highestUnlockedLevel(items, levels, regressed)).toBe(1);
   });
 });
