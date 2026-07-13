@@ -128,6 +128,25 @@ describe("successRate", () => {
   });
 });
 
+describe("Beispielrechnung aus Issue #137", () => {
+  it("erreicht nach früh gemachten Fehlern (1x richtig, 3x falsch) mit weniger als 26 weiteren richtigen Antworten wieder 90%", () => {
+    let store: ItemStatsStore = {};
+    store = updateItemRecord(store, "ha", true);
+    store = updateItemRecord(store, "ha", false);
+    store = updateItemRecord(store, "ha", false);
+    store = updateItemRecord(store, "ha", false);
+    expect(successRate(store["ha"])).toBe(0.25); // Lifetime-Quote wie zuvor: 1/4
+
+    // Mit der alten Lifetime-Formel wären ab hier 26 weitere richtige Antworten nötig
+    // (siehe Issue #137), bis correct/(correct+incorrect) wieder auf 0.9 steigt.
+    // Das rollierende Fenster braucht dafür höchstens HISTORY_WINDOW (10) Antworten.
+    for (let i = 0; i < 9; i++) {
+      store = updateItemRecord(store, "ha", true);
+    }
+    expect(successRate(store["ha"])).toBeGreaterThanOrEqual(0.9);
+  });
+});
+
 describe("loadItemStats — Migration von Alt-Daten ohne history", () => {
   beforeEach(() => { storage.clear(); });
 
