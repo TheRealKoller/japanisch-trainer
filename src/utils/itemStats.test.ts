@@ -20,12 +20,14 @@ describe("updateItemRecord", () => {
     const store = updateItemRecord({}, "ha", true);
     expect(store["ha"]?.correct).toBe(1);
     expect(store["ha"]?.incorrect).toBe(0);
+    expect(store["ha"]?.history).toEqual([true]);
   });
 
   it("increments incorrect count on wrong answer", () => {
     const store = updateItemRecord({}, "ha", false);
     expect(store["ha"]?.correct).toBe(0);
     expect(store["ha"]?.incorrect).toBe(1);
+    expect(store["ha"]?.history).toEqual([false]);
   });
 
   it("accumulates counts across multiple calls", () => {
@@ -35,6 +37,7 @@ describe("updateItemRecord", () => {
     store = updateItemRecord(store, "ha", true);
     expect(store["ha"]?.correct).toBe(2);
     expect(store["ha"]?.incorrect).toBe(1);
+    expect(store["ha"]?.history).toEqual([true, false, true]);
   });
 
   it("tracks multiple items independently", () => {
@@ -50,6 +53,17 @@ describe("updateItemRecord", () => {
     const original: ItemStatsStore = {};
     updateItemRecord(original, "ha", true);
     expect(original["ha"]).toBeUndefined();
+  });
+
+  it("caps history at HISTORY_WINDOW, dropping the oldest entries", () => {
+    let store: ItemStatsStore = {};
+    for (let i = 0; i < 12; i++) {
+      store = updateItemRecord(store, "ha", i >= 2); // erste 2 falsch, Rest richtig
+    }
+    expect(store["ha"]?.history).toHaveLength(10);
+    expect(store["ha"]?.history.every(Boolean)).toBe(true); // die 2 Fehler sind aus dem Fenster gefallen
+    expect(store["ha"]?.correct).toBe(10); // Lifetime-Zähler bleiben unbegrenzt
+    expect(store["ha"]?.incorrect).toBe(2);
   });
 });
 
@@ -87,15 +101,65 @@ describe("successRate", () => {
   });
 
   it("liefert 0 für einen Eintrag ohne jede Antwort", () => {
-    expect(successRate({ id: "ha", correct: 0, incorrect: 0, lastSeen: 0 })).toBe(0);
+    expect(successRate({ id: "ha", correct: 0, incorrect: 0, history: [], lastSeen: 0 })).toBe(0);
   });
 
   it("liefert 1 wenn alle Antworten richtig waren", () => {
-    expect(successRate({ id: "ha", correct: 3, incorrect: 0, lastSeen: 0 })).toBe(1);
+    expect(successRate({ id: "ha", correct: 3, incorrect: 0, history: [true, true, true], lastSeen: 0 })).toBe(1);
   });
 
   it("liefert die korrekte Quote bei gemischten Antworten", () => {
-    expect(successRate({ id: "ha", correct: 3, incorrect: 1, lastSeen: 0 })).toBe(0.75);
+    expect(
+      successRate({ id: "ha", correct: 3, incorrect: 1, history: [true, true, true, false], lastSeen: 0 }),
+    ).toBe(0.75);
+  });
+
+  it("berücksichtigt nur die letzten HISTORY_WINDOW Antworten, nicht die Lifetime-Zähler", () => {
+    // Lifetime wäre 3/13 ≈ 23%, aber history spiegelt nur die letzten 10 (alle richtig) wider.
+    expect(
+      successRate({
+        id: "ha",
+        correct: 10,
+        incorrect: 3,
+        history: Array(10).fill(true),
+        lastSeen: 0,
+      }),
+    ).toBe(1);
+  });
+});
+
+describe("loadItemStats — Migration von Alt-Daten ohne history", () => {
+  beforeEach(() => { storage.clear(); });
+
+  it("synthetisiert eine plausible history aus correct/incorrect im vorhandenen Verhältnis", () => {
+    storage.set(
+      "japanisch-trainer:item-stats",
+      JSON.stringify({ ha: { id: "ha", correct: 1, incorrect: 3, lastSeen: 123 } }),
+    );
+    const loaded = loadItemStats();
+    expect(loaded["ha"]?.history).toHaveLength(4);
+    expect(loaded["ha"]?.history.filter(Boolean)).toHaveLength(1);
+    expect(successRate(loaded["ha"])).toBe(0.25);
+  });
+
+  it("kappt die synthetisierte history auf HISTORY_WINDOW Einträge bei hoher Lifetime-Gesamtzahl", () => {
+    storage.set(
+      "japanisch-trainer:item-stats",
+      JSON.stringify({ ha: { id: "ha", correct: 27, incorrect: 3, lastSeen: 123 } }),
+    );
+    const loaded = loadItemStats();
+    expect(loaded["ha"]?.history).toHaveLength(10);
+    // 30 total, Verhältnis 27/30 = 90% → 9 von 10 synthetisierten Einträgen richtig
+    expect(loaded["ha"]?.history.filter(Boolean)).toHaveLength(9);
+  });
+
+  it("lässt bereits migrierte Einträge (mit history) unverändert", () => {
+    storage.set(
+      "japanisch-trainer:item-stats",
+      JSON.stringify({ ha: { id: "ha", correct: 1, incorrect: 1, history: [true, false], lastSeen: 123 } }),
+    );
+    const loaded = loadItemStats();
+    expect(loaded["ha"]?.history).toEqual([true, false]);
   });
 });
 

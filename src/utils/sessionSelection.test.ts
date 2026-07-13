@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { selectSessionItems } from "./sessionSelection";
-import type { ItemStatsStore } from "./itemStats";
+import type { ItemStats, ItemStatsStore } from "./itemStats";
+
+function makeStats(id: string, correct: number, incorrect: number): ItemStats {
+  return { id, correct, incorrect, history: [...Array(correct).fill(true), ...Array(incorrect).fill(false)], lastSeen: 0 };
+}
 
 function makeItems(count: number) {
   return Array.from({ length: count }, (_, i) => ({
@@ -39,7 +43,7 @@ describe("selectSessionItems", () => {
     // Die ersten 10 Begriffe bekommen eine niedrige, eindeutig unterscheidbare Quote,
     // der Rest eine deutlich höhere Quote — kein Gleichstand an der Auswahlgrenze.
     items.forEach((item, i) => {
-      stats[item.id] = { id: item.id, correct: i < 10 ? 0 : 9, incorrect: i < 10 ? 10 - i : 1, lastSeen: 0 };
+      stats[item.id] = makeStats(item.id, i < 10 ? 0 : 9, i < 10 ? 10 - i : 1);
     });
     const expectedWeakestIds = items.slice(0, 10).map((item) => item.id);
 
@@ -55,7 +59,7 @@ describe("selectSessionItems", () => {
     const stats: ItemStatsStore = {};
     // Nur die letzten 5 Begriffe haben überhaupt einen Eintrag, alle mit 100%.
     for (const item of items.slice(20)) {
-      stats[item.id] = { id: item.id, correct: 5, incorrect: 0, lastSeen: 0 };
+      stats[item.id] = makeStats(item.id, 5, 0);
     }
     const neverPracticedIds = new Set(items.slice(0, 20).map((item) => item.id));
 
@@ -71,7 +75,7 @@ describe("selectSessionItems", () => {
     // Alle Begriffe haben dieselbe (hohe) Quote — die "schwächsten 10" sind also
     // beliebig, und die "zufälligen 10" sollten über viele Läufe hinweg variieren.
     const stats: ItemStatsStore = Object.fromEntries(
-      items.map((item) => [item.id, { id: item.id, correct: 10, incorrect: 0, lastSeen: 0 }]),
+      items.map((item) => [item.id, makeStats(item.id, 10, 0)]),
     );
 
     const seen = new Set<string>();
