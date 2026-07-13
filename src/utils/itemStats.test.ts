@@ -180,6 +180,21 @@ describe("loadItemStats — Migration von Alt-Daten ohne history", () => {
     const loaded = loadItemStats();
     expect(loaded["ha"]?.history).toEqual([true, false]);
   });
+
+  it("verwirft nur einen beschädigten Eintrag statt die gesamte Statistik zu löschen", () => {
+    storage.set(
+      "japanisch-trainer:item-stats",
+      JSON.stringify({
+        // korrupte Werte (z.B. durch manuelle localStorage-Manipulation): dürfen migrateEntry
+        // nicht crashen lassen (new Array(NaN)/new Array(negativ) würde einen RangeError werfen)
+        kaputt: { id: "kaputt", correct: NaN, incorrect: -1, lastSeen: 0 },
+        hi: { id: "hi", correct: 2, incorrect: 0, lastSeen: 0 },
+      }),
+    );
+    const loaded = loadItemStats();
+    expect(loaded["kaputt"]?.history).toEqual([]);
+    expect(loaded["hi"]?.history.filter(Boolean)).toHaveLength(2);
+  });
 });
 
 // Tests below verify the combination of quizStats.extractDigits + updateItemRecord,
