@@ -211,12 +211,13 @@ function App() {
       const sessionItems = itemsForLevel(allItems, levels, level, cumulative);
 
       return (
-        <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
+        <main className="h-screen overflow-hidden flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
           <TrainingSession
             items={sessionItems}
             title={`${title} – Level ${level}`}
             onBack={() => setActiveLevel(null)}
             cardVariant={cardVariant}
+            lessonId={lessonId}
           />
         </main>
       );
@@ -291,7 +292,7 @@ function App() {
     const _: "numbers" = view;
     void _;
     return (
-      <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
+      <main className="h-screen overflow-hidden flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
         <TrainingSession
           items={numbers}
           title="Zahlen"

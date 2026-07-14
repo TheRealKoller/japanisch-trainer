@@ -4,6 +4,7 @@ import { speakText } from "../utils/voicevox";
 import { usePrefetchNext } from "../hooks/usePrefetchNext";
 import { loadStats, saveStats, recordSession, LEVELS, extractDigits, type QuizStats } from "../utils/quizStats";
 import { loadItemStats, saveItemStats, updateItemRecord } from "../utils/itemStats";
+import { LessonStatsSection } from "./StatsSections";
 import { OptionsMenu } from "./OptionsMenu";
 import { Flashcard } from "./Flashcard";
 
@@ -318,6 +319,10 @@ export function NumberQuizSession({ onBack }: Props) {
             </p>
           </div>
         )}
+
+        <div className="w-full">
+          <LessonStatsSection lessonId="number-quiz" store={loadItemStats()} />
+        </div>
 
         <div className="flex gap-4 mt-2 w-full max-w-xs sm:w-auto">
           <button

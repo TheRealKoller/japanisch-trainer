@@ -8,6 +8,7 @@ import { recordAnswer, loadItemStats } from "../utils/itemStats";
 import { buildOrientations } from "../utils/cardOrientation";
 import { selectSessionItems, shuffle } from "../utils/sessionSelection";
 import { usePrefetchNext } from "../hooks/usePrefetchNext";
+import { LessonStatsSection, type StatsLessonId } from "./StatsSections";
 
 const WAVE_BARS = [
   { delay: "0ms",   h: "h-2" },
@@ -31,9 +32,10 @@ interface Props {
   title: string;
   onBack: () => void;
   cardVariant?: FlashcardVariant;
+  lessonId?: StatsLessonId;
 }
 
-export function TrainingSession({ items, title, onBack, cardVariant }: Props) {
+export function TrainingSession({ items, title, onBack, cardVariant, lessonId }: Props) {
   const [selectedItems, setSelectedItems] = useState<VocabItem[]>(
     () => selectSessionItems(items, loadItemStats()),
   );
@@ -114,21 +116,28 @@ export function TrainingSession({ items, title, onBack, cardVariant }: Props) {
     const firstTryCorrect = selectedItems.length - wrongItemIds.size;
     const pct = Math.round((firstTryCorrect / selectedItems.length) * 100);
     return (
-      <div className="flex flex-col items-center gap-6 w-full max-w-md mx-auto">
-        <div className="text-6xl">🎉</div>
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Geschafft!</h2>
-        <div className="flex gap-8 text-center">
-          <div>
-            <p className="text-4xl font-bold text-green-600 dark:text-green-400">{firstTryCorrect}</p>
-            <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">richtig</p>
+      <div className="flex flex-col w-full max-w-md mx-auto flex-1 min-h-0">
+        <div className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center gap-6 py-4">
+          <div className="text-6xl">🎉</div>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Geschafft!</h2>
+          <div className="flex gap-8 text-center">
+            <div>
+              <p className="text-4xl font-bold text-green-600 dark:text-green-400">{firstTryCorrect}</p>
+              <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">richtig</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-red-500 dark:text-red-400">{wrongItemIds.size}</p>
+              <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">falsch</p>
+            </div>
           </div>
-          <div>
-            <p className="text-4xl font-bold text-red-500 dark:text-red-400">{wrongItemIds.size}</p>
-            <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">falsch</p>
-          </div>
+          <p className="text-lg font-semibold text-gray-600 dark:text-slate-300">{pct}% beim ersten Versuch</p>
+          {lessonId && (
+            <div className="w-full">
+              <LessonStatsSection lessonId={lessonId} store={loadItemStats()} />
+            </div>
+          )}
         </div>
-        <p className="text-lg font-semibold text-gray-600 dark:text-slate-300">{pct}% beim ersten Versuch</p>
-        <div className="flex gap-4 mt-4 w-full max-w-xs sm:w-auto">
+        <div className="flex gap-4 pt-4 w-full max-w-xs mx-auto sm:w-auto">
           <button
             onClick={restart}
             className="flex-1 sm:flex-none px-6 py-3 rounded-xl font-medium text-white bg-gradient-to-r from-indigo-500 to-violet-500 hover:opacity-90 transition-opacity"
@@ -149,7 +158,7 @@ export function TrainingSession({ items, title, onBack, cardVariant }: Props) {
   }
 
   return (
-    <div className="flex flex-col w-full max-w-md mx-auto flex-1">
+    <div className="flex flex-col w-full max-w-md mx-auto flex-1 min-h-0 overflow-y-auto">
       <div className="flex items-center justify-between w-full py-1">
         <button
           onClick={onBack}
