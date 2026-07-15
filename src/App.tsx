@@ -187,7 +187,7 @@ function App() {
 
   if (view === "stats") {
     return (
-      <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
+      <main className="h-screen overflow-hidden flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
         <StatsPage onBack={goBack} />
       </main>
     );

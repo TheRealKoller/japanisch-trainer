@@ -224,6 +224,21 @@ Hiragana/Katakana: Gojūon-Raster (`grid-cols-6`, Zeilen/Spalten nach Aussprache
 | ≤ 4 | `text-sm leading-none` |
 | > 4 | `text-xs leading-tight` |
 
+### Tabs (Lektions-Reiter)
+
+Statistikseite: horizontal scrollbare Reiter-Leiste, ein Reiter pro Lektionsart, volle Labels (kein Abkürzen). Nur die Sektion des aktiven Reiters wird angezeigt (`LessonTabs.tsx`).
+
+```
+Leiste:  flex gap-2 overflow-x-auto pb-2 -mx-1 px-1
+Reiter:  shrink-0 whitespace-nowrap px-4 py-2 rounded-xl text-sm font-medium transition-colors
+
+Aktiv:   bg-indigo-500 text-white
+Inaktiv: bg-gray-100 text-gray-600 hover:bg-gray-200
+         dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700
+```
+
+Aktiver Reiter immer Indigo (Primärfarbe), unabhängig von etwaigen Lektionsfarben. Der zuletzt aktive Reiter wird geräte-lokal in `localStorage` persistiert (`statsTabStorage.ts`, Key `"stats-active-tab"`, kein `japanisch-trainer:`-Prefix da bewusst nicht Teil des Server-Syncs) und beim Wiederöffnen der Seite wiederhergestellt.
+
 ### Badge / Pill
 
 ```

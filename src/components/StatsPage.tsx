@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { loadItemStats } from "../utils/itemStats";
+import { getActiveStatsTab, setActiveStatsTab } from "../utils/statsTabStorage";
 import { LessonStatsSection, type StatsLessonId } from "./StatsSections";
+import { LessonTabs } from "./LessonTabs";
 
 interface Props {
   onBack: () => void;
@@ -17,9 +19,17 @@ const LESSON_IDS: StatsLessonId[] = [
 
 export function StatsPage({ onBack }: Props) {
   const [store] = useState(() => loadItemStats());
+  const [activeTab, setActiveTab] = useState<StatsLessonId>(() =>
+    getActiveStatsTab(LESSON_IDS, LESSON_IDS[0]),
+  );
+
+  function selectTab(id: StatsLessonId) {
+    setActiveTab(id);
+    setActiveStatsTab(id);
+  }
 
   return (
-    <div className="flex flex-col w-full max-w-md mx-auto flex-1">
+    <div className="flex flex-col w-full max-w-md mx-auto flex-1 min-h-0">
       <div className="flex items-center justify-between w-full py-1">
         <button
           onClick={onBack}
@@ -31,10 +41,10 @@ export function StatsPage({ onBack }: Props) {
         <div className="w-8" />
       </div>
 
-      <div className="flex-1 overflow-y-auto py-4 flex flex-col gap-8">
-        {LESSON_IDS.map((id) => (
-          <LessonStatsSection key={id} lessonId={id} store={store} />
-        ))}
+      <LessonTabs ids={LESSON_IDS} active={activeTab} onSelect={selectTab} />
+
+      <div className="flex-1 min-h-0 overflow-y-auto py-4">
+        <LessonStatsSection lessonId={activeTab} store={store} />
       </div>
     </div>
   );
