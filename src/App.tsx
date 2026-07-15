@@ -195,7 +195,7 @@ function App() {
 
   if (view === "number-quiz") {
     return (
-      <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
+      <main className="h-screen overflow-hidden flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
         <NumberQuizSession onBack={() => { setView(null); setQuizLevel(loadStats().currentLevel); }} />
       </main>
     );

@@ -163,7 +163,7 @@ export function NumberQuizSession({ onBack }: Props) {
   if (!started) {
     const levelConfig = LEVELS[currentLevel - 1];
     return (
-      <div className="flex flex-col w-full max-w-md mx-auto flex-1">
+      <div className="flex flex-col w-full max-w-md mx-auto flex-1 min-h-0 overflow-y-auto">
         <div className="flex items-center justify-between w-full py-1">
           <button
             onClick={onBack}
@@ -226,105 +226,107 @@ export function NumberQuizSession({ onBack }: Props) {
       .map(([digit, count]) => ({ digit: Number(digit), count }));
 
     return (
-      <div className="flex flex-col items-center gap-4 py-8 w-full max-w-md">
-        <div className="text-6xl">🎉</div>
+      <div className="flex flex-col w-full max-w-md mx-auto flex-1 min-h-0">
+        <div className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center gap-4 py-8">
+          <div className="text-6xl">🎉</div>
 
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-400/20 dark:text-orange-300">
-            Stufe {currentLevel} · 0–{levelConfig.max.toLocaleString("de-DE")}
-          </span>
-          {leveledUp && (
-            <p className="text-sm font-medium text-green-600 dark:text-green-400">
-              🎊 Aufgestiegen auf Stufe {currentLevel + 1}!
-            </p>
-          )}
-        </div>
-
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Geschafft!</h2>
-
-        <div className="flex gap-8 text-center">
-          <div>
-            <p className="text-4xl font-bold text-green-600 dark:text-green-400">{firstTryCorrect}</p>
-            <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">richtig</p>
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-400/20 dark:text-orange-300">
+              Stufe {currentLevel} · 0–{levelConfig.max.toLocaleString("de-DE")}
+            </span>
+            {leveledUp && (
+              <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                🎊 Aufgestiegen auf Stufe {currentLevel + 1}!
+              </p>
+            )}
           </div>
-          <div>
-            <p className="text-4xl font-bold text-red-500 dark:text-red-400">{wrongIds.size}</p>
-            <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">falsch</p>
-          </div>
-        </div>
-        <p className="text-lg font-semibold text-gray-600 dark:text-slate-300">{pct}% beim ersten Versuch</p>
 
-        <div className="w-full">
-          <p className="text-xs text-gray-400 dark:text-slate-500 text-center mb-2">Stufe wählen</p>
-          <div className="flex gap-2 justify-center">
-            {LEVELS.map(l => (
-              <button
-                key={l.level}
-                onClick={() => selectLevel(l.level)}
-                className={`flex flex-col items-center px-2.5 py-2 rounded-xl border-2 transition-colors
-                  ${stats.currentLevel === l.level
-                    ? "border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-500/15 dark:border-orange-400/60 dark:text-orange-300"
-                    : "border-gray-200 text-gray-500 hover:border-gray-300 dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-600"
-                  }`}
-              >
-                <span className="font-bold text-sm">{l.level}</span>
-                <span className="text-[10px] text-gray-400 dark:text-slate-500 leading-tight">
-                  0–{l.max >= 1000 ? `${l.max / 1000}k` : l.max}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Geschafft!</h2>
 
-        {levelEntries.length > 0 && (
-          <div className="w-full">
-            <p className="text-xs text-gray-400 dark:text-slate-500 text-center mb-2">Gesamtstatistik</p>
-            <div className="flex flex-col gap-2 w-full">
-              {levelEntries.map(({ l, rec }) => {
-                const acc = Math.round((rec.firstTryCorrect / rec.totalCards) * 100);
-                const reached = acc >= l.threshold * 100;
-                return (
-                  <div key={l.level} className="flex justify-between text-sm text-gray-600 dark:text-slate-400 px-1">
-                    <span>Stufe {l.level}</span>
-                    <span className="text-gray-400 dark:text-slate-500">{rec.sessions} Sitzung{rec.sessions !== 1 ? "en" : ""}</span>
-                    <span className={reached ? "text-green-600 dark:text-green-400 font-medium" : "text-gray-500 dark:text-slate-500"}>
-                      {acc}% {reached ? "✓" : ""}
-                    </span>
-                  </div>
-                );
-              })}
+          <div className="flex gap-8 text-center">
+            <div>
+              <p className="text-4xl font-bold text-green-600 dark:text-green-400">{firstTryCorrect}</p>
+              <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">richtig</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-red-500 dark:text-red-400">{wrongIds.size}</p>
+              <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">falsch</p>
             </div>
           </div>
-        )}
+          <p className="text-lg font-semibold text-gray-600 dark:text-slate-300">{pct}% beim ersten Versuch</p>
 
-        {digitEntries.length > 0 && (
           <div className="w-full">
-            <p className="text-xs text-gray-400 dark:text-slate-500 text-center mb-2">Problematische Ziffern</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500 text-center mb-2">Stufe wählen</p>
             <div className="flex gap-2 justify-center">
-              {digitEntries.map(({ digit, count }) => (
-                <div key={digit} className="flex flex-col items-center px-4 py-2 rounded-xl bg-red-100 dark:bg-red-500/15">
-                  <span className="text-2xl font-bold text-red-700 dark:text-red-400">{digit}</span>
-                  <span className="text-xs text-red-500 dark:text-red-500">{count}×</span>
-                </div>
+              {LEVELS.map(l => (
+                <button
+                  key={l.level}
+                  onClick={() => selectLevel(l.level)}
+                  className={`flex flex-col items-center px-2.5 py-2 rounded-xl border-2 transition-colors
+                    ${stats.currentLevel === l.level
+                      ? "border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-500/15 dark:border-orange-400/60 dark:text-orange-300"
+                      : "border-gray-200 text-gray-500 hover:border-gray-300 dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-600"
+                    }`}
+                >
+                  <span className="font-bold text-sm">{l.level}</span>
+                  <span className="text-[10px] text-gray-400 dark:text-slate-500 leading-tight">
+                    0–{l.max >= 1000 ? `${l.max / 1000}k` : l.max}
+                  </span>
+                </button>
               ))}
             </div>
           </div>
-        )}
 
-        {stats.recentWrongNumbers.length > 0 && (
+          {levelEntries.length > 0 && (
+            <div className="w-full">
+              <p className="text-xs text-gray-400 dark:text-slate-500 text-center mb-2">Gesamtstatistik</p>
+              <div className="flex flex-col gap-2 w-full">
+                {levelEntries.map(({ l, rec }) => {
+                  const acc = Math.round((rec.firstTryCorrect / rec.totalCards) * 100);
+                  const reached = acc >= l.threshold * 100;
+                  return (
+                    <div key={l.level} className="flex justify-between text-sm text-gray-600 dark:text-slate-400 px-1">
+                      <span>Stufe {l.level}</span>
+                      <span className="text-gray-400 dark:text-slate-500">{rec.sessions} Sitzung{rec.sessions !== 1 ? "en" : ""}</span>
+                      <span className={reached ? "text-green-600 dark:text-green-400 font-medium" : "text-gray-500 dark:text-slate-500"}>
+                        {acc}% {reached ? "✓" : ""}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {digitEntries.length > 0 && (
+            <div className="w-full">
+              <p className="text-xs text-gray-400 dark:text-slate-500 text-center mb-2">Problematische Ziffern</p>
+              <div className="flex gap-2 justify-center">
+                {digitEntries.map(({ digit, count }) => (
+                  <div key={digit} className="flex flex-col items-center px-4 py-2 rounded-xl bg-red-100 dark:bg-red-500/15">
+                    <span className="text-2xl font-bold text-red-700 dark:text-red-400">{digit}</span>
+                    <span className="text-xs text-red-500 dark:text-red-500">{count}×</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {stats.recentWrongNumbers.length > 0 && (
+            <div className="w-full">
+              <p className="text-xs text-gray-400 dark:text-slate-500 text-center mb-1">Letzte Fehler</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400 text-center leading-relaxed">
+                {stats.recentWrongNumbers.slice(0, 10).map(n => n.toLocaleString("de-DE")).join(" · ")}
+              </p>
+            </div>
+          )}
+
           <div className="w-full">
-            <p className="text-xs text-gray-400 dark:text-slate-500 text-center mb-1">Letzte Fehler</p>
-            <p className="text-sm text-gray-500 dark:text-slate-400 text-center leading-relaxed">
-              {stats.recentWrongNumbers.slice(0, 10).map(n => n.toLocaleString("de-DE")).join(" · ")}
-            </p>
+            <LessonStatsSection lessonId="number-quiz" store={loadItemStats()} />
           </div>
-        )}
-
-        <div className="w-full">
-          <LessonStatsSection lessonId="number-quiz" store={loadItemStats()} />
         </div>
 
-        <div className="flex gap-4 mt-2 w-full max-w-xs sm:w-auto">
+        <div className="flex gap-4 pt-4 w-full max-w-xs mx-auto sm:w-auto">
           <button
             onClick={restart}
             className="flex-1 sm:flex-none px-6 py-3 rounded-xl font-medium text-white bg-gradient-to-r from-indigo-500 to-violet-500 hover:opacity-90 transition-opacity"
@@ -345,7 +347,7 @@ export function NumberQuizSession({ onBack }: Props) {
   }
 
   return (
-    <div className="flex flex-col w-full max-w-md mx-auto flex-1">
+    <div className="flex flex-col w-full max-w-md mx-auto flex-1 min-h-0 overflow-y-auto">
       <div className="flex items-center justify-between w-full py-1">
         <button
           onClick={onBack}
