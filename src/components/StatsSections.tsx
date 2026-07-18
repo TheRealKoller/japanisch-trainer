@@ -5,7 +5,7 @@ import { katakana } from "../data/katakana";
 import { coreVocab, coreVocabLevels } from "../data/coreVocab";
 import { dailyPhrases, dailyPhraseLevels } from "../data/dailyPhrases";
 import { travelPhrases, travelPhraseLevels } from "../data/travelPhrases";
-import { successRate, type ItemStats, type ItemStatsStore } from "../utils/itemStats";
+import { successRate, totalAttempts, formatPercent, type ItemStats, type ItemStatsStore } from "../utils/itemStats";
 import { MASTERY_THRESHOLD } from "../utils/levelMastery";
 
 function tileColor(stats: ItemStats | undefined): string {
@@ -85,20 +85,30 @@ interface TileProps {
   item: VocabItem | undefined;
   stats: ItemStats | undefined;
   showRomaji?: boolean;
+  onSelect?: (item: VocabItem) => void;
 }
 
-function KanaTile({ item, stats, showRomaji }: TileProps) {
+function KanaTile({ item, stats, showRomaji, onSelect }: TileProps) {
   if (!item) {
     return <div className="rounded-lg bg-gray-100 dark:bg-slate-800/50" />;
   }
-  const total = (stats?.correct ?? 0) + (stats?.incorrect ?? 0);
-  const pct = total > 0 ? `${Math.round(successRate(stats) * 100)}%` : "—";
-  return (
-    <div className={`flex flex-col items-center py-1.5 rounded-lg transition-colors ${tileColor(stats)}`}>
+  const total = totalAttempts(stats);
+  const pct = total > 0 ? formatPercent(successRate(stats)) : "—";
+  const className = `flex flex-col items-center py-1.5 rounded-lg transition-colors ${tileColor(stats)}`;
+  const content = (
+    <>
       <span className={`${tileTextSizeClass(item.japanese)} font-medium text-center`}>{item.japanese}</span>
       {showRomaji && <span className="text-xs leading-none mt-0.5 opacity-60">{item.romaji}</span>}
       <span className="text-xs leading-none mt-0.5 opacity-70">{pct}</span>
-    </div>
+    </>
+  );
+  if (!onSelect) {
+    return <div className={className}>{content}</div>;
+  }
+  return (
+    <button onClick={() => onSelect(item)} className={`${className} hover:opacity-70`}>
+      {content}
+    </button>
   );
 }
 
@@ -106,9 +116,10 @@ interface GridProps {
   prefix: string;
   lookup: Record<string, VocabItem>;
   store: ItemStatsStore;
+  onSelect?: (item: VocabItem) => void;
 }
 
-function GojuonMainGrid({ prefix, lookup, store }: GridProps) {
+function GojuonMainGrid({ prefix, lookup, store, onSelect }: GridProps) {
   const grid = gojuonGrid(prefix);
   return (
     <div className="flex flex-col gap-1">
@@ -126,7 +137,7 @@ function GojuonMainGrid({ prefix, lookup, store }: GridProps) {
             {ROW_LABELS[ri]}
           </div>
           {row.map((id, ci) => (
-            <KanaTile key={ci} item={id ? lookup[id] : undefined} stats={id ? store[id] : undefined} />
+            <KanaTile key={ci} item={id ? lookup[id] : undefined} stats={id ? store[id] : undefined} onSelect={onSelect} />
           ))}
         </div>
       ))}
@@ -134,7 +145,7 @@ function GojuonMainGrid({ prefix, lookup, store }: GridProps) {
   );
 }
 
-function DakutenSection({ prefix, lookup, store }: GridProps) {
+function DakutenSection({ prefix, lookup, store, onSelect }: GridProps) {
   const rows = dakutenHandakutenRows(prefix);
   return (
     <div>
@@ -146,7 +157,7 @@ function DakutenSection({ prefix, lookup, store }: GridProps) {
               {DAKUTEN_LABELS[ri]}
             </div>
             {row.map((id) => (
-              <KanaTile key={id} item={lookup[id]} stats={store[id]} showRomaji />
+              <KanaTile key={id} item={lookup[id]} stats={store[id]} showRomaji onSelect={onSelect} />
             ))}
           </div>
         ))}
@@ -155,7 +166,7 @@ function DakutenSection({ prefix, lookup, store }: GridProps) {
   );
 }
 
-function YouonSection({ prefix, lookup, store }: GridProps) {
+function YouonSection({ prefix, lookup, store, onSelect }: GridProps) {
   const rows = youonRows(prefix);
   return (
     <div>
@@ -167,7 +178,7 @@ function YouonSection({ prefix, lookup, store }: GridProps) {
               {YOUON_LABELS[ri]}
             </div>
             {row.map((id) => (
-              <KanaTile key={id} item={lookup[id]} stats={store[id]} showRomaji />
+              <KanaTile key={id} item={lookup[id]} stats={store[id]} showRomaji onSelect={onSelect} />
             ))}
           </div>
         ))}
@@ -181,16 +192,17 @@ export interface GojuonSectionProps {
   items: VocabItem[];
   prefix: string;
   store: ItemStatsStore;
+  onSelect?: (item: VocabItem) => void;
 }
 
-export function GojuonSection({ title, items, prefix, store }: GojuonSectionProps) {
+export function GojuonSection({ title, items, prefix, store, onSelect }: GojuonSectionProps) {
   const lookup = buildLookup(items);
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-sm font-medium text-gray-500 dark:text-slate-400">{title}</h3>
-      <GojuonMainGrid prefix={prefix} lookup={lookup} store={store} />
-      <DakutenSection prefix={prefix} lookup={lookup} store={store} />
-      <YouonSection prefix={prefix} lookup={lookup} store={store} />
+      <GojuonMainGrid prefix={prefix} lookup={lookup} store={store} onSelect={onSelect} />
+      <DakutenSection prefix={prefix} lookup={lookup} store={store} onSelect={onSelect} />
+      <YouonSection prefix={prefix} lookup={lookup} store={store} onSelect={onSelect} />
     </div>
   );
 }
@@ -219,11 +231,12 @@ export interface LevelGroupedSectionProps {
   items: VocabItem[];
   levels: Level[];
   store: ItemStatsStore;
+  onSelect?: (item: VocabItem) => void;
 }
 
 // Zeigt alle Wörter/Floskeln einer Lektion, gruppiert nach Level — unabhängig vom
 // Freischaltungsstatus (bewusste Vollansicht, siehe Issue #124).
-export function LevelGroupedSection({ title, items, levels, store }: LevelGroupedSectionProps) {
+export function LevelGroupedSection({ title, items, levels, store, onSelect }: LevelGroupedSectionProps) {
   const lookup = buildLookup(items);
   return (
     <div className="flex flex-col gap-4">
@@ -233,7 +246,7 @@ export function LevelGroupedSection({ title, items, levels, store }: LevelGroupe
           <h4 className="text-xs font-medium text-gray-500 dark:text-slate-400 mb-1.5">Level {level.level}</h4>
           <div className="grid grid-cols-4 gap-1.5">
             {level.ids.map((id) => (
-              <KanaTile key={id} item={lookup[id]} stats={store[id]} />
+              <KanaTile key={id} item={lookup[id]} stats={store[id]} onSelect={onSelect} />
             ))}
           </div>
         </div>
@@ -259,21 +272,22 @@ export type StatsLessonId =
 interface LessonStatsSectionProps {
   lessonId: StatsLessonId;
   store: ItemStatsStore;
+  onSelect?: (item: VocabItem) => void;
 }
 
-export function LessonStatsSection({ lessonId, store }: LessonStatsSectionProps) {
+export function LessonStatsSection({ lessonId, store, onSelect }: LessonStatsSectionProps) {
   switch (lessonId) {
     case "hiragana":
-      return <GojuonSection title="Hiragana" items={hiragana} prefix="h" store={store} />;
+      return <GojuonSection title="Hiragana" items={hiragana} prefix="h" store={store} onSelect={onSelect} />;
     case "katakana":
-      return <GojuonSection title="Katakana" items={katakana} prefix="k" store={store} />;
+      return <GojuonSection title="Katakana" items={katakana} prefix="k" store={store} onSelect={onSelect} />;
     case "number-quiz":
       return <DigitSection store={store} />;
     case "core-vocab":
-      return <LevelGroupedSection title="Grundwortschatz" items={coreVocab} levels={coreVocabLevels} store={store} />;
+      return <LevelGroupedSection title="Grundwortschatz" items={coreVocab} levels={coreVocabLevels} store={store} onSelect={onSelect} />;
     case "daily-phrases":
-      return <LevelGroupedSection title="Alltags-Floskeln" items={dailyPhrases} levels={dailyPhraseLevels} store={store} />;
+      return <LevelGroupedSection title="Alltags-Floskeln" items={dailyPhrases} levels={dailyPhraseLevels} store={store} onSelect={onSelect} />;
     case "travel-phrases":
-      return <LevelGroupedSection title="Reise-Floskeln" items={travelPhrases} levels={travelPhraseLevels} store={store} />;
+      return <LevelGroupedSection title="Reise-Floskeln" items={travelPhrases} levels={travelPhraseLevels} store={store} onSelect={onSelect} />;
   }
 }

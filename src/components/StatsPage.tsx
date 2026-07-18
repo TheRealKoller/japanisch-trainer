@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import type { VocabItem } from "../data/types";
 import { loadItemStats } from "../utils/itemStats";
 import { getActiveStatsTab, setActiveStatsTab } from "../utils/statsTabStorage";
 import { LessonStatsSection, type StatsLessonId } from "./StatsSections";
 import { LessonTabs } from "./LessonTabs";
+import { StatItemDetailModal } from "./StatItemDetailModal";
 
 interface Props {
   onBack: () => void;
@@ -22,6 +24,8 @@ export function StatsPage({ onBack }: Props) {
   const [activeTab, setActiveTab] = useState<StatsLessonId>(() =>
     getActiveStatsTab(LESSON_IDS, LESSON_IDS[0]),
   );
+  const [selectedItem, setSelectedItem] = useState<VocabItem | null>(null);
+  const closeDetail = useCallback(() => setSelectedItem(null), []);
 
   function selectTab(id: StatsLessonId) {
     setActiveTab(id);
@@ -44,8 +48,16 @@ export function StatsPage({ onBack }: Props) {
       <LessonTabs ids={LESSON_IDS} active={activeTab} onSelect={selectTab} />
 
       <div className="flex-1 min-h-0 overflow-y-auto py-4">
-        <LessonStatsSection lessonId={activeTab} store={store} />
+        <LessonStatsSection lessonId={activeTab} store={store} onSelect={setSelectedItem} />
       </div>
+
+      {selectedItem && (
+        <StatItemDetailModal
+          item={selectedItem}
+          stats={store[selectedItem.id]}
+          onClose={closeDetail}
+        />
+      )}
     </div>
   );
 }

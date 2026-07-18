@@ -89,3 +89,20 @@ export function successRate(stats: ItemStats | undefined): number {
   if (!stats || stats.history.length === 0) return 0;
   return stats.history.filter(Boolean).length / stats.history.length;
 }
+
+// Erfolgsquote 0..1 über die gesamte Lernhistorie (Lifetime-Zähler), im Gegensatz zu
+// successRate() oben, das nur das jüngste HISTORY_WINDOW betrachtet.
+export function lifetimeSuccessRate(stats: ItemStats | undefined): number {
+  if (!stats || stats.correct + stats.incorrect === 0) return 0;
+  return stats.correct / (stats.correct + stats.incorrect);
+}
+
+// Anzahl bisheriger Antworten (richtig + falsch) — 0 bedeutet "noch nie geübt".
+export function totalAttempts(stats: ItemStats | undefined): number {
+  return (stats?.correct ?? 0) + (stats?.incorrect ?? 0);
+}
+
+// Formatiert eine Quote (0..1) als gerundeten Prozentwert, z.B. 0.8 -> "80%".
+export function formatPercent(rate: number): string {
+  return `${Math.round(rate * 100)}%`;
+}
