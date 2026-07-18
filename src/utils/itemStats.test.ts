@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { updateItemRecord, loadItemStats, saveItemStats, successRate, type ItemStatsStore } from "./itemStats";
+import { updateItemRecord, loadItemStats, saveItemStats, successRate, lifetimeSuccessRate, type ItemStatsStore } from "./itemStats";
 import { extractDigits } from "./quizStats";
 
 // localStorage mock for node environment
@@ -125,6 +125,24 @@ describe("successRate", () => {
         lastSeen: 0,
       }),
     ).toBe(1);
+  });
+});
+
+describe("lifetimeSuccessRate", () => {
+  it("liefert 0 für fehlenden Eintrag", () => {
+    expect(lifetimeSuccessRate(undefined)).toBe(0);
+  });
+
+  it("liefert 0 für einen Eintrag ohne jede Antwort", () => {
+    expect(lifetimeSuccessRate({ id: "ha", correct: 0, incorrect: 0, history: [], lastSeen: 0 })).toBe(0);
+  });
+
+  it("berücksichtigt die gesamte Lernhistorie, nicht nur das history-Fenster", () => {
+    // Lifetime: 10/13 ≈ 77%, aber history spiegelt nur die letzten 10 (alle richtig) wider —
+    // hier muss lifetimeSuccessRate von successRate abweichen.
+    const stats = { id: "ha", correct: 10, incorrect: 3, history: Array(10).fill(true), lastSeen: 0 };
+    expect(lifetimeSuccessRate(stats)).toBeCloseTo(10 / 13);
+    expect(successRate(stats)).toBe(1);
   });
 });
 

@@ -239,6 +239,21 @@ Inaktiv: bg-gray-100 text-gray-600 hover:bg-gray-200
 
 Aktiver Reiter immer Indigo (Primärfarbe), unabhängig von etwaigen Lektionsfarben. Der zuletzt aktive Reiter wird geräte-lokal in `localStorage` persistiert (`statsTabStorage.ts`, Key `"stats-active-tab"`, kein `japanisch-trainer:`-Prefix da bewusst nicht Teil des Server-Syncs) und beim Wiederöffnen der Seite wiederhergestellt.
 
+### Modal
+
+Zentriertes Dialog-Fenster über abgedunkeltem Hintergrund (`Modal.tsx`). Schließt bei Klick auf den X-Button, Klick außerhalb des Dialogs (`pointerdown`-Listener, analog zu `OptionsMenu`) und bei der Escape-Taste.
+
+```
+Backdrop: fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40
+Dialog:   relative w-full max-w-sm rounded-2xl border shadow-lg p-6
+          bg-white border-gray-200 dark:bg-slate-800 dark:border-slate-700
+
+X-Button: absolute top-3 right-3 p-2.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100
+          dark:text-slate-500 dark:hover:text-slate-300 dark:hover:bg-slate-800
+```
+
+**Verwendung:** `StatItemDetailModal.tsx` (Statistik-Detailview pro Begriff, Issue #135) — Schreibweisen (japanese/reading/romaji), 🔊-Play-Button (identisches Pattern wie im Session-Header), darunter durch `border-t` abgetrennt die Statistikwerte (gesehen, richtig, aktuelle Quote, Lifetime-Quote, zuletzt geübt) oder „Noch nicht geübt" ohne Lernhistorie.
+
 ### Badge / Pill
 
 ```
@@ -352,7 +367,7 @@ main: min-h-screen flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950
 
 ## Was NICHT verwendet wird
 
-- Keine Schatten (`shadow-*`) außer `shadow-sm` am Toggle-Thumb und `shadow-lg` am OptionsMenu-Panel
+- Keine Schatten (`shadow-*`) außer `shadow-sm` am Toggle-Thumb und `shadow-lg` am OptionsMenu-Panel und Modal-Dialog
 - Kein globales State-Management — lokaler `useState` reicht (Ausnahme: `AuthContext` für den Login-Status)
 - Keine CSS-Klassen-Extraktion — Tailwind direkt im JSX
 - Keine beliebigen Werte (`w-[123px]`) — nur Tailwind-Skala

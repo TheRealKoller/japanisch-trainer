@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { GojuonSection, LevelGroupedSection, DigitSection } from "./StatsSections";
 import type { VocabItem } from "../data/types";
 import type { Level } from "../data/levels";
@@ -19,6 +19,22 @@ describe("GojuonSection", () => {
     expect(screen.getByText("Hiragana")).toBeInTheDocument();
     expect(screen.getByText("80%")).toBeInTheDocument();
   });
+
+  it("ruft onSelect mit dem Item auf, wenn eine Kachel angeklickt wird", () => {
+    const items: VocabItem[] = [{ id: "ha", japanese: "は", romaji: "ha", meaning: "ha" }];
+    const store: ItemStatsStore = { ha: stats(4, 1) };
+    const onSelect = vi.fn();
+    render(<GojuonSection title="Hiragana" items={items} prefix="h" store={store} onSelect={onSelect} />);
+    fireEvent.click(screen.getByText("は"));
+    expect(onSelect).toHaveBeenCalledWith(items[0]);
+  });
+
+  it("ist ohne onSelect nicht klickbar (kein Button-Element)", () => {
+    const items: VocabItem[] = [{ id: "ha", japanese: "は", romaji: "ha", meaning: "ha" }];
+    const store: ItemStatsStore = { ha: stats(4, 1) };
+    render(<GojuonSection title="Hiragana" items={items} prefix="h" store={store} />);
+    expect(screen.queryByRole("button", { name: /は/ })).not.toBeInTheDocument();
+  });
 });
 
 describe("LevelGroupedSection", () => {
@@ -30,6 +46,16 @@ describe("LevelGroupedSection", () => {
     expect(screen.getByText("Grundwortschatz")).toBeInTheDocument();
     expect(screen.getByText("Level 1")).toBeInTheDocument();
     expect(screen.getByText("75%")).toBeInTheDocument();
+  });
+
+  it("ruft onSelect mit dem Item auf, wenn eine Kachel angeklickt wird", () => {
+    const items: VocabItem[] = [{ id: "cv1", japanese: "水", romaji: "mizu", meaning: "Wasser" }];
+    const levels: Level[] = [{ level: 1, ids: ["cv1"] }];
+    const store: ItemStatsStore = { cv1: stats(3, 1) };
+    const onSelect = vi.fn();
+    render(<LevelGroupedSection title="Grundwortschatz" items={items} levels={levels} store={store} onSelect={onSelect} />);
+    fireEvent.click(screen.getByText("水"));
+    expect(onSelect).toHaveBeenCalledWith(items[0]);
   });
 });
 
