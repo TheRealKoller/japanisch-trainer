@@ -170,7 +170,7 @@ Rückseite:   w-72 h-72 sm:w-80 sm:h-80 rounded-2xl border-2
 | ≤ 8 | `text-3xl sm:text-4xl` |
 | > 8 | `text-xl sm:text-2xl` |
 
-**Kartenvariante `vocab` (Grundwortschatz, Alltags-/Reise-Floskeln):** `Flashcard` erhält einen `variant`-Prop (`"default" | "vocab"`), gesteuert über `cardVariant` in `levelLessons` (`App.tsx`) und durchgereicht über `TrainingSession`. Bei `variant="vocab"` steht die westliche Schreibweise im Vordergrund, nicht die Schriftzeichen (Ziel: Wörter/Floskeln lernen, nicht die Schrift) — Hiragana/Katakana/Zahlen-Lektionen bleiben unverändert bei `"default"`.
+**Kartenvariante `vocab` (Grundwortschatz, Alltags-/Reise-Floskeln):** `Flashcard` erhält einen `variant`-Prop (`"default" | "vocab"`), gesteuert über `cardVariant` in `vocabLessons` (`App.tsx`) und durchgereicht über `TrainingSession`. Bei `variant="vocab"` steht die westliche Schreibweise im Vordergrund, nicht die Schriftzeichen (Ziel: Wörter/Floskeln lernen, nicht die Schrift) — Hiragana/Katakana/Zahlen-Lektionen bleiben unverändert bei `"default"`.
 
 Vorderseite (`variant="vocab"`), von oben nach unten:
 1. Romaji (`item.romaji`) groß, Größe via `romajiSizeClass()`
