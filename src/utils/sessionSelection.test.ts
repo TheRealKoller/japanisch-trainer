@@ -15,6 +15,16 @@ function makeItems(count: number) {
   }));
 }
 
+// Markiert die ersten `count` Items als bereits geübt (mit gegebener Erfolgsquote),
+// der Rest bleibt unangetastet (totalAttempts === 0, "noch nie geübt").
+function markSeen(items: ReturnType<typeof makeItems>, count: number, correct: number, incorrect: number) {
+  const stats: ItemStatsStore = {};
+  for (const item of items.slice(0, count)) {
+    stats[item.id] = makeStats(item.id, correct, incorrect);
+  }
+  return stats;
+}
+
 describe("selectSessionItems", () => {
   it("lässt Pools bis 20 Begriffe unverändert", () => {
     const items = makeItems(20);
@@ -28,7 +38,8 @@ describe("selectSessionItems", () => {
 
   it("begrenzt größere Pools auf genau 20 eindeutige Begriffe aus dem Pool", () => {
     const items = makeItems(50);
-    const selected = selectSessionItems(items, {});
+    const stats = markSeen(items, 30, 8, 2);
+    const selected = selectSessionItems(items, stats);
     expect(selected).toHaveLength(20);
     const ids = new Set(selected.map((item) => item.id));
     expect(ids.size).toBe(20);
@@ -37,54 +48,93 @@ describe("selectSessionItems", () => {
     }
   });
 
-  it("enthält garantiert die 10 Begriffe mit der niedrigsten Erfolgsquote", () => {
-    const items = makeItems(30);
-    const stats: ItemStatsStore = {};
-    // Die ersten 10 Begriffe bekommen eine niedrige, eindeutig unterscheidbare Quote,
-    // der Rest eine deutlich höhere Quote — kein Gleichstand an der Auswahlgrenze.
-    items.forEach((item, i) => {
-      stats[item.id] = makeStats(item.id, i < 10 ? 0 : 9, i < 10 ? 10 - i : 1);
-    });
-    const expectedWeakestIds = items.slice(0, 10).map((item) => item.id);
+  it("enthält bei genug ungesehenen Wörtern genau die ersten 5 nie geübten Items in Datei-Reihenfolge", () => {
+    const items = makeItems(50);
+    // Erste 30 Items sind bereits geübt, die letzten 20 sind noch nie geübt.
+    const stats = markSeen(items, 30, 8, 2);
+    const expectedNewIds = items.slice(30, 35).map((item) => item.id);
 
     const selected = selectSessionItems(items, stats);
-    const selectedIds = new Set(selected.map((item) => item.id));
-    for (const id of expectedWeakestIds) {
-      expect(selectedIds.has(id)).toBe(true);
+    expect(selected.slice(0, 5).map((item) => item.id)).toEqual(expectedNewIds);
+  });
+
+  it("füllt bei weniger als 5 verbleibenden neuen Wörtern nur die tatsächlich verfügbaren neuen Wörter auf, Rest sind Wiederholungen", () => {
+    const items = makeItems(30);
+    // Nur die letzten 2 Items wurden noch nie geübt.
+    const stats = markSeen(items, 28, 5, 5);
+    const expectedNewIds = new Set(items.slice(28).map((item) => item.id));
+
+    const selected = selectSessionItems(items, stats);
+    expect(selected).toHaveLength(20);
+    const newInSelection = selected.filter((item) => expectedNewIds.has(item.id));
+    expect(newInSelection).toHaveLength(2);
+    const repetitions = selected.filter((item) => !expectedNewIds.has(item.id));
+    expect(repetitions).toHaveLength(18);
+    for (const item of repetitions) {
+      expect(item.id.startsWith("x") && Number(item.id.slice(1)) <= 28).toBe(true);
     }
   });
 
-  it("behandelt nie geübte Begriffe (kein Store-Eintrag) als 0% und bevorzugt sie", () => {
+  it("besteht komplett aus Wiederholungen, wenn alle Wörter bereits gesehen wurden", () => {
     const items = makeItems(25);
-    const stats: ItemStatsStore = {};
-    // Nur die letzten 5 Begriffe haben überhaupt einen Eintrag, alle mit 100%.
-    for (const item of items.slice(20)) {
-      stats[item.id] = makeStats(item.id, 5, 0);
-    }
-    const neverPracticedIds = new Set(items.slice(0, 20).map((item) => item.id));
+    const stats = markSeen(items, 25, 5, 5);
 
     const selected = selectSessionItems(items, stats);
-    const guaranteedWeakest = selected.slice(0, 10);
-    for (const item of guaranteedWeakest) {
-      expect(neverPracticedIds.has(item.id)).toBe(true);
-    }
+    expect(selected).toHaveLength(20);
+    const ids = new Set(selected.map((item) => item.id));
+    expect(ids.size).toBe(20);
   });
 
-  it("wählt die zufälligen 10 über mehrere Durchläufe hinweg unterschiedlich aus", () => {
+  it("füllt mit weiteren neuen Wörtern auf, wenn weder 5 neue noch genug bereits gesehene Wörter für 20 Plätze reichen", () => {
     const items = makeItems(30);
-    // Alle Begriffe haben dieselbe (hohe) Quote — die "schwächsten 10" sind also
-    // beliebig, und die "zufälligen 10" sollten über viele Läufe hinweg variieren.
-    const stats: ItemStatsStore = Object.fromEntries(
-      items.map((item) => [item.id, makeStats(item.id, 10, 0)]),
-    );
+    // Ganz am Anfang der Lektion: nur 3 Items je geübt, der Rest komplett neu.
+    const stats = markSeen(items, 3, 5, 0);
 
-    const seen = new Set<string>();
-    for (let i = 0; i < 50; i++) {
+    const selected = selectSessionItems(items, stats);
+    expect(selected).toHaveLength(20);
+    const ids = new Set(selected.map((item) => item.id));
+    expect(ids.size).toBe(20);
+  });
+
+  it("bevorzugt Wörter mit niedrigerer successRate() in der Wiederholungsauswahl über viele Durchläufe", () => {
+    const items = makeItems(30);
+    // Alle 30 Items sind bereits geübt: die ersten 15 mit niedriger, die letzten 15 mit
+    // hoher Erfolgsquote. Keine neuen Items vorhanden, also besteht die Session komplett
+    // aus gewichteten Wiederholungen (20 von 30).
+    const stats: ItemStatsStore = {};
+    items.forEach((item, i) => {
+      stats[item.id] = i < 15 ? makeStats(item.id, 1, 9) : makeStats(item.id, 9, 1);
+    });
+    const weakIds = new Set(items.slice(0, 15).map((item) => item.id));
+
+    const counts = new Map<string, number>();
+    const runs = 100;
+    for (let i = 0; i < runs; i++) {
       for (const item of selectSessionItems(items, stats)) {
-        seen.add(item.id);
+        counts.set(item.id, (counts.get(item.id) ?? 0) + 1);
       }
     }
-    // Bei rein deterministischer Auswahl blieben immer dieselben 20 IDs übrig.
-    expect(seen.size).toBeGreaterThan(20);
+    const weakAvg =
+      [...weakIds].reduce((sum, id) => sum + (counts.get(id) ?? 0), 0) / weakIds.size;
+    const strongIds = items.slice(15).map((item) => item.id);
+    const strongAvg = strongIds.reduce((sum, id) => sum + (counts.get(id) ?? 0), 0) / strongIds.length;
+
+    expect(weakAvg).toBeGreaterThan(strongAvg);
+  });
+
+  it("zieht auch Items mit 100%-Erfolgsquote über viele Durchläufe gelegentlich, aber seltener", () => {
+    const items = makeItems(25);
+    const stats: ItemStatsStore = {};
+    items.forEach((item, i) => {
+      stats[item.id] = i === 0 ? makeStats(item.id, 10, 0) : makeStats(item.id, 1, 9);
+    });
+
+    let masteredSeen = 0;
+    const runs = 300;
+    for (let i = 0; i < runs; i++) {
+      if (selectSessionItems(items, stats).some((item) => item.id === "x1")) masteredSeen++;
+    }
+    expect(masteredSeen).toBeGreaterThan(0);
+    expect(masteredSeen).toBeLessThan(runs);
   });
 });

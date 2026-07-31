@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { numbers } from "./data/numbers";
 import { hiragana } from "./data/hiragana";
 import { katakana } from "./data/katakana";
-import { coreVocab, coreVocabLevels } from "./data/coreVocab";
-import { dailyPhrases, dailyPhraseLevels } from "./data/dailyPhrases";
-import { travelPhrases, travelPhraseLevels } from "./data/travelPhrases";
+import { coreVocab } from "./data/coreVocab";
+import { dailyPhrases } from "./data/dailyPhrases";
+import { travelPhrases } from "./data/travelPhrases";
 import type { VocabItem } from "./data/types";
 import { TrainingSession } from "./components/TrainingSession";
 import type { FlashcardVariant } from "./components/Flashcard";
@@ -14,12 +14,8 @@ import { OptionsMenu } from "./components/OptionsMenu";
 import { SettingsPage } from "./components/SettingsPage";
 import { StatsPage } from "./components/StatsPage";
 import { LoginPage } from "./components/LoginPage";
-import { hiraganaLevels, katakanaLevels } from "./data/kanaLevels";
-import { itemsForLevel } from "./data/levels";
-import type { Level } from "./data/levels";
-import { loadItemStats } from "./utils/itemStats";
+import { loadItemStats, countPracticed } from "./utils/itemStats";
 import type { ItemStatsStore } from "./utils/itemStats";
-import { highestUnlockedLevel } from "./utils/levelMastery";
 import { loadStats } from "./utils/quizStats";
 
 type Lesson =
@@ -63,71 +59,67 @@ const lessons: Record<Lesson, LessonMeta> = {
   hiragana: {
     title: "Hiragana",
     subtitle: "あ い う え お ...",
-    description: "16 Level",
+    description: `${hiragana.length} Zeichen`,
     color: "bg-rose-50 border-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:border-rose-500/30 dark:hover:bg-rose-500/15",
     badge: "bg-rose-100 text-rose-700 dark:bg-rose-400/20 dark:text-rose-300",
-    progressTotal: 16,
+    progressTotal: hiragana.length,
     accentClass: "bg-rose-400 dark:bg-rose-400",
   },
   katakana: {
     title: "Katakana",
     subtitle: "ア イ ウ エ オ ...",
-    description: "16 Level",
+    description: `${katakana.length} Zeichen`,
     color: "bg-sky-50 border-sky-200 hover:bg-sky-100 dark:bg-sky-500/10 dark:border-sky-500/30 dark:hover:bg-sky-500/15",
     badge: "bg-sky-100 text-sky-700 dark:bg-sky-400/20 dark:text-sky-300",
-    progressTotal: 16,
+    progressTotal: katakana.length,
     accentClass: "bg-sky-400 dark:bg-sky-400",
   },
   "core-vocab": {
     title: "Grundwortschatz",
     subtitle: "水 家 食べる ...",
-    description: `${coreVocabLevels.length} Level`,
+    description: `${coreVocab.length} Wörter`,
     color: "bg-violet-50 border-violet-200 hover:bg-violet-100 dark:bg-violet-500/10 dark:border-violet-500/30 dark:hover:bg-violet-500/15",
     badge: "bg-violet-100 text-violet-700 dark:bg-violet-400/20 dark:text-violet-300",
-    progressTotal: coreVocabLevels.length,
+    progressTotal: coreVocab.length,
     accentClass: "bg-violet-400 dark:bg-violet-400",
   },
   "daily-phrases": {
     title: "Alltags-Floskeln",
     subtitle: "こんにちは ...",
-    description: `${dailyPhraseLevels.length} Level`,
+    description: `${dailyPhrases.length} Floskeln`,
     color: "bg-teal-50 border-teal-200 hover:bg-teal-100 dark:bg-teal-500/10 dark:border-teal-500/30 dark:hover:bg-teal-500/15",
     badge: "bg-teal-100 text-teal-700 dark:bg-teal-400/20 dark:text-teal-300",
-    progressTotal: dailyPhraseLevels.length,
+    progressTotal: dailyPhrases.length,
     accentClass: "bg-teal-400 dark:bg-teal-400",
   },
   "travel-phrases": {
     title: "Reise-Floskeln",
     subtitle: "いくらですか ...",
-    description: `${travelPhraseLevels.length} Level`,
+    description: `${travelPhrases.length} Floskeln`,
     color: "bg-lime-50 border-lime-200 hover:bg-lime-100 dark:bg-lime-500/10 dark:border-lime-500/30 dark:hover:bg-lime-500/15",
     badge: "bg-lime-100 text-lime-700 dark:bg-lime-400/20 dark:text-lime-300",
-    progressTotal: travelPhraseLevels.length,
+    progressTotal: travelPhrases.length,
     accentClass: "bg-lime-400 dark:bg-lime-400",
   },
 };
 
-interface LevelLessonConfig {
+interface VocabLessonConfig {
   items: VocabItem[];
-  levels: Level[];
-  cumulative: boolean; // true: Level-Pool umfasst alle Karten bis einschließlich des Levels, nicht nur das Level selbst
-                        // (bei Pools über 20 Karten wählt TrainingSession daraus eine gewichtete Session-Teilmenge aus, siehe Issue #127)
-  unit: string;
   cardVariant: FlashcardVariant; // Kana-Sessions zeigen Kanji/Kana groß, Vokabel-Sessions Romaji groß (siehe Issue #119)
 }
 
-const levelLessons = {
-  hiragana: { items: hiragana, levels: hiraganaLevels, cumulative: true, unit: "neue Zeichen", cardVariant: "default" },
-  katakana: { items: katakana, levels: katakanaLevels, cumulative: true, unit: "neue Zeichen", cardVariant: "default" },
-  "core-vocab": { items: coreVocab, levels: coreVocabLevels, cumulative: true, unit: "neue Wörter", cardVariant: "vocab" },
-  "daily-phrases": { items: dailyPhrases, levels: dailyPhraseLevels, cumulative: true, unit: "neue Floskeln", cardVariant: "vocab" },
-  "travel-phrases": { items: travelPhrases, levels: travelPhraseLevels, cumulative: true, unit: "neue Floskeln", cardVariant: "vocab" },
-} satisfies Record<string, LevelLessonConfig>;
+const vocabLessons = {
+  hiragana: { items: hiragana, cardVariant: "default" },
+  katakana: { items: katakana, cardVariant: "default" },
+  "core-vocab": { items: coreVocab, cardVariant: "vocab" },
+  "daily-phrases": { items: dailyPhrases, cardVariant: "vocab" },
+  "travel-phrases": { items: travelPhrases, cardVariant: "vocab" },
+} satisfies Record<string, VocabLessonConfig>;
 
-type LevelLessonId = keyof typeof levelLessons;
+type VocabLessonId = keyof typeof vocabLessons;
 
-function isLevelLesson(view: View): view is LevelLessonId {
-  return view !== null && view in levelLessons;
+function isVocabLesson(view: View): view is VocabLessonId {
+  return view !== null && view in vocabLessons;
 }
 
 function viewFromHash(): View {
@@ -140,12 +132,10 @@ function viewFromHash(): View {
 function App() {
   const [view, setView] = useState<View>(viewFromHash);
   const [quizLevel, setQuizLevel] = useState(() => loadStats().currentLevel);
-  const [activeLevel, setActiveLevel] = useState<number | null>(null);
 
   function getProgressCompleted(lessonId: Lesson, itemStats: ItemStatsStore): number | null {
-    if (isLevelLesson(lessonId)) {
-      const { items, levels } = levelLessons[lessonId];
-      return highestUnlockedLevel(items, levels, itemStats) - 1;
+    if (isVocabLesson(lessonId)) {
+      return countPracticed(vocabLessons[lessonId].items, itemStats);
     }
     if (lessonId === "number-quiz") return quizLevel - 1;
     return null;
@@ -158,7 +148,6 @@ function App() {
         setView(next);
       } else if (!window.location.hash) {
         setView((v) => (v === "settings" || v === "stats" || v === "login" ? null : v));
-        setActiveLevel(null);
       }
     }
     window.addEventListener("hashchange", onHashChange);
@@ -201,89 +190,20 @@ function App() {
     );
   }
 
-  if (isLevelLesson(view)) {
+  if (isVocabLesson(view)) {
     const lessonId = view;
-    const { items: allItems, levels, cumulative, unit, cardVariant } = levelLessons[lessonId];
-    const { title, color: cardBase, badge: badgeActive } = lessons[lessonId];
-
-    if (activeLevel !== null) {
-      const level = activeLevel;
-      const sessionItems = itemsForLevel(allItems, levels, level, cumulative);
-
-      return (
-        <main className="h-screen overflow-hidden flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
-          <TrainingSession
-            items={sessionItems}
-            title={`${title} – Level ${level}`}
-            onBack={() => setActiveLevel(null)}
-            cardVariant={cardVariant}
-            lessonId={lessonId}
-          />
-        </main>
-      );
-    }
-
-    const unlocked = highestUnlockedLevel(allItems, levels, loadItemStats());
+    const { items, cardVariant } = vocabLessons[lessonId];
+    const { title } = lessons[lessonId];
 
     return (
-      <main className="min-h-screen flex flex-col p-6 sm:p-8 bg-gray-50 dark:bg-slate-950">
-        <div className="fixed top-4 right-4 z-50">
-          <OptionsMenu />
-        </div>
-        <div className="max-w-md w-full mx-auto flex flex-col gap-8">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setView(null)}
-              className="text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors text-sm"
-            >
-              ← Zurück
-            </button>
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-slate-100">{title}</h1>
-            <div className="w-14" />
-          </div>
-
-          <div className="flex flex-col gap-3">
-            {levels.map((levelDef) => {
-              const isCompleted = levelDef.level < unlocked;
-              const isLocked = levelDef.level > unlocked;
-
-              return (
-                <button
-                  key={levelDef.level}
-                  onClick={() => !isLocked && setActiveLevel(levelDef.level)}
-                  disabled={isLocked}
-                  className={`border-2 rounded-2xl p-5 text-left transition-colors duration-200 ${
-                    isLocked
-                      ? "bg-gray-50 border-gray-100 opacity-40 cursor-not-allowed dark:bg-slate-900 dark:border-slate-800"
-                      : cardBase
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100">
-                        Level {levelDef.level} {isCompleted && "✓"}
-                      </h2>
-                      <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
-                        {levelDef.ids.length} {unit}
-                      </p>
-                    </div>
-                    <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 mt-0.5 ${
-                        isLocked
-                          ? "bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-slate-500"
-                          : isCompleted
-                          ? "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400"
-                          : badgeActive
-                      }`}
-                    >
-                      {isLocked ? "Gesperrt" : isCompleted ? "Bestanden" : "Aktuell"}
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      <main className="h-screen overflow-hidden flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
+        <TrainingSession
+          items={items}
+          title={title}
+          onBack={() => setView(null)}
+          cardVariant={cardVariant}
+          lessonId={lessonId}
+        />
       </main>
     );
   }
