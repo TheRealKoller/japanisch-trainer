@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { updateItemRecord, loadItemStats, saveItemStats, successRate, lifetimeSuccessRate, type ItemStatsStore } from "./itemStats";
+import { updateItemRecord, loadItemStats, saveItemStats, successRate, lifetimeSuccessRate, countPracticed, type ItemStatsStore } from "./itemStats";
 import { extractDigits } from "./quizStats";
 
 // localStorage mock for node environment
@@ -212,6 +212,24 @@ describe("loadItemStats — Migration von Alt-Daten ohne history", () => {
     const loaded = loadItemStats();
     expect(loaded["kaputt"]?.history).toEqual([]);
     expect(loaded["hi"]?.history.filter(Boolean)).toHaveLength(2);
+  });
+});
+
+describe("countPracticed", () => {
+  it("liefert 0 für einen leeren Store", () => {
+    expect(countPracticed([{ id: "ha" }, { id: "hi" }], {})).toBe(0);
+  });
+
+  it("zählt nur Items mit mindestens einer Antwort", () => {
+    let store: ItemStatsStore = {};
+    store = updateItemRecord(store, "ha", true);
+    store = updateItemRecord(store, "hi", false);
+    expect(countPracticed([{ id: "ha" }, { id: "hi" }, { id: "hu" }], store)).toBe(2);
+  });
+
+  it("ignoriert Items ohne Store-Eintrag", () => {
+    const store = updateItemRecord({}, "ha", true);
+    expect(countPracticed([{ id: "unbekannt" }], store)).toBe(0);
   });
 });
 

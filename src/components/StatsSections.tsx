@@ -5,8 +5,7 @@ import { katakana } from "../data/katakana";
 import { coreVocab, coreVocabLevels } from "../data/coreVocab";
 import { dailyPhrases, dailyPhraseLevels } from "../data/dailyPhrases";
 import { travelPhrases, travelPhraseLevels } from "../data/travelPhrases";
-import { successRate, totalAttempts, formatPercent, type ItemStats, type ItemStatsStore } from "../utils/itemStats";
-import { MASTERY_THRESHOLD } from "../utils/levelMastery";
+import { successRate, totalAttempts, formatPercent, MASTERY_THRESHOLD, type ItemStats, type ItemStatsStore } from "../utils/itemStats";
 
 function tileColor(stats: ItemStats | undefined): string {
   if (!stats || stats.correct + stats.incorrect === 0) {

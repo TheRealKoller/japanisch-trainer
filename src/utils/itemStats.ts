@@ -4,6 +4,10 @@ import { pushProgress } from "./progressSync";
 // verjähren, damit früh im Lernprozess gemachte Fehler nicht dauerhaft nachwirken.
 export const HISTORY_WINDOW = 10;
 
+// Schwelle für "gemeistert" bei der Kachel-Einfärbung in den Statistik-Sektionen.
+// Ehemals in utils/levelMastery.ts (Level-Freischaltlogik entfernt, Issue #143).
+export const MASTERY_THRESHOLD = 0.9;
+
 export interface ItemStats {
   id: string;
   correct: number;
@@ -100,6 +104,12 @@ export function lifetimeSuccessRate(stats: ItemStats | undefined): number {
 // Anzahl bisheriger Antworten (richtig + falsch) — 0 bedeutet "noch nie geübt".
 export function totalAttempts(stats: ItemStats | undefined): number {
   return (stats?.correct ?? 0) + (stats?.incorrect ?? 0);
+}
+
+// Anzahl der Items aus `items`, die mindestens einmal geübt wurden — Grundlage für die
+// Home-Screen-Fortschrittsanzeige der Lektionen ohne Level-Konzept (Issue #143).
+export function countPracticed(items: { id: string }[], stats: ItemStatsStore): number {
+  return items.filter((item) => totalAttempts(stats[item.id]) > 0).length;
 }
 
 // Formatiert eine Quote (0..1) als gerundeten Prozentwert, z.B. 0.8 -> "80%".
