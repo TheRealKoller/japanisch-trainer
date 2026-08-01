@@ -36,6 +36,7 @@ src/
     coreVocab.ts     # Grundwortschatz (128 Wörter, 16 Level)
     dailyPhrases.ts  # Alltags-Floskeln (40 Wendungen, 5 Level)
     travelPhrases.ts # Reise-Floskeln (40 Wendungen, 5 Level)
+    verbConjugation.ts # Verbkonjugation (48 Karten, 6 Level)
   components/
     Flashcard.tsx        # Einzelne Lernkarte (vorne/hinten)
     TrainingSession.tsx  # Kartenstapel-Logik mit Wiederholung falsch beantworteter Karten
@@ -64,6 +65,7 @@ interface VocabItem {
   romaji: string;    // Romaji-Lesung
   reading?: string;  // optional: Kana-Lesung (nur bei Zahlen/Kanji)
   meaning: string;   // Deutsche/Englische Bedeutung
+  formLabel?: string; // optional: gefragte Konjugationsform (nur Verbkonjugation)
 }
 ```
 

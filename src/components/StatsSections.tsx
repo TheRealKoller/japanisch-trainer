@@ -3,6 +3,7 @@ import type { Level } from "../data/levels";
 import { coreVocabLevels } from "../data/coreVocab";
 import { dailyPhraseLevels } from "../data/dailyPhrases";
 import { travelPhraseLevels } from "../data/travelPhrases";
+import { verbConjugationLevels } from "../data/verbConjugation";
 import { lessonItems, type VocabLessonId } from "../data/lessonRegistry";
 import { successRate, totalAttempts, formatPercent, MASTERY_THRESHOLD, type ItemStats, type ItemStatsStore } from "../utils/itemStats";
 
@@ -281,5 +282,7 @@ export function LessonStatsSection({ lessonId, store, onSelect }: LessonStatsSec
       return <LevelGroupedSection title="Alltags-Floskeln" items={lessonItems["daily-phrases"]} levels={dailyPhraseLevels} store={store} onSelect={onSelect} />;
     case "travel-phrases":
       return <LevelGroupedSection title="Reise-Floskeln" items={lessonItems["travel-phrases"]} levels={travelPhraseLevels} store={store} onSelect={onSelect} />;
+    case "verb-conjugation":
+      return <LevelGroupedSection title="Verbkonjugation" items={lessonItems["verb-conjugation"]} levels={verbConjugationLevels} store={store} onSelect={onSelect} />;
   }
 }

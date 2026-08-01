@@ -64,6 +64,11 @@ export function StatItemDetailModal({ item, stats, onClose }: Props) {
     <Modal onClose={onClose} label={`Details zu ${item.japanese}`}>
       <div className="flex flex-col items-center gap-1 pt-2">
         <span className="text-2xl text-indigo-600 dark:text-indigo-400">{item.japanese}</span>
+        {item.formLabel && (
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-400/20 dark:text-indigo-300">
+            {item.formLabel}
+          </span>
+        )}
         {item.reading && (
           <span className="text-xl text-indigo-600 dark:text-indigo-300 font-medium">{item.reading}</span>
         )}
