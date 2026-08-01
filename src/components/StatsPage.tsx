@@ -19,6 +19,7 @@ const LESSON_IDS: StatsLessonId[] = [
   "core-vocab",
   "daily-phrases",
   "travel-phrases",
+  "verb-conjugation",
 ];
 
 export function StatsPage({ onBack }: Props) {

@@ -5,6 +5,7 @@ import { katakana } from "./katakana";
 import { coreVocab, coreVocabLevels } from "./coreVocab";
 import { dailyPhrases, dailyPhraseLevels } from "./dailyPhrases";
 import { travelPhrases, travelPhraseLevels } from "./travelPhrases";
+import { verbConjugation } from "./verbConjugation";
 
 const datasets = [
   { name: "Grundwortschatz", items: coreVocab, levels: coreVocabLevels, prefix: "w", count: 128 },
@@ -58,7 +59,10 @@ for (const { name, items, levels, prefix, count } of datasets) {
 
 describe("alle Lektionen", () => {
   it("hat lektionsübergreifend eindeutige IDs", () => {
-    const all = [...numbers, ...hiragana, ...katakana, ...coreVocab, ...dailyPhrases, ...travelPhrases];
+    // verbConjugation bewusst nicht Teil des obigen datasets-Loops: dessen "Kana-Lesung
+    // bei Kanji"-Check würde hier vacuous durchlaufen, da reading dort die konjugierte
+    // Antwort trägt statt der Lesung von japanese (siehe verbConjugation.test.ts).
+    const all = [...numbers, ...hiragana, ...katakana, ...coreVocab, ...dailyPhrases, ...travelPhrases, ...verbConjugation];
     const ids = all.map((i) => i.id);
     expect(new Set(ids).size).toBe(ids.length);
   });

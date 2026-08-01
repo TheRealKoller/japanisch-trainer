@@ -20,7 +20,8 @@ type Lesson =
   | "number-quiz"
   | "core-vocab"
   | "daily-phrases"
-  | "travel-phrases";
+  | "travel-phrases"
+  | "verb-conjugation";
 type View = Lesson | "settings" | "stats" | "login" | null;
 
 interface LessonMeta {
@@ -86,6 +87,13 @@ const lessons: Record<Lesson, LessonMeta> = {
     color: "bg-lime-50 border-lime-200 hover:bg-lime-100 dark:bg-lime-500/10 dark:border-lime-500/30 dark:hover:bg-lime-500/15",
     badge: "bg-lime-100 text-lime-700 dark:bg-lime-400/20 dark:text-lime-300",
   },
+  "verb-conjugation": {
+    title: "Verbkonjugation",
+    subtitle: "食べる → 食べて ...",
+    description: `${lessonItems["verb-conjugation"].length} Karten`,
+    color: "bg-cyan-50 border-cyan-200 hover:bg-cyan-100 dark:bg-cyan-500/10 dark:border-cyan-500/30 dark:hover:bg-cyan-500/15",
+    badge: "bg-cyan-100 text-cyan-700 dark:bg-cyan-400/20 dark:text-cyan-300",
+  },
 };
 
 interface VocabLessonConfig {
@@ -98,6 +106,7 @@ const vocabLessonConfig: Record<VocabLessonId, VocabLessonConfig> = {
   "core-vocab": { cardVariant: "vocab" },
   "daily-phrases": { cardVariant: "vocab" },
   "travel-phrases": { cardVariant: "vocab" },
+  "verb-conjugation": { cardVariant: "conjugation" },
 };
 
 function isVocabLesson(view: View): view is VocabLessonId {

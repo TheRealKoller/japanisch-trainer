@@ -73,6 +73,7 @@ Jede Lektion hat eine eigene Tintfarbe — nur auf der Startseite und für Badge
 | Grundwortschatz | `bg-violet-50 border-violet-200 hover:bg-violet-100` | `dark:bg-violet-500/10 dark:border-violet-500/30 dark:hover:bg-violet-500/15` | `bg-violet-100 text-violet-700` | `dark:bg-violet-400/20 dark:text-violet-300` |
 | Alltags-Floskeln | `bg-teal-50 border-teal-200 hover:bg-teal-100` | `dark:bg-teal-500/10 dark:border-teal-500/30 dark:hover:bg-teal-500/15` | `bg-teal-100 text-teal-700` | `dark:bg-teal-400/20 dark:text-teal-300` |
 | Reise-Floskeln | `bg-lime-50 border-lime-200 hover:bg-lime-100` | `dark:bg-lime-500/10 dark:border-lime-500/30 dark:hover:bg-lime-500/15` | `bg-lime-100 text-lime-700` | `dark:bg-lime-400/20 dark:text-lime-300` |
+| Verbkonjugation | `bg-cyan-50 border-cyan-200 hover:bg-cyan-100` | `dark:bg-cyan-500/10 dark:border-cyan-500/30 dark:hover:bg-cyan-500/15` | `bg-cyan-100 text-cyan-700` | `dark:bg-cyan-400/20 dark:text-cyan-300` |
 
 ---
 
@@ -194,6 +195,12 @@ Rückseite (`variant="vocab"`): nur `item.meaning`, Stil `meaning-lg`.
 - `orientation="forward"` (Standard): wie oben beschrieben — Vorderseite Romaji/Kana/Kanji, Rückseite nur Bedeutung.
 - `orientation="reversed"`: **gespiegelt** — Vorderseite zeigt nur `item.meaning` (groß, `meaningSizeClass()`), Rückseite zeigt denselben Romaji/Kana/Kanji-Block wie sonst die Vorderseite (identischer Inhalt/Reihenfolge, via gemeinsame `RomajiKanaKanji`-Komponente in `Flashcard.tsx`).
 
+**Kartenvariante `conjugation` (Verbkonjugation):** `cardVariant: "conjugation"` in `vocabLessonConfig` (`App.tsx`). Keine `orientation`/Zufalls-Vertauschung — die Vorder-/Rückseiten-Zuordnung ist fix, da `TrainingSession.tsx`s `buildOrientations()`-Guard nur bei `variant === "vocab"` greift.
+
+Vorderseite: Grundform (`item.japanese`, `japaneseSizeClass()`) groß, darunter ein Badge mit der gefragten Form (`item.formLabel`, z.B. "て-Form") im Badge-Stil `text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-400/20 dark:text-indigo-300`.
+
+Rückseite: identisch zur `"default"`-Rückseite — `item.reading` (konjugierte Kana), `item.romaji` (konjugierte Romaji), `item.meaning` (Bedeutung der Grundform als Kontext).
+
 **Dynamische Schriftgröße (Bedeutung, `orientation="reversed"`):** `meaningSizeClass()` in `Flashcard.tsx` — deutsche Bedeutungen reichen von kurzen Wörtern bis zu ganzen Sätzen (Reise-/Alltags-Floskeln), daher eigene Staffelung:
 
 | Zeichenlänge | Klassen |
@@ -285,8 +292,8 @@ Label: text-sm text-gray-400 dark:text-slate-500  →  "{n} / {total} gelernt"
 
 ### Mastery-Fortschrittsbalken (Vokabel-Lektionen)
 
-Durchgehender Balken mit 2 proportionalen Farbzonen (kein Segment pro Item) für die 5
-Vokabel-Lektionen (Hiragana, Katakana, Grundwortschatz, Alltags-/Reise-Floskeln) —
+Durchgehender Balken mit 2 proportionalen Farbzonen (kein Segment pro Item) für die 6
+Vokabel-Lektionen (Hiragana, Katakana, Grundwortschatz, Alltags-/Reise-Floskeln, Verbkonjugation) —
 `MasteryProgressBar.tsx`. Nicht für Zahlen/Zahlen-Quiz (dort weiterhin die einfarbige
 `SegmentedProgressBar`). Aggregation über `masteryBuckets()` in `utils/itemStats.ts`.
 

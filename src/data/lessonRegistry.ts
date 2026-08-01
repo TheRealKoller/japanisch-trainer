@@ -4,6 +4,7 @@ import { katakana } from "./katakana";
 import { coreVocab } from "./coreVocab";
 import { dailyPhrases } from "./dailyPhrases";
 import { travelPhrases } from "./travelPhrases";
+import { verbConjugation } from "./verbConjugation";
 
 // Einzige Quelle für "welche Items gehören zu welcher Lektion" — ersetzt die vormals in
 // App.tsx und StatsSections.tsx parallel gepflegten Imports derselben Arrays (Issue #146).
@@ -13,6 +14,7 @@ export const lessonItems = {
   "core-vocab": coreVocab,
   "daily-phrases": dailyPhrases,
   "travel-phrases": travelPhrases,
+  "verb-conjugation": verbConjugation,
 } satisfies Record<string, VocabItem[]>;
 
 export type VocabLessonId = keyof typeof lessonItems;

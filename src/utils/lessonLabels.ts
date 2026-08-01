@@ -10,4 +10,5 @@ export const LESSON_LABELS: Record<StatsLessonId, string> = {
   "core-vocab": "Grundwortschatz",
   "daily-phrases": "Alltags-Floskeln",
   "travel-phrases": "Reise-Floskeln",
+  "verb-conjugation": "Verbkonjugation",
 };

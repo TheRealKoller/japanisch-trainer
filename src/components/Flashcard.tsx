@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import type { VocabItem } from "../data/types";
 
-export type FlashcardVariant = "default" | "vocab";
+export type FlashcardVariant = "default" | "vocab" | "conjugation";
 
 // Nur bei variant="vocab" relevant: "forward" zeigt vorne Romaji/Kana/Kanji (wie bisher),
 // "reversed" vertauscht Vorder- und Rückseite (vorne nur Bedeutung).
@@ -98,6 +98,17 @@ export function Flashcard({ item, front, back, variant = "default", orientation 
             ) : (
               <RomajiKanaKanji item={item} />
             )
+          ) : variant === "conjugation" ? (
+            <>
+              <span className={`${japaneseSizeClass(item?.japanese ?? "")} text-center px-4 text-gray-800 dark:text-slate-100`}>
+                {item?.japanese}
+              </span>
+              {item?.formLabel && (
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-400/20 dark:text-indigo-300">
+                  {item.formLabel}
+                </span>
+              )}
+            </>
           ) : (
             <>
               <span className={`${japaneseSizeClass(item?.japanese ?? "")} text-center px-4 text-gray-800 dark:text-slate-100`}>
