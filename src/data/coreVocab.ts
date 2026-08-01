@@ -137,7 +137,7 @@ export const coreVocab: VocabItem[] = [
   { id: "w117", japanese: "椅子",      reading: "いす",      romaji: "isu",          meaning: "Stuhl" },
   { id: "w118", japanese: "テレビ",                         romaji: "terebi",       meaning: "Fernseher" },
   { id: "w119", japanese: "コンピューター",                     romaji: "konpyuutaa",   meaning: "Computer" },
-  { id: "w120", japanese: "携帯電話",    reading: "けいたいでんわ", romaji: "keitai denwa", meaning: "Handy" },
+  { id: "w120", japanese: "携帯電話",    reading: "けいたいでんわ", romaji: "keitaidenwa", meaning: "Handy" },
   // Level 16 — Alltagsgegenstände III
   { id: "w121", japanese: "鉛筆",  reading: "えんぴつ", romaji: "enpitsu", meaning: "Bleistift" },
   { id: "w122", japanese: "紙",   reading: "かみ",   romaji: "kami",    meaning: "Papier" },

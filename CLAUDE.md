@@ -33,7 +33,7 @@ src/
     numbers.ts  # Zahlen (0–10.000)
     hiragana.ts # Hiragana-Alphabet (46 Zeichen)
     katakana.ts # Katakana-Alphabet (46 Zeichen)
-    coreVocab.ts     # Grundwortschatz (80 Wörter, 10 Level)
+    coreVocab.ts     # Grundwortschatz (128 Wörter, 16 Level)
     dailyPhrases.ts  # Alltags-Floskeln (40 Wendungen, 5 Level)
     travelPhrases.ts # Reise-Floskeln (40 Wendungen, 5 Level)
   components/
