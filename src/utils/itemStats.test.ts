@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { updateItemRecord, loadItemStats, saveItemStats, successRate, lifetimeSuccessRate, countPracticed, type ItemStatsStore } from "./itemStats";
+import { updateItemRecord, loadItemStats, saveItemStats, successRate, lifetimeSuccessRate, masteryBuckets, type ItemStatsStore } from "./itemStats";
 import { extractDigits } from "./quizStats";
 
 // localStorage mock for node environment
@@ -215,21 +215,39 @@ describe("loadItemStats — Migration von Alt-Daten ohne history", () => {
   });
 });
 
-describe("countPracticed", () => {
-  it("liefert 0 für einen leeren Store", () => {
-    expect(countPracticed([{ id: "ha" }, { id: "hi" }], {})).toBe(0);
+describe("masteryBuckets", () => {
+  it("ordnet Items ohne jede Antwort als 'unseen' ein", () => {
+    expect(masteryBuckets([{ id: "ha" }, { id: "hi" }], {})).toEqual({ mastered: 0, learning: 0, unseen: 2 });
   });
 
-  it("zählt nur Items mit mindestens einer Antwort", () => {
+  it("ordnet Items mit Erfolgsquote genau auf der Schwelle als 'mastered' ein (>=, nicht >)", () => {
+    const store: ItemStatsStore = {
+      ha: { id: "ha", correct: 9, incorrect: 1, history: [...Array(9).fill(true), false], lastSeen: 0 },
+    };
+    expect(masteryBuckets([{ id: "ha" }], store)).toEqual({ mastered: 1, learning: 0, unseen: 0 });
+  });
+
+  it("ordnet Items mit mindestens einer Antwort aber Quote knapp unter der Schwelle als 'learning' ein", () => {
     let store: ItemStatsStore = {};
     store = updateItemRecord(store, "ha", true);
-    store = updateItemRecord(store, "hi", false);
-    expect(countPracticed([{ id: "ha" }, { id: "hi" }, { id: "hu" }], store)).toBe(2);
+    store = updateItemRecord(store, "ha", false);
+    expect(masteryBuckets([{ id: "ha" }], store)).toEqual({ mastered: 0, learning: 1, unseen: 0 });
   });
 
-  it("ignoriert Items ohne Store-Eintrag", () => {
+  it("ignoriert Items ohne Store-Eintrag als 'unseen'", () => {
     const store = updateItemRecord({}, "ha", true);
-    expect(countPracticed([{ id: "unbekannt" }], store)).toBe(0);
+    expect(masteryBuckets([{ id: "unbekannt" }], store)).toEqual({ mastered: 0, learning: 0, unseen: 1 });
+  });
+
+  it("Summe der 3 Kategorien ergibt immer die Gesamtzahl der Items", () => {
+    let store: ItemStatsStore = {};
+    store = updateItemRecord(store, "ha", true); // mastered (1/1 = 100%)
+    store = updateItemRecord(store, "hi", true);
+    store = updateItemRecord(store, "hi", false); // learning (1/2 = 50%)
+    const items = [{ id: "ha" }, { id: "hi" }, { id: "hu" }]; // hu: unseen
+    const buckets = masteryBuckets(items, store);
+    expect(buckets.mastered + buckets.learning + buckets.unseen).toBe(items.length);
+    expect(buckets).toEqual({ mastered: 1, learning: 1, unseen: 1 });
   });
 });
 

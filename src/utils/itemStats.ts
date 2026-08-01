@@ -106,10 +106,27 @@ export function totalAttempts(stats: ItemStats | undefined): number {
   return (stats?.correct ?? 0) + (stats?.incorrect ?? 0);
 }
 
-// Anzahl der Items aus `items`, die mindestens einmal geübt wurden — Grundlage für die
-// Home-Screen-Fortschrittsanzeige der Lektionen ohne Level-Konzept (Issue #143).
-export function countPracticed(items: { id: string }[], stats: ItemStatsStore): number {
-  return items.filter((item) => totalAttempts(stats[item.id]) > 0).length;
+export interface MasteryBuckets {
+  mastered: number; // successRate() >= MASTERY_THRESHOLD
+  learning: number; // mindestens 1 Versuch, aber < MASTERY_THRESHOLD
+  unseen: number;   // noch nie geübt
+}
+
+// Teilt `items` anhand ihrer Erfolgsquote in 3 Kategorien ein — Grundlage für die
+// Fortschrittsanzeige pro Lektion (gut gekannt/wird gelernt/noch nicht gesehen, Issue #146).
+export function masteryBuckets(items: { id: string }[], stats: ItemStatsStore): MasteryBuckets {
+  const result: MasteryBuckets = { mastered: 0, learning: 0, unseen: 0 };
+  for (const item of items) {
+    const entry = stats[item.id];
+    if (totalAttempts(entry) === 0) {
+      result.unseen++;
+    } else if (successRate(entry) >= MASTERY_THRESHOLD) {
+      result.mastered++;
+    } else {
+      result.learning++;
+    }
+  }
+  return result;
 }
 
 // Formatiert eine Quote (0..1) als gerundeten Prozentwert, z.B. 0.8 -> "80%".

@@ -170,7 +170,7 @@ Rückseite:   w-72 h-72 sm:w-80 sm:h-80 rounded-2xl border-2
 | ≤ 8 | `text-3xl sm:text-4xl` |
 | > 8 | `text-xl sm:text-2xl` |
 
-**Kartenvariante `vocab` (Grundwortschatz, Alltags-/Reise-Floskeln):** `Flashcard` erhält einen `variant`-Prop (`"default" | "vocab"`), gesteuert über `cardVariant` in `vocabLessons` (`App.tsx`) und durchgereicht über `TrainingSession`. Bei `variant="vocab"` steht die westliche Schreibweise im Vordergrund, nicht die Schriftzeichen (Ziel: Wörter/Floskeln lernen, nicht die Schrift) — Hiragana/Katakana/Zahlen-Lektionen bleiben unverändert bei `"default"`.
+**Kartenvariante `vocab` (Grundwortschatz, Alltags-/Reise-Floskeln):** `Flashcard` erhält einen `variant`-Prop (`"default" | "vocab"`), gesteuert über `cardVariant` in `vocabLessonConfig` (`App.tsx`) und durchgereicht über `TrainingSession`. Bei `variant="vocab"` steht die westliche Schreibweise im Vordergrund, nicht die Schriftzeichen (Ziel: Wörter/Floskeln lernen, nicht die Schrift) — Hiragana/Katakana/Zahlen-Lektionen bleiben unverändert bei `"default"`.
 
 Vorderseite (`variant="vocab"`), von oben nach unten:
 1. Romaji (`item.romaji`) groß, Größe via `romajiSizeClass()`
@@ -282,6 +282,27 @@ Track: w-full bg-gray-100 dark:bg-slate-800 rounded-full h-2
 Fill:  bg-gradient-to-r from-indigo-500 to-violet-500 h-2 rounded-full transition-all duration-500
 Label: text-sm text-gray-400 dark:text-slate-500  →  "{n} / {total} gelernt"
 ```
+
+### Mastery-Fortschrittsbalken (Vokabel-Lektionen)
+
+Durchgehender Balken mit 2 proportionalen Farbzonen (kein Segment pro Item) für die 5
+Vokabel-Lektionen (Hiragana, Katakana, Grundwortschatz, Alltags-/Reise-Floskeln) —
+`MasteryProgressBar.tsx`. Nicht für Zahlen/Zahlen-Quiz (dort weiterhin die einfarbige
+`SegmentedProgressBar`). Aggregation über `masteryBuckets()` in `utils/itemStats.ts`.
+
+```
+Track:  flex w-full h-1.5 rounded-full overflow-hidden bg-gray-200 dark:bg-slate-700
+Zone 1 (gut gekannt, successRate() >= MASTERY_THRESHOLD): bg-green-400
+Zone 2 (wird gelernt, >=1 Versuch und < MASTERY_THRESHOLD): bg-orange-400
+        Breite je Zone: style={{ width: `${(n / total) * 100}%` }}, transition-all duration-500
+        "Noch nicht gesehen" bekommt keine eigene Zone — die Track-Hintergrundfarbe selbst
+        bildet diesen Anteil ab (kein 3. div nötig, da die Farbfläche ohnehin bereits grau ist).
+Label:  text-xs text-gray-400 dark:text-slate-500 → "{n} gut gekannt · {n} wird gelernt · {n} nicht gesehen"
+```
+
+**Verwendung:** Startseite (Lektionskachel, ohne Label, ausgeblendet bis zur ersten
+geübten Antwort) und Statistikseite (Kopfzeile über dem aktiven Tab, mit Label, auch
+vor der ersten Antwort sichtbar — `alwaysShow`-Prop).
 
 ### OptionsMenu
 
