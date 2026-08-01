@@ -1,7 +1,7 @@
 import type { VocabItem } from "./types";
 import { buildLevels } from "./levels";
 
-// Grundwortschatz — 80 Wörter in 10 thematischen Leveln à 8 Karten.
+// Grundwortschatz — 128 Wörter in 16 thematischen Leveln à 8 Karten.
 export const coreVocab: VocabItem[] = [
   // Level 1 — Menschen
   { id: "w1",  japanese: "私",     reading: "わたし",   romaji: "watashi",   meaning: "ich" },
@@ -93,6 +93,60 @@ export const coreVocab: VocabItem[] = [
   { id: "w78", japanese: "かばん",                      romaji: "kaban",  meaning: "Tasche" },
   { id: "w79", japanese: "服",     reading: "ふく",     romaji: "fuku",   meaning: "Kleidung" },
   { id: "w80", japanese: "お金",   reading: "おかね",   romaji: "okane",  meaning: "Geld" },
+  // Level 11 — Essen & Trinken II
+  { id: "w81", japanese: "コーヒー",                    romaji: "koohii",   meaning: "Kaffee" },
+  { id: "w82", japanese: "野菜",   reading: "やさい",    romaji: "yasai",    meaning: "Gemüse" },
+  { id: "w83", japanese: "塩",    reading: "しお",     romaji: "shio",     meaning: "Salz" },
+  { id: "w84", japanese: "砂糖",   reading: "さとう",    romaji: "satou",    meaning: "Zucker" },
+  { id: "w85", japanese: "ラーメン",                    romaji: "raamen",   meaning: "Ramen" },
+  { id: "w86", japanese: "寿司",   reading: "すし",     romaji: "sushi",    meaning: "Sushi" },
+  { id: "w87", japanese: "ビール",                     romaji: "biiru",    meaning: "Bier" },
+  { id: "w88", japanese: "牛乳",   reading: "ぎゅうにゅう", romaji: "gyuunyuu", meaning: "Milch" },
+  // Level 12 — Essen & Trinken III
+  { id: "w89", japanese: "朝ご飯",   reading: "あさごはん", romaji: "asagohan",  meaning: "Frühstück" },
+  { id: "w90", japanese: "昼ご飯",   reading: "ひるごはん", romaji: "hirugohan", meaning: "Mittagessen" },
+  { id: "w91", japanese: "晩ご飯",   reading: "ばんごはん", romaji: "bangohan",  meaning: "Abendessen" },
+  { id: "w92", japanese: "味噌汁",   reading: "みそしる",  romaji: "misoshiru", meaning: "Miso-Suppe" },
+  { id: "w93", japanese: "お菓子",   reading: "おかし",   romaji: "okashi",    meaning: "Süßigkeiten" },
+  { id: "w94", japanese: "麺",     reading: "めん",    romaji: "men",       meaning: "Nudeln" },
+  { id: "w95", japanese: "レストラン",                   romaji: "resutoran", meaning: "Restaurant" },
+  { id: "w96", japanese: "デザート",                    romaji: "dezaato",   meaning: "Nachtisch" },
+  // Level 13 — Orte II
+  { id: "w97",  japanese: "公園",  reading: "こうえん",    romaji: "kouen",       meaning: "Park" },
+  { id: "w98",  japanese: "図書館", reading: "としょかん",   romaji: "toshokan",    meaning: "Bibliothek" },
+  { id: "w99",  japanese: "郵便局", reading: "ゆうびんきょく", romaji: "yuubinkyoku", meaning: "Postamt" },
+  { id: "w100", japanese: "大学",  reading: "だいがく",    romaji: "daigaku",     meaning: "Universität" },
+  { id: "w101", japanese: "教室",  reading: "きょうしつ",   romaji: "kyoushitsu",  meaning: "Klassenzimmer" },
+  { id: "w102", japanese: "台所",  reading: "だいどころ",   romaji: "daidokoro",   meaning: "Küche" },
+  { id: "w103", japanese: "庭",   reading: "にわ",      romaji: "niwa",        meaning: "Garten" },
+  { id: "w104", japanese: "神社",  reading: "じんじゃ",    romaji: "jinja",       meaning: "Schrein" },
+  // Level 14 — Orte III
+  { id: "w105", japanese: "動物園", reading: "どうぶつえん", romaji: "doubutsuen", meaning: "Zoo" },
+  { id: "w106", japanese: "映画館", reading: "えいがかん",  romaji: "eigakan",    meaning: "Kino" },
+  { id: "w107", japanese: "美術館", reading: "びじゅつかん", romaji: "bijutsukan", meaning: "Kunstmuseum" },
+  { id: "w108", japanese: "橋",   reading: "はし",     romaji: "hashi",      meaning: "Brücke" },
+  { id: "w109", japanese: "道",   reading: "みち",     romaji: "michi",      meaning: "Straße, Weg" },
+  { id: "w110", japanese: "寝室",  reading: "しんしつ",   romaji: "shinshitsu", meaning: "Schlafzimmer" },
+  { id: "w111", japanese: "ホテル",                    romaji: "hoteru",     meaning: "Hotel" },
+  { id: "w112", japanese: "城",   reading: "しろ",     romaji: "shiro",      meaning: "Schloss, Burg" },
+  // Level 15 — Alltagsgegenstände II
+  { id: "w113", japanese: "傘",       reading: "かさ",      romaji: "kasa",         meaning: "Regenschirm" },
+  { id: "w114", japanese: "眼鏡",      reading: "めがね",     romaji: "megane",       meaning: "Brille" },
+  { id: "w115", japanese: "財布",      reading: "さいふ",     romaji: "saifu",        meaning: "Geldbeutel" },
+  { id: "w116", japanese: "机",       reading: "つくえ",     romaji: "tsukue",       meaning: "Schreibtisch" },
+  { id: "w117", japanese: "椅子",      reading: "いす",      romaji: "isu",          meaning: "Stuhl" },
+  { id: "w118", japanese: "テレビ",                         romaji: "terebi",       meaning: "Fernseher" },
+  { id: "w119", japanese: "コンピューター",                     romaji: "konpyuutaa",   meaning: "Computer" },
+  { id: "w120", japanese: "携帯電話",    reading: "けいたいでんわ", romaji: "keitaidenwa", meaning: "Handy" },
+  // Level 16 — Alltagsgegenstände III
+  { id: "w121", japanese: "鉛筆",  reading: "えんぴつ", romaji: "enpitsu", meaning: "Bleistift" },
+  { id: "w122", japanese: "紙",   reading: "かみ",   romaji: "kami",    meaning: "Papier" },
+  { id: "w123", japanese: "靴",   reading: "くつ",   romaji: "kutsu",   meaning: "Schuhe" },
+  { id: "w124", japanese: "帽子",  reading: "ぼうし",  romaji: "boushi",  meaning: "Hut, Mütze" },
+  { id: "w125", japanese: "鏡",   reading: "かがみ",  romaji: "kagami",  meaning: "Spiegel" },
+  { id: "w126", japanese: "石鹸",  reading: "せっけん", romaji: "sekken",  meaning: "Seife" },
+  { id: "w127", japanese: "タオル",                  romaji: "taoru",   meaning: "Handtuch" },
+  { id: "w128", japanese: "箱",   reading: "はこ",   romaji: "hako",    meaning: "Kiste, Schachtel" },
 ];
 
 export const coreVocabLevels = buildLevels(coreVocab, 8);
