@@ -7,7 +7,7 @@ import { dailyPhrases, dailyPhraseLevels } from "./dailyPhrases";
 import { travelPhrases, travelPhraseLevels } from "./travelPhrases";
 
 const datasets = [
-  { name: "Grundwortschatz", items: coreVocab, levels: coreVocabLevels, prefix: "w", count: 80 },
+  { name: "Grundwortschatz", items: coreVocab, levels: coreVocabLevels, prefix: "w", count: 128 },
   { name: "Alltags-Floskeln", items: dailyPhrases, levels: dailyPhraseLevels, prefix: "a", count: 40 },
   { name: "Reise-Floskeln", items: travelPhrases, levels: travelPhraseLevels, prefix: "r", count: 40 },
 ];
