@@ -26,6 +26,17 @@ describe("StatsPage", () => {
     expect(screen.queryByText("Dakuten / Handakuten")).not.toBeInTheDocument();
   });
 
+  it("zeigt den Mastery-Balken mit Zahlen für eine Vokabel-Lektion, auch ohne geübte Wörter", () => {
+    render(<StatsPage onBack={vi.fn()} />);
+    expect(screen.getByText(/nicht gesehen/)).toBeInTheDocument();
+  });
+
+  it("zeigt keinen Mastery-Balken für die Zahlen-Quiz-Lektion", () => {
+    render(<StatsPage onBack={vi.fn()} />);
+    fireEvent.click(screen.getByText("Zahlen-Quiz"));
+    expect(screen.queryByText(/nicht gesehen/)).not.toBeInTheDocument();
+  });
+
   it("stellt den zuletzt aktiven Reiter nach einem Remount wieder her", () => {
     render(<StatsPage onBack={vi.fn()} />);
     fireEvent.click(screen.getByText("Grundwortschatz"));

@@ -283,6 +283,27 @@ Fill:  bg-gradient-to-r from-indigo-500 to-violet-500 h-2 rounded-full transitio
 Label: text-sm text-gray-400 dark:text-slate-500  →  "{n} / {total} gelernt"
 ```
 
+### Mastery-Fortschrittsbalken (Vokabel-Lektionen)
+
+Durchgehender Balken mit 2 proportionalen Farbzonen (kein Segment pro Item) für die 5
+Vokabel-Lektionen (Hiragana, Katakana, Grundwortschatz, Alltags-/Reise-Floskeln) —
+`MasteryProgressBar.tsx`. Nicht für Zahlen/Zahlen-Quiz (dort weiterhin die einfarbige
+`SegmentedProgressBar`). Aggregation über `masteryBuckets()` in `utils/itemStats.ts`.
+
+```
+Track:  flex w-full h-1.5 rounded-full overflow-hidden bg-gray-200 dark:bg-slate-700
+Zone 1 (gut gekannt, successRate() >= MASTERY_THRESHOLD): bg-green-400
+Zone 2 (wird gelernt, >=1 Versuch und < MASTERY_THRESHOLD): bg-orange-400
+        Breite je Zone: style={{ width: `${(n / total) * 100}%` }}, transition-all duration-500
+        "Noch nicht gesehen" bekommt keine eigene Zone — die Track-Hintergrundfarbe selbst
+        bildet diesen Anteil ab (kein 3. div nötig, da die Farbfläche ohnehin bereits grau ist).
+Label:  text-xs text-gray-400 dark:text-slate-500 → "{n} gut gekannt · {n} wird gelernt · {n} nicht gesehen"
+```
+
+**Verwendung:** Startseite (Lektionskachel, ohne Label, ausgeblendet bis zur ersten
+geübten Antwort) und Statistikseite (Kopfzeile über dem aktiven Tab, mit Label, auch
+vor der ersten Antwort sichtbar — `alwaysShow`-Prop).
+
 ### OptionsMenu
 
 ⚙️-Button öffnet ein Dropdown-Panel. Schließt bei Klick außerhalb (`pointerdown`-Listener).

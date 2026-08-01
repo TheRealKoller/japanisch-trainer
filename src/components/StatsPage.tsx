@@ -1,9 +1,11 @@
 import { useCallback, useState } from "react";
 import type { VocabItem } from "../data/types";
-import { loadItemStats } from "../utils/itemStats";
+import { lessonItems, isVocabLessonId } from "../data/lessonRegistry";
+import { loadItemStats, masteryBuckets } from "../utils/itemStats";
 import { getActiveStatsTab, setActiveStatsTab } from "../utils/statsTabStorage";
 import { LessonStatsSection, type StatsLessonId } from "./StatsSections";
 import { LessonTabs } from "./LessonTabs";
+import { MasteryProgressBar } from "./MasteryProgressBar";
 import { StatItemDetailModal } from "./StatItemDetailModal";
 
 interface Props {
@@ -46,6 +48,10 @@ export function StatsPage({ onBack }: Props) {
       </div>
 
       <LessonTabs ids={LESSON_IDS} active={activeTab} onSelect={selectTab} />
+
+      {isVocabLessonId(activeTab) && (
+        <MasteryProgressBar {...masteryBuckets(lessonItems[activeTab], store)} showLabel alwaysShow />
+      )}
 
       <div className="flex-1 min-h-0 overflow-y-auto py-4">
         <LessonStatsSection lessonId={activeTab} store={store} onSelect={setSelectedItem} />

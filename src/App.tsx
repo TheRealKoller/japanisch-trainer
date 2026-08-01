@@ -1,21 +1,16 @@
 import { useState, useEffect } from "react";
 import { numbers } from "./data/numbers";
-import { hiragana } from "./data/hiragana";
-import { katakana } from "./data/katakana";
-import { coreVocab } from "./data/coreVocab";
-import { dailyPhrases } from "./data/dailyPhrases";
-import { travelPhrases } from "./data/travelPhrases";
-import type { VocabItem } from "./data/types";
+import { lessonItems, isVocabLessonId, type VocabLessonId } from "./data/lessonRegistry";
 import { TrainingSession } from "./components/TrainingSession";
 import type { FlashcardVariant } from "./components/Flashcard";
 import { NumberQuizSession } from "./components/NumberQuizSession";
 import { SegmentedProgressBar } from "./components/SegmentedProgressBar";
+import { MasteryProgressBar } from "./components/MasteryProgressBar";
 import { OptionsMenu } from "./components/OptionsMenu";
 import { SettingsPage } from "./components/SettingsPage";
 import { StatsPage } from "./components/StatsPage";
 import { LoginPage } from "./components/LoginPage";
-import { loadItemStats, countPracticed } from "./utils/itemStats";
-import type { ItemStatsStore } from "./utils/itemStats";
+import { loadItemStats, masteryBuckets } from "./utils/itemStats";
 import { loadStats } from "./utils/quizStats";
 
 type Lesson =
@@ -59,67 +54,54 @@ const lessons: Record<Lesson, LessonMeta> = {
   hiragana: {
     title: "Hiragana",
     subtitle: "あ い う え お ...",
-    description: `${hiragana.length} Zeichen`,
+    description: `${lessonItems.hiragana.length} Zeichen`,
     color: "bg-rose-50 border-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:border-rose-500/30 dark:hover:bg-rose-500/15",
     badge: "bg-rose-100 text-rose-700 dark:bg-rose-400/20 dark:text-rose-300",
-    progressTotal: hiragana.length,
-    accentClass: "bg-rose-400 dark:bg-rose-400",
   },
   katakana: {
     title: "Katakana",
     subtitle: "ア イ ウ エ オ ...",
-    description: `${katakana.length} Zeichen`,
+    description: `${lessonItems.katakana.length} Zeichen`,
     color: "bg-sky-50 border-sky-200 hover:bg-sky-100 dark:bg-sky-500/10 dark:border-sky-500/30 dark:hover:bg-sky-500/15",
     badge: "bg-sky-100 text-sky-700 dark:bg-sky-400/20 dark:text-sky-300",
-    progressTotal: katakana.length,
-    accentClass: "bg-sky-400 dark:bg-sky-400",
   },
   "core-vocab": {
     title: "Grundwortschatz",
     subtitle: "水 家 食べる ...",
-    description: `${coreVocab.length} Wörter`,
+    description: `${lessonItems["core-vocab"].length} Wörter`,
     color: "bg-violet-50 border-violet-200 hover:bg-violet-100 dark:bg-violet-500/10 dark:border-violet-500/30 dark:hover:bg-violet-500/15",
     badge: "bg-violet-100 text-violet-700 dark:bg-violet-400/20 dark:text-violet-300",
-    progressTotal: coreVocab.length,
-    accentClass: "bg-violet-400 dark:bg-violet-400",
   },
   "daily-phrases": {
     title: "Alltags-Floskeln",
     subtitle: "こんにちは ...",
-    description: `${dailyPhrases.length} Floskeln`,
+    description: `${lessonItems["daily-phrases"].length} Floskeln`,
     color: "bg-teal-50 border-teal-200 hover:bg-teal-100 dark:bg-teal-500/10 dark:border-teal-500/30 dark:hover:bg-teal-500/15",
     badge: "bg-teal-100 text-teal-700 dark:bg-teal-400/20 dark:text-teal-300",
-    progressTotal: dailyPhrases.length,
-    accentClass: "bg-teal-400 dark:bg-teal-400",
   },
   "travel-phrases": {
     title: "Reise-Floskeln",
     subtitle: "いくらですか ...",
-    description: `${travelPhrases.length} Floskeln`,
+    description: `${lessonItems["travel-phrases"].length} Floskeln`,
     color: "bg-lime-50 border-lime-200 hover:bg-lime-100 dark:bg-lime-500/10 dark:border-lime-500/30 dark:hover:bg-lime-500/15",
     badge: "bg-lime-100 text-lime-700 dark:bg-lime-400/20 dark:text-lime-300",
-    progressTotal: travelPhrases.length,
-    accentClass: "bg-lime-400 dark:bg-lime-400",
   },
 };
 
 interface VocabLessonConfig {
-  items: VocabItem[];
   cardVariant: FlashcardVariant; // Kana-Sessions zeigen Kanji/Kana groß, Vokabel-Sessions Romaji groß (siehe Issue #119)
 }
 
-const vocabLessons = {
-  hiragana: { items: hiragana, cardVariant: "default" },
-  katakana: { items: katakana, cardVariant: "default" },
-  "core-vocab": { items: coreVocab, cardVariant: "vocab" },
-  "daily-phrases": { items: dailyPhrases, cardVariant: "vocab" },
-  "travel-phrases": { items: travelPhrases, cardVariant: "vocab" },
-} satisfies Record<string, VocabLessonConfig>;
-
-type VocabLessonId = keyof typeof vocabLessons;
+const vocabLessonConfig: Record<VocabLessonId, VocabLessonConfig> = {
+  hiragana: { cardVariant: "default" },
+  katakana: { cardVariant: "default" },
+  "core-vocab": { cardVariant: "vocab" },
+  "daily-phrases": { cardVariant: "vocab" },
+  "travel-phrases": { cardVariant: "vocab" },
+};
 
 function isVocabLesson(view: View): view is VocabLessonId {
-  return view !== null && view in vocabLessons;
+  return view !== null && isVocabLessonId(view);
 }
 
 function viewFromHash(): View {
@@ -133,10 +115,7 @@ function App() {
   const [view, setView] = useState<View>(viewFromHash);
   const [quizLevel, setQuizLevel] = useState(() => loadStats().currentLevel);
 
-  function getProgressCompleted(lessonId: Lesson, itemStats: ItemStatsStore): number | null {
-    if (isVocabLesson(lessonId)) {
-      return countPracticed(vocabLessons[lessonId].items, itemStats);
-    }
+  function getProgressCompleted(lessonId: Lesson): number | null {
     if (lessonId === "number-quiz") return quizLevel - 1;
     return null;
   }
@@ -192,7 +171,8 @@ function App() {
 
   if (isVocabLesson(view)) {
     const lessonId = view;
-    const { items, cardVariant } = vocabLessons[lessonId];
+    const items = lessonItems[lessonId];
+    const { cardVariant } = vocabLessonConfig[lessonId];
     const { title } = lessons[lessonId];
 
     return (
@@ -241,7 +221,7 @@ function App() {
 
         <div className="flex flex-col gap-3">
           {(Object.entries(lessons) as [Lesson, LessonMeta][]).map(([id, lesson]) => {
-            const completed = getProgressCompleted(id, homeScreenItemStats);
+            const completed = getProgressCompleted(id);
             return (
               <button
                 key={id}
@@ -261,6 +241,9 @@ function App() {
                     {lesson.description}
                   </span>
                 </div>
+                {isVocabLessonId(id) && (
+                  <MasteryProgressBar {...masteryBuckets(lessonItems[id], homeScreenItemStats)} />
+                )}
                 {lesson.progressTotal !== undefined && completed !== null && lesson.accentClass && (
                   <SegmentedProgressBar
                     completed={completed}

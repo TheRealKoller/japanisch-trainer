@@ -1,10 +1,9 @@
 import type { VocabItem } from "../data/types";
 import type { Level } from "../data/levels";
-import { hiragana } from "../data/hiragana";
-import { katakana } from "../data/katakana";
-import { coreVocab, coreVocabLevels } from "../data/coreVocab";
-import { dailyPhrases, dailyPhraseLevels } from "../data/dailyPhrases";
-import { travelPhrases, travelPhraseLevels } from "../data/travelPhrases";
+import { coreVocabLevels } from "../data/coreVocab";
+import { dailyPhraseLevels } from "../data/dailyPhrases";
+import { travelPhraseLevels } from "../data/travelPhrases";
+import { lessonItems, type VocabLessonId } from "../data/lessonRegistry";
 import { successRate, totalAttempts, formatPercent, MASTERY_THRESHOLD, type ItemStats, type ItemStatsStore } from "../utils/itemStats";
 
 function tileColor(stats: ItemStats | undefined): string {
@@ -260,13 +259,7 @@ export function LevelGroupedSection({ title, items, levels, store, onSelect }: L
 // TrainingSession/NumberQuizSession (genau eine Lektionsart, siehe Issue #133)
 // rendern darüber, damit das Mapping nicht doppelt gepflegt werden muss.
 
-export type StatsLessonId =
-  | "hiragana"
-  | "katakana"
-  | "number-quiz"
-  | "core-vocab"
-  | "daily-phrases"
-  | "travel-phrases";
+export type StatsLessonId = VocabLessonId | "number-quiz";
 
 interface LessonStatsSectionProps {
   lessonId: StatsLessonId;
@@ -277,16 +270,16 @@ interface LessonStatsSectionProps {
 export function LessonStatsSection({ lessonId, store, onSelect }: LessonStatsSectionProps) {
   switch (lessonId) {
     case "hiragana":
-      return <GojuonSection title="Hiragana" items={hiragana} prefix="h" store={store} onSelect={onSelect} />;
+      return <GojuonSection title="Hiragana" items={lessonItems.hiragana} prefix="h" store={store} onSelect={onSelect} />;
     case "katakana":
-      return <GojuonSection title="Katakana" items={katakana} prefix="k" store={store} onSelect={onSelect} />;
+      return <GojuonSection title="Katakana" items={lessonItems.katakana} prefix="k" store={store} onSelect={onSelect} />;
     case "number-quiz":
       return <DigitSection store={store} />;
     case "core-vocab":
-      return <LevelGroupedSection title="Grundwortschatz" items={coreVocab} levels={coreVocabLevels} store={store} onSelect={onSelect} />;
+      return <LevelGroupedSection title="Grundwortschatz" items={lessonItems["core-vocab"]} levels={coreVocabLevels} store={store} onSelect={onSelect} />;
     case "daily-phrases":
-      return <LevelGroupedSection title="Alltags-Floskeln" items={dailyPhrases} levels={dailyPhraseLevels} store={store} onSelect={onSelect} />;
+      return <LevelGroupedSection title="Alltags-Floskeln" items={lessonItems["daily-phrases"]} levels={dailyPhraseLevels} store={store} onSelect={onSelect} />;
     case "travel-phrases":
-      return <LevelGroupedSection title="Reise-Floskeln" items={travelPhrases} levels={travelPhraseLevels} store={store} onSelect={onSelect} />;
+      return <LevelGroupedSection title="Reise-Floskeln" items={lessonItems["travel-phrases"]} levels={travelPhraseLevels} store={store} onSelect={onSelect} />;
   }
 }
