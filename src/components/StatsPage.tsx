@@ -20,6 +20,7 @@ const LESSON_IDS: StatsLessonId[] = [
   "daily-phrases",
   "travel-phrases",
   "verb-conjugation",
+  "particle-quiz",
 ];
 
 export function StatsPage({ onBack }: Props) {

@@ -5,6 +5,7 @@ import { dailyPhraseLevels } from "../data/dailyPhrases";
 import { travelPhraseLevels } from "../data/travelPhrases";
 import { verbConjugationLevels } from "../data/verbConjugation";
 import { lessonItems, type VocabLessonId } from "../data/lessonRegistry";
+import { PARTICLES, PARTICLE_STAT_ID } from "../data/particleSentences";
 import { successRate, totalAttempts, formatPercent, MASTERY_THRESHOLD, type ItemStats, type ItemStatsStore } from "../utils/itemStats";
 
 function tileColor(stats: ItemStats | undefined): string {
@@ -225,6 +226,24 @@ export function DigitSection({ store }: { store: ItemStatsStore }) {
   );
 }
 
+export function ParticleSection({ store }: { store: ItemStatsStore }) {
+  return (
+    <div>
+      <h3 className="text-sm font-medium text-gray-500 dark:text-slate-400 mb-3">Partikel (Partikel-Übung)</h3>
+      <div className="flex gap-1.5">
+        {PARTICLES.map((p) => (
+          <div
+            key={p}
+            className={`flex-1 flex flex-col items-center py-2 rounded-lg transition-colors ${tileColor(store[PARTICLE_STAT_ID[p]])}`}
+          >
+            <span className="text-lg font-bold leading-none">{p}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export interface LevelGroupedSectionProps {
   title: string;
   items: VocabItem[];
@@ -260,7 +279,7 @@ export function LevelGroupedSection({ title, items, levels, store, onSelect }: L
 // TrainingSession/NumberQuizSession (genau eine Lektionsart, siehe Issue #133)
 // rendern darüber, damit das Mapping nicht doppelt gepflegt werden muss.
 
-export type StatsLessonId = VocabLessonId | "number-quiz";
+export type StatsLessonId = VocabLessonId | "number-quiz" | "particle-quiz";
 
 interface LessonStatsSectionProps {
   lessonId: StatsLessonId;
@@ -276,6 +295,8 @@ export function LessonStatsSection({ lessonId, store, onSelect }: LessonStatsSec
       return <GojuonSection title="Katakana" items={lessonItems.katakana} prefix="k" store={store} onSelect={onSelect} />;
     case "number-quiz":
       return <DigitSection store={store} />;
+    case "particle-quiz":
+      return <ParticleSection store={store} />;
     case "core-vocab":
       return <LevelGroupedSection title="Grundwortschatz" items={lessonItems["core-vocab"]} levels={coreVocabLevels} store={store} onSelect={onSelect} />;
     case "daily-phrases":

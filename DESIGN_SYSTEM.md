@@ -74,6 +74,7 @@ Jede Lektion hat eine eigene Tintfarbe — nur auf der Startseite und für Badge
 | Alltags-Floskeln | `bg-teal-50 border-teal-200 hover:bg-teal-100` | `dark:bg-teal-500/10 dark:border-teal-500/30 dark:hover:bg-teal-500/15` | `bg-teal-100 text-teal-700` | `dark:bg-teal-400/20 dark:text-teal-300` |
 | Reise-Floskeln | `bg-lime-50 border-lime-200 hover:bg-lime-100` | `dark:bg-lime-500/10 dark:border-lime-500/30 dark:hover:bg-lime-500/15` | `bg-lime-100 text-lime-700` | `dark:bg-lime-400/20 dark:text-lime-300` |
 | Verbkonjugation | `bg-cyan-50 border-cyan-200 hover:bg-cyan-100` | `dark:bg-cyan-500/10 dark:border-cyan-500/30 dark:hover:bg-cyan-500/15` | `bg-cyan-100 text-cyan-700` | `dark:bg-cyan-400/20 dark:text-cyan-300` |
+| Partikel-Übung | `bg-pink-50 border-pink-200 hover:bg-pink-100` | `dark:bg-pink-500/10 dark:border-pink-500/30 dark:hover:bg-pink-500/15` | `bg-pink-100 text-pink-700` | `dark:bg-pink-400/20 dark:text-pink-300` |
 
 ---
 
