@@ -11,4 +11,5 @@ export const LESSON_LABELS: Record<StatsLessonId, string> = {
   "daily-phrases": "Alltags-Floskeln",
   "travel-phrases": "Reise-Floskeln",
   "verb-conjugation": "Verbkonjugation",
+  "particle-quiz": "Partikel-Übung",
 };

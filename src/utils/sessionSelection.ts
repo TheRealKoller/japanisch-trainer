@@ -1,4 +1,3 @@
-import type { VocabItem } from "../data/types";
 import { successRate, totalAttempts, type ItemStatsStore } from "./itemStats";
 import { weightedSampleWithoutReplacement } from "./weightedSample";
 
@@ -19,8 +18,8 @@ export function shuffle<T>(arr: T[]): T[] {
 
 // Liefert die ersten `count` noch nie geübten Items in bestehender Array-Reihenfolge
 // (nicht zufällig gewählt) — liefert weniger, falls insgesamt nicht genug vorhanden sind.
-function reserveNewItems(items: VocabItem[], stats: ItemStatsStore, count: number): VocabItem[] {
-  const result: VocabItem[] = [];
+function reserveNewItems<T extends { id: string }>(items: T[], stats: ItemStatsStore, count: number): T[] {
+  const result: T[] = [];
   for (const item of items) {
     if (result.length >= count) break;
     if (totalAttempts(stats[item.id]) === 0) result.push(item);
@@ -35,7 +34,8 @@ function reserveNewItems(items: VocabItem[], stats: ItemStatsStore, count: numbe
 // Begriffe nicht aus, um die restlichen Plätze zu füllen (z.B. ganz am Anfang einer
 // großen Lektion, wenn erst wenige Begriffe je geübt wurden), werden weitere, noch nicht
 // reservierte neue Begriffe angehängt, bis SESSION_CAP erreicht ist.
-export function selectSessionItems(items: VocabItem[], stats: ItemStatsStore): VocabItem[] {
+// Generisch über beliebige Item-Pools mit `id` (VocabItem, aber auch z.B. ParticleSentence).
+export function selectSessionItems<T extends { id: string }>(items: T[], stats: ItemStatsStore): T[] {
   if (items.length <= SESSION_CAP) return items;
 
   const newItems = reserveNewItems(items, stats, NEW_ITEMS_RESERVED);

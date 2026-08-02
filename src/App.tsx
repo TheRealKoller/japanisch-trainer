@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { numbers } from "./data/numbers";
 import { lessonItems, isVocabLessonId, type VocabLessonId } from "./data/lessonRegistry";
+import { particleSentences } from "./data/particleSentences";
 import { TrainingSession } from "./components/TrainingSession";
 import type { FlashcardVariant } from "./components/Flashcard";
 import { NumberQuizSession } from "./components/NumberQuizSession";
+import { ParticleQuizSession } from "./components/ParticleQuizSession";
 import { SegmentedProgressBar } from "./components/SegmentedProgressBar";
 import { MasteryProgressBar } from "./components/MasteryProgressBar";
 import { OptionsMenu } from "./components/OptionsMenu";
@@ -21,7 +23,8 @@ type Lesson =
   | "core-vocab"
   | "daily-phrases"
   | "travel-phrases"
-  | "verb-conjugation";
+  | "verb-conjugation"
+  | "particle-quiz";
 type View = Lesson | "settings" | "stats" | "login" | null;
 
 interface LessonMeta {
@@ -93,6 +96,13 @@ const lessons: Record<Lesson, LessonMeta> = {
     description: `${lessonItems["verb-conjugation"].length} Karten`,
     color: "bg-cyan-50 border-cyan-200 hover:bg-cyan-100 dark:bg-cyan-500/10 dark:border-cyan-500/30 dark:hover:bg-cyan-500/15",
     badge: "bg-cyan-100 text-cyan-700 dark:bg-cyan-400/20 dark:text-cyan-300",
+  },
+  "particle-quiz": {
+    title: "Partikel-Übung",
+    subtitle: "は が を に で",
+    description: `${particleSentences.length} Sätze`,
+    color: "bg-pink-50 border-pink-200 hover:bg-pink-100 dark:bg-pink-500/10 dark:border-pink-500/30 dark:hover:bg-pink-500/15",
+    badge: "bg-pink-100 text-pink-700 dark:bg-pink-400/20 dark:text-pink-300",
   },
 };
 
@@ -174,6 +184,14 @@ function App() {
     return (
       <main className="h-screen overflow-hidden flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
         <NumberQuizSession onBack={() => { setView(null); setQuizLevel(loadStats().currentLevel); }} />
+      </main>
+    );
+  }
+
+  if (view === "particle-quiz") {
+    return (
+      <main className="h-screen overflow-hidden flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-950">
+        <ParticleQuizSession onBack={() => setView(null)} />
       </main>
     );
   }
