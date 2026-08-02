@@ -37,6 +37,7 @@ src/
     dailyPhrases.ts  # Alltags-Floskeln (40 Wendungen, 5 Level)
     travelPhrases.ts # Reise-Floskeln (40 Wendungen, 5 Level)
     verbConjugation.ts # Verbkonjugation (48 Karten, 6 Level)
+    particleSentences.ts # Partikel-Übung (40 Lückensätze, は/が/を/に/で)
   components/
     Flashcard.tsx        # Einzelne Lernkarte (vorne/hinten)
     TrainingSession.tsx  # Kartenstapel-Logik mit Wiederholung falsch beantworteter Karten
