@@ -29,6 +29,12 @@ export async function progressRoutes(app: FastifyInstance): Promise<void> {
   app.put<{ Params: { key: string }; Body: { value: unknown } }>(
     "/:key",
     {
+      config: {
+        rateLimit: {
+          max: 60,
+          timeWindow: "1 minute",
+        },
+      },
       schema: {
         body: {
           type: "object",

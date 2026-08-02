@@ -23,8 +23,18 @@ interface Credentials {
   password: string;
 }
 
+// Strict rate-limit config for sensitive auth endpoints (brute-force / mass-registration protection)
+const AUTH_RATE_LIMIT = {
+  config: {
+    rateLimit: {
+      max: 10,
+      timeWindow: "1 minute",
+    },
+  },
+} as const;
+
 export async function authRoutes(app: FastifyInstance): Promise<void> {
-  app.post<{ Body: Credentials }>("/register", { schema: credentialsSchema }, async (request, reply) => {
+  app.post<{ Body: Credentials }>("/register", { schema: credentialsSchema, ...AUTH_RATE_LIMIT }, async (request, reply) => {
     const email = request.body.email.toLowerCase();
 
     // Schema-maxLength zählt Zeichen, bcrypt schneidet aber bei 72 Bytes ab —
@@ -50,7 +60,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     return reply.code(201).send({ email });
   });
 
-  app.post<{ Body: Credentials }>("/login", { schema: credentialsSchema }, async (request, reply) => {
+  app.post<{ Body: Credentials }>("/login", { schema: credentialsSchema, ...AUTH_RATE_LIMIT }, async (request, reply) => {
     const email = request.body.email.toLowerCase();
 
     const [user] = await db.select().from(users).where(eq(users.email, email));

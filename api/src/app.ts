@@ -1,6 +1,7 @@
 import Fastify, { type FastifyInstance } from "fastify";
 import cookie from "@fastify/cookie";
 import jwt from "@fastify/jwt";
+import rateLimit from "@fastify/rate-limit";
 import { AUTH_COOKIE } from "./auth.js";
 import { authRoutes } from "./routes/auth.js";
 import { progressRoutes } from "./routes/progress.js";
@@ -11,6 +12,13 @@ export function buildApp(): FastifyInstance {
   if (!process.env.JWT_SECRET) {
     app.log.warn("JWT_SECRET nicht gesetzt — unsicherer Dev-Default aktiv. Für den Betrieb JWT_SECRET setzen!");
   }
+
+  // Global rate-limit default — overridden per-route where necessary
+  app.register(rateLimit, {
+    global: true,
+    max: 100,
+    timeWindow: "1 minute",
+  });
 
   app.register(cookie);
   app.register(jwt, {
