@@ -58,13 +58,15 @@ gh pr create \
 
 Rufe jetzt den `feature-dev:feature-dev`-Skill auf — verwende dazu das Skill-Tool mit `skill: "feature-dev:feature-dev"`. Übergib die Issue-Nummer als Kontext im Prompt. Implementiere das Feature nicht selbst. Warte auf den vollständigen Abschluss bevor du weitergehst.
 
-### 3. Code Review
+### 3. PR fertigstellen
+
+Rufe jetzt den `pr-ready`-Skill auf — verwende dazu das Skill-Tool mit `skill: "pr-ready"`. Führt die lokalen Qualitätschecks aus, entfernt das `WIP:`-Präfix und markiert den in Schritt 1c angelegten Draft-PR als ready-for-review. Stelle sicher dass der PR weiterhin mit `Closes #<nr>` verknüpft ist.
+
+### 4. Code Review
 
 Rufe jetzt den `review`-Skill auf — verwende dazu das Skill-Tool mit `skill: "review"`. Warte auf den Abschluss und adressiere kritische Findings bevor du weitergehst.
 
-### 4. PR erstellen
-
-Rufe jetzt den `pr-ready`-Skill auf — verwende dazu das Skill-Tool mit `skill: "pr-ready"`. Stelle sicher dass der PR mit `Closes #<nr>` verknüpft wird.
+**Wichtig:** Dieser Schritt muss nach Schritt 3 laufen — `/code-review` lehnt Draft-PRs und PRs mit `WIP:`-Titel automatisch ab. Läuft er vorher, schlägt der Review-Eligibility-Check fehl und muss nach dem Entdraften erneut angestoßen werden.
 
 ## Hinweise
 - Branch immer von `main` aus erstellen, nie von einem anderen Feature-Branch
